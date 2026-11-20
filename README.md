@@ -1,4 +1,4 @@
-# .NET Interview Gym
+# .NET Interview GYM
 
 A free, static, community-editable interview practice app with English MCQs, brief Egyptian-Arabic hints and explanations, timed exam and study modes, topic filters, and progress saved locally.
 
@@ -71,3 +71,17 @@ All history is stored in browser `localStorage` as `interview_gym_history_v2`; c
 ## License
 
 The application code is released under the MIT License. Newly contributed original question text and explanations are licensed under CC BY 4.0 unless the contributor states otherwise. Do not submit copied third-party question banks or proprietary interview material.
+
+## V7 — Adaptive assessment
+
+- **Placement Test**: 30 timed questions sampled across the available categories. The next difficulty adjusts to your latest answer in the same area. Arabic hints are hidden by default in placement; showing one is recorded as assistance.
+- **Adaptive Practice**: personalized category mix based on weak areas and unseen questions; difficulty changes during the round. The selected difficulty filter is intentionally ignored in adaptive mode.
+- **Skill Profile**: provisional per-category performance indicators using distinct questions, difficulty and hint use. These are **not certified psychometric scores or job seniority labels**. A limited 120-question bank, uneven difficulty coverage and small samples constrain accuracy.
+- Saved progress and history keep their existing localStorage keys; prior sessions still resume. Export/import remains available.
+- All assessment logic is local JavaScript: no tracking, login, cloud database or cost.
+
+Run checks with `node scripts/validate-questions.mjs`, `node scripts/assessment-test.mjs`, and `node scripts/smoke-test.mjs`.
+
+## Branding
+
+Our new barbell-and-code icon combines the `.NET` developer experience with the **GYM** idea: practice a little, improve every day. The logo, favicon and touch icon live in `assets/` and can be freely adapted under the repository license.

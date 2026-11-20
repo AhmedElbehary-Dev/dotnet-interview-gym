@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#FEF3E2">
-<link rel="icon" type="image/x-icon" href="assets/favicon.ico">
-<title>.NET Interview Gym — English + Arabic Hints (V6)</title>
+<link rel="icon" type="image/x-icon" href="assets/favicon.ico?v=7">
+<link rel="apple-touch-icon" href="assets/icon-512.png">
+<title>.NET Interview GYM — Adaptive Assessment (V7)</title>
 <script>try{const t=localStorage.getItem("interview_gym_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch{document.documentElement.dataset.theme="light"}</script>
 <link rel="stylesheet" href="assets/styles.css"><style id="dotnet-2026-overrides">
 /* v5 • Fluent-informed editorial test layout with .NET purple accent */
@@ -131,7 +132,7 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 </head>
 <body>
 <main class="app">
-<header class="brand"><div class="brand-name"><img class="brand-logo" src="assets/logo.png" alt="" width="44" height="44"><span>.NET Interview Gym</span></div><div class="brand-actions"><span class="meta-chip">120 سؤال • أوفلاين</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل مظهر التطبيق" aria-pressed="false">☾ الوضع الداكن</button></div></header>
+<header class="brand"><div class="brand-name"><img class="brand-logo" src="assets/logo.png?v=7" alt="" width="44" height="44"><span>.NET Interview GYM</span></div><div class="brand-actions"><span class="meta-chip" id="bankBadge">بنك أسئلة • أوفلاين</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل مظهر التطبيق" aria-pressed="false">☾ الوضع الداكن</button></div></header>
 <section id="setup" class="stack" aria-labelledby="setup-title">
   <div class="hero"><div class="eyebrow">تدريب يومي لمهندس .NET</div><h1 id="setup-title">استرجع معلوماتك. سؤال ورا سؤال.</h1><p class="lede">بنك أسئلة متجدد بالإنجليزي مع لمحات عربية قصيرة. جاوب بالمؤقت، وبعد الجولة راجع الشرح الكامل بالعربي، وركّز على نقاط ضعفك.</p></div>
   <div class="card"><h2>إعداد الجولة</h2>
@@ -144,10 +145,11 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
       <label class="field">الموضوع<select id="category"><option value="all">كل المجالات</option></select></label>
       <label class="field">عدد الأسئلة<select id="size"><option value="10">10 أسئلة</option><option value="20">20 سؤال</option><option value="30" selected>30 سؤالًا</option><option value="40">40 سؤالًا</option><option value="120">120 سؤالًا</option></select></label>
     </div>
-    <div class="form-row extra-filters"><label class="field">الصعوبة<select id="difficulty"><option value="all">كل المستويات</option><option value="أساسي">أساسي</option><option value="متوسط">متوسط</option><option value="متقدم">متقدم</option></select></label><label class="field">نوع المهارة<select id="skill"><option value="all">كل الأنواع</option><option value="مفهوم">فهم المفاهيم</option><option value="فهم الكود">قراءة الكود</option><option value="حل مشكلة">حل مشكلات</option></select></label></div><div class="action-row"><button class="btn primary" id="start" disabled>ابدأ الجولة ←</button><button class="btn secondary" id="retry" disabled>راجع نقاط الضعف</button><button class="btn" id="resume" disabled>استكمال الجولة المحفوظة</button></div>
+    <div class="form-row extra-filters"><label class="field">الصعوبة<select id="difficulty"><option value="all">كل المستويات</option><option value="أساسي">أساسي</option><option value="متوسط">متوسط</option><option value="متقدم">متقدم</option></select></label><label class="field">نوع المهارة<select id="skill"><option value="all">كل الأنواع</option><option value="مفهوم">فهم المفاهيم</option><option value="فهم الكود">قراءة الكود</option><option value="حل مشكلة">حل مشكلات</option></select></label></div><div class="assessment-intro" aria-label="التقييم التكيفي"><div><strong>ابدأ بتحديد مستواك أو راجع على مستواك</strong><p class="small muted">التقييم الأول 30 سؤال من كل المجالات. التدريب المتكيف يغيّر صعوبة السؤال التالي حسب أدائك، والنتيجة مبدئية وليست لقبًا وظيفيًا.</p></div><div class="action-row"><button class="btn primary" id="placement" disabled>اختبار تحديد المستوى — 30 سؤال</button><button class="btn secondary" id="adaptive" disabled>تدريب متكيف</button></div></div><div class="action-row"><button class="btn primary" id="start" disabled>ابدأ الجولة ←</button><button class="btn secondary" id="retry" disabled>راجع نقاط الضعف</button><button class="btn" id="resume" disabled>استكمال الجولة المحفوظة</button></div>
     <div class="notice">الأسئلة والاختيارات بالإنجليزي، ومع كل سؤال لمحة عربية صغيرة من غير كشف الحل. في وضع الاختبار يظهر الشرح الكامل بعد الجولة. المؤقت والانتقال التلقائي وحفظ التقدم شغالين كالمعتاد.</div>
   </div>
   <div class="loading-notice muted" id="loadStatus" role="status">جاري تحميل بنك الأسئلة…</div>
+  <div class="card"><h2>ملف المهارات</h2><p class="small muted">مؤشر تدريبي مبني على آخر إجابة لكل سؤال مختلف، مع مراعاة الصعوبة والتلميحات. مش شهادة Senior/Junior، وبيكون غير دقيق لو الأسئلة قليلة.</p><div class="skill-profile" id="skillProfile"></div><p class="small muted" id="profileMessage"></p></div>
   <div class="card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة تمت تجربتها</span><strong id="triedCount">0</strong></div><div class="stat"><span>مفاهيم تحتاج مراجعة</span><strong id="needsCount">0</strong></div><div class="stat"><span>تم تثبيتها</span><strong id="masteredCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">مسح تقدم هذه النسخة</button><button class="btn ghost" id="exportProgress">تصدير التقدم</button><button class="btn ghost" id="importProgress">استيراد التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
 </section>
 <section id="quiz" class="hidden" aria-label="سؤال الاختبار">
@@ -168,7 +170,7 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
           <div class="code-toolbar"><span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="code-lang" id="codeLang">C#</span><button class="copy-code" id="copyCode" aria-label="نسخ الكود" type="button">نسخ الكود</button></div>
           <pre><code dir="ltr" id="codeText"></code></pre>
         </div>
-        <p class="micro-hint" id="microHint" dir="rtl" aria-label="لمحة قصيرة بالعربي"><span class="micro-hint-label">لمحة بالعربي</span><span id="microHintText"></span></p>
+        <button type="button" class="btn hint-toggle hidden" id="hintToggle" aria-expanded="false">عرض لمحة بالعربي (هتُسجّل كمساعدة)</button><p class="micro-hint" id="microHint" dir="rtl" aria-label="لمحة قصيرة بالعربي"><span class="micro-hint-label">لمحة بالعربي</span><span id="microHintText"></span></p>
         <div class="question-footer"><span class="pane-foot-index">مراجعة .NET • ركّز وفكّر</span><span class="pane-foot-shape" aria-hidden="true">⌁</span></div>
       </div>
       <div class="answer-pane">
@@ -188,7 +190,7 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 <section id="results" class="hidden" aria-label="تقرير الجولة">
   <div class="hero"><div class="eyebrow">انتهت الجولة</div><h1>التقرير والمراجعة</h1><p class="lede">شوف نقاط القوة والضعف، واقرأ شرح الأسئلة براحتك من غير مؤقت.</p></div>
   <div class="card"><div class="stats"><div class="stat"><span>النتيجة</span><strong id="score">—</strong></div><div class="stat"><span>صحيح</span><strong id="right">0</strong></div><div class="stat"><span>إجابة خاطئة</span><strong id="wrongCount">0</strong></div><div class="stat"><span>انتهى الوقت / تخطي</span><strong id="unanswered">0</strong></div></div><p class="small muted" id="runInfo"></p><h3>النتيجة حسب المجال</h3><div class="topics" id="breakdown"></div></div>
-  <div class="card" style="margin-top:16px"><h2>راجع الإجابات</h2><div class="report-tabs" role="group" aria-label="تصفية النتائج"><button class="btn tab" data-filter="weak" aria-pressed="true">الأسئلة اللي وقعت فيها</button><button class="btn tab" data-filter="timeout" aria-pressed="false">انتهى الوقت</button><button class="btn tab" data-filter="all" aria-pressed="false">كل الأسئلة</button></div><div id="reviewList"></div><div class="action-row"><button class="btn secondary" id="again">راجع نقاط الضعف</button><button class="btn primary" id="newRound">جولة جديدة</button><button class="btn" id="copy">نسخ التقرير</button></div></div>
+  <div class="card" style="margin-top:16px"><h2>ملف مهاراتك بعد الجولة</h2><div class="skill-profile" id="resultSkills"></div><p class="small muted" id="resultProfileMessage"></p></div><div class="card" style="margin-top:16px"><h2>راجع الإجابات</h2><div class="report-tabs" role="group" aria-label="تصفية النتائج"><button class="btn tab" data-filter="weak" aria-pressed="true">الأسئلة اللي وقعت فيها</button><button class="btn tab" data-filter="timeout" aria-pressed="false">انتهى الوقت</button><button class="btn tab" data-filter="all" aria-pressed="false">كل الأسئلة</button></div><div id="reviewList"></div><div class="action-row"><button class="btn secondary" id="again">راجع نقاط الضعف</button><button class="btn primary" id="newRound">جولة جديدة</button><button class="btn" id="copy">نسخ التقرير</button></div></div>
 </section>
 <p class="footer">Interview Gym • تدريب عملي ومراجعة مفاهيم .NET وSQL Server</p>
 </main>
@@ -209,5 +211,6 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 <div class="gym-toast-wrap" id="gym-toast-wrap" role="status" aria-live="polite"></div>
 <script defer src="https://cdn.jsdelivr.net/npm/micromodal@0.4.10/dist/micromodal.min.js"></script>
 <script defer src="assets/dialogs.js"></script>
+<script defer src="assets/assessment.js"></script>
 <script defer src="assets/app.js"></script>
 </body></html>

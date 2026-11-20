@@ -301,3 +301,18 @@ html[data-theme="dark"] .code-block{background:#171310;border-color:#655140;}
 .gym-toast.warn{border-inline-start-color:var(--danger)}
 .loading-notice{margin:15px 0;font-size:.88rem}
 @media(max-width:700px){.gym-toast-wrap{inset-inline-start:10px;bottom:10px}.gym-modal__dialog{padding:20px}}
+
+/* V7: skill profile and placement actions */
+.assessment-intro{border:1px solid var(--border);background:var(--studio-cream,var(--surface));padding:19px 22px;margin:16px 0;border-radius:6px}
+.assessment-intro strong{font-size:1.08rem}
+.assessment-intro p{max-width:75ch;margin-bottom:8px}
+.assessment-intro .action-row{margin-top:10px}
+.skill-profile{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.skill-row{background:var(--card);border:1px solid var(--border);padding:15px;border-radius:6px;min-width:0}
+.skill-row-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;font-size:.87rem}
+.skill-row-top span{color:var(--muted);text-align:left;white-space:normal}
+.skill-meter{height:7px;background:var(--surface);border:1px solid var(--border);margin:12px 0 7px;border-radius:8px;overflow:hidden}
+.skill-meter>div{height:100%;background:var(--clay);border-radius:8px}
+.skill-row-meta{font-size:.73rem;color:var(--muted)}
+.hint-toggle{font-size:.83rem;padding:6px 11px;min-height:35px;margin:14px 0 4px}
+@media(max-width:690px){.skill-profile{grid-template-columns:1fr}.assessment-intro{padding:14px}.assessment-intro .action-row .btn{flex:1;min-width:200px}}

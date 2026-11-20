@@ -4,6 +4,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 const root=process.cwd();
 const app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');
+const assessment=fs.readFileSync(path.join(root,'assets/assessment.js'),'utf8');
 const store=new Map();
 const elements=new Map();
 class FakeElement {
@@ -30,6 +31,7 @@ const context=vm.createContext({document,window:{scrollTo(){},addEventListener()
   GymUI:{notify:(...args)=>uiMessages.push(args),confirm:async()=>true},
   fetch:async(p)=>({ok:true,json:async()=>JSON.parse(fs.readFileSync(path.join(root,p),'utf8'))})
 });
+vm.runInContext(assessment,context,{filename:'assessment.js'});
 vm.runInContext(app,context,{filename:'app.js'});
 await new Promise(r=>setTimeout(r,50));
 assert.equal(vm.runInContext('BANK.length',context),120);
@@ -45,5 +47,17 @@ assert.equal(Object.keys(JSON.parse(store.get('interview_gym_history_v2'))).leng
 vm.runInContext('leave()',context);
 await vm.runInContext('start(false)',context);
 assert.notEqual(vm.runInContext('current().id',context),firstId);
+vm.runInContext('stopClock()',context);
+await vm.runInContext("start(false,'placement')",context);
+assert.equal(vm.runInContext('state.target',context),30);
+assert.equal(vm.runInContext('state.plan',context),'placement');
+for(let i=0;i<30;i++) vm.runInContext('answer(current().answer)',context);
+assert.equal(vm.runInContext('state.done',context),true);
+assert.equal(vm.runInContext('state.ids.length',context),30);
+await vm.runInContext("start(false,'adaptive')",context);
+assert.equal(vm.runInContext('state.plan',context),'adaptive');
+assert.equal(vm.runInContext('state.target',context),30);
+vm.runInContext('answer(null,"skip")',context);
+assert.equal(vm.runInContext('state.index',context),1);
 vm.runInContext('stopClock()',context);
 console.log('Smoke test OK: loads JSON, starts timed exam, saves history, prefers unseen and restores flow.');
