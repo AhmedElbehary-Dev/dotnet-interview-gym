@@ -12,7 +12,7 @@
 :root{color-scheme:light;--cream:#F6F6FA;--sun:#DDD4FF;--clay:#512BD4;--clay-ink:#512BD4;--ink:#22223A;--card:#FFFFFF;--surface:#F3F3F9;--border:#D9D9E5;--muted:#5A5C71;--success:#176F52;--success-bg:#EAF7F1;--danger:#B3354A;--danger-bg:#FFF0F2;--studio-grid:#E4E4EC;--studio-edge:#DADBE6;--studio-muted:#65657C;--studio-paper:#FFFFFF;--studio-cream:#F2F0FE;--studio-mark:#512BD4;--font:'Segoe UI',Tahoma,Arial,sans-serif}
 html[data-theme="dark"]{color-scheme:dark;--cream:#151522;--sun:#B8A5FF;--clay:#AD97FF;--clay-ink:#D1C5FF;--ink:#F1F0FA;--card:#242438;--surface:#2B2B42;--border:#43435E;--muted:#BAB9CF;--success:#8CE5B7;--success-bg:#19392F;--danger:#FF9BAA;--danger-bg:#44232F;--studio-grid:#36364C;--studio-edge:#3B3B55;--studio-muted:#BAB9D1;--studio-paper:#232336;--studio-cream:#25233C;--studio-mark:#B8A5FF}
 body{background:var(--cream);font-family:var(--font)} body::before{display:none}
-.app{width:min(1310px,calc(100% - 64px));padding:24px 0 50px}
+.app{width:min(1310px,calc(100% - 64px));margin:0 auto;padding:24px 0 50px}
 .brand{border-bottom:1px solid var(--studio-edge);margin-bottom:26px;min-height:66px}
 .brand-logo{width:43px;height:43px;border-radius:10px}
 .brand-name{font-size:1.06rem;letter-spacing:0}
@@ -33,17 +33,17 @@ html[data-theme="dark"] .btn.primary:hover:not(:disabled){background:#D1C5FF;col
 html[data-theme="dark"] .btn:hover:not(:disabled){background:var(--surface);border-color:var(--clay)}
 html[data-theme="dark"] .btn.primary:hover:not(:disabled){background:#D1C5FF;color:#161325}
 .extra-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:100%;margin-top:-2px;margin-bottom:15px}
-#setup>.hero{background:#4322A8;color:#fff;border:0;border-radius:0;min-height:430px;padding:50px clamp(28px,4vw,58px)}
-#setup>.hero::before{content:'.NET';color:#C2B6FF;opacity:.11;font-size:clamp(9rem,15vw,15rem);letter-spacing:-.11em;bottom:-44px;right:-5px}
-#setup>.hero::after{background:#DDD4FF;height:5px;width:63px}
-#setup>.hero h1{color:#fff;font-size:clamp(2.2rem,3.55vw,3.8rem);font-weight:790;line-height:1.36;max-width:13ch;letter-spacing:0}
-#setup>.hero .eyebrow{color:#DED6FF;letter-spacing:0;text-transform:none;font-size:.94rem}
-#setup>.hero .lede{color:#EFEAFF;font-size:1.02rem;line-height:2}
-html[data-theme="dark"] #setup>.hero{background:#40279B;color:#fff;border-color:#4C3B79}
-html[data-theme="dark"] #setup>.hero h1{color:#fff}
-#setup>.card{background:var(--studio-paper);border-color:var(--border)}
-#setup h2::after{background:#512BD4}
-html[data-theme="dark"] #setup h2::after{background:#B49FFF}
+.setup-hero,#setup>.hero{background:#4322A8;color:#fff;border:0;border-radius:0;min-height:430px;padding:50px clamp(28px,4vw,58px);position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.setup-hero::before,#setup>.hero::before{content:'.NET';color:#C2B6FF;opacity:.11;font:900 clamp(9rem,15vw,15rem)/1 var(--font);letter-spacing:-.11em;bottom:-44px;right:-5px;position:absolute;z-index:-1;pointer-events:none}
+.setup-hero::after,#setup>.hero::after{background:#DDD4FF;height:5px;width:63px;content:'';position:absolute;top:36px;right:clamp(28px,4vw,58px)}
+.setup-hero h1,#setup>.hero h1{color:#fff;font-size:clamp(2.2rem,3.55vw,3.8rem);font-weight:790;line-height:1.36;max-width:13ch;letter-spacing:0;margin:0 0 12px}
+.setup-hero .eyebrow,#setup>.hero .eyebrow{color:#DED6FF;letter-spacing:0;text-transform:none;font-size:.94rem;margin-bottom:20px}
+.setup-hero .lede,#setup>.hero .lede{color:#EFEAFF;font-size:1.02rem;line-height:2;max-width:52ch;margin:8px 0 12px}
+html[data-theme="dark"] .setup-hero,html[data-theme="dark"] #setup>.hero{background:#40279B;color:#fff;border-color:#4C3B79}
+html[data-theme="dark"] .setup-hero h1,html[data-theme="dark"] #setup>.hero h1{color:#fff}
+.setup-card,#setup>.card{background:var(--studio-paper);border:1px solid var(--border);border-radius:0;box-shadow:none}
+.setup-grid h2::after,#setup h2::after{content:"";display:block;width:40px;height:4px;margin-top:12px;background:#512BD4}
+html[data-theme="dark"] .setup-grid h2::after,html[data-theme="dark"] #setup h2::after{background:#B49FFF}
 .mode-option{background:var(--card);border:1px solid var(--border)}
 .mode-option:has(input:checked),html[data-theme="dark"] .mode-option:has(input:checked){border-color:var(--clay);background:var(--studio-cream);box-shadow:inset 0 0 0 1px var(--clay)}
 .mode-option input{accent-color:#512BD4}
@@ -106,7 +106,7 @@ html[data-theme="dark"] .q-category{color:var(--clay-ink)}
 html[data-theme="dark"] .progress{background:var(--border)}
 html[data-theme="dark"] .progress>div{background:var(--clay)}
 @media(max-width:1080px){.app{width:min(100% - 40px,1020px)}.question-pane .q-text{font-size:1.32rem}.assessment-body{gap:12px}.question-pane,.answer-pane{padding:28px 23px}}
-@media(max-width:760px){.app{width:calc(100% - 22px);padding:12px 0 30px}.brand{margin-bottom:20px}.assessment-body{grid-template-columns:1fr;gap:10px}.question-pane,.answer-pane{padding:25px 21px;min-height:0}.question-pane .q-category{margin-top:20px}.question-pane .q-text{font-size:1.35rem;line-height:1.75;max-width:none}.question-footer{display:none}.question-pane .code-block pre{font-size:.88rem}.answer-pane .q-actions{margin-top:24px}.mode-wrap,.form-row{grid-template-columns:1fr}.answer-pane .choice{min-height:58px}#setup>.hero{min-height:auto;padding:38px 28px}#setup>.hero h1{max-width:none}}
+@media(max-width:768px){.app{width:calc(100% - 22px);padding:12px 0 30px}.brand{margin-bottom:20px}.assessment-body{grid-template-columns:1fr;gap:10px}.question-pane,.answer-pane{padding:25px 21px;min-height:0}.question-pane .q-category{margin-top:20px}.question-pane .q-text{font-size:1.35rem;line-height:1.75;max-width:none}.question-footer{display:none}.question-pane .code-block pre{font-size:.88rem}.answer-pane .q-actions{margin-top:24px}.mode-wrap,.form-row{grid-template-columns:1fr}.answer-pane .choice{min-height:58px}.setup-hero,#setup>.hero{min-height:auto;padding:38px 24px}.setup-hero h1,#setup>.hero h1{max-width:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
 
@@ -127,15 +127,15 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 .review-item summary{unicode-bidi:plaintext}
 .review-item .explain{direction:rtl;text-align:right;unicode-bidi:plaintext}
 .question-pane .pane-kicker,.answer-pane .pane-kicker{font-size:.75rem;letter-spacing:.075em}
-@media(max-width:760px){.question-pane .q-text{font-size:1.22rem;line-height:1.56}.micro-hint{font-size:.75rem;padding-top:10px;margin-bottom:9px}.answer-pane .choice{min-height:55px}}
+@media(max-width:768px){.question-pane .q-text{font-size:1.22rem;line-height:1.56}.micro-hint{font-size:.75rem;padding-top:10px;margin-bottom:9px}.answer-pane .choice{min-height:55px}}
 </style>
 </head>
 <body>
 <main class="app">
 <header class="brand"><div class="brand-name"><img class="brand-logo" src="assets/logo.png?v=7" alt="" width="44" height="44"><span>.NET Interview GYM</span></div><div class="brand-actions"><span class="meta-chip" id="bankBadge">بنك أسئلة • أوفلاين</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل مظهر التطبيق" aria-pressed="false">☾ الوضع الداكن</button></div></header>
-<section id="setup" class="stack" aria-labelledby="setup-title">
-  <div class="hero"><div class="eyebrow">تدريب يومي لمهندس .NET</div><h1 id="setup-title">استرجع معلوماتك. سؤال ورا سؤال.</h1><p class="lede">بنك أسئلة متجدد بالإنجليزي مع لمحات عربية قصيرة. جاوب بالمؤقت، وبعد الجولة راجع الشرح الكامل بالعربي، وركّز على نقاط ضعفك.</p></div>
-  <div class="card"><h2>إعداد الجولة</h2>
+<section id="setup" class="setup-grid" aria-labelledby="setup-title">
+  <div class="hero setup-hero"><div class="eyebrow">تدريب يومي لمهندس .NET</div><h1 id="setup-title">استرجع معلوماتك. سؤال ورا سؤال.</h1><p class="lede">بنك أسئلة متجدد بالإنجليزي مع لمحات عربية قصيرة. جاوب بالمؤقت، وبعد الجولة راجع الشرح الكامل بالعربي، وركّز على نقاط ضعفك.</p></div>
+  <div class="card setup-card setup-quiz-card"><h2>إعداد الجولة</h2>
     <div class="mode-wrap" role="group" aria-label="وضع المراجعة">
       <label class="mode-option"><input type="radio" name="mode" value="exam" checked><span><strong>وضع الاختبار</strong><span class="muted">بدون إجابات أثناء الجولة. انتقال فوري بعد التأكيد أو انتهاء الوقت.</span></span></label>
       <label class="mode-option"><input type="radio" name="mode" value="learn"><span><strong>وضع المذاكرة</strong><span class="muted">اعرض التفسير بعد كل إجابة، وافهم السبب قبل الانتقال.</span></span></label>
@@ -147,10 +147,10 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
     </div>
     <div class="form-row extra-filters"><label class="field">الصعوبة<select id="difficulty"><option value="all">كل المستويات</option><option value="أساسي">أساسي</option><option value="متوسط">متوسط</option><option value="متقدم">متقدم</option></select></label><label class="field">نوع المهارة<select id="skill"><option value="all">كل الأنواع</option><option value="مفهوم">فهم المفاهيم</option><option value="فهم الكود">قراءة الكود</option><option value="حل مشكلة">حل مشكلات</option></select></label></div><div class="assessment-intro" aria-label="التقييم التكيفي"><div><strong>ابدأ بتحديد مستواك أو راجع على مستواك</strong><p class="small muted">التقييم الأول 30 سؤال من كل المجالات. التدريب المتكيف يغيّر صعوبة السؤال التالي حسب أدائك، والنتيجة مبدئية وليست لقبًا وظيفيًا.</p></div><div class="action-row"><button class="btn primary" id="placement" disabled>اختبار تحديد المستوى — 30 سؤال</button><button class="btn secondary" id="adaptive" disabled>تدريب متكيف</button></div></div><div class="action-row"><button class="btn primary" id="start" disabled>ابدأ الجولة ←</button><button class="btn secondary" id="retry" disabled>راجع نقاط الضعف</button><button class="btn" id="resume" disabled>استكمال الجولة المحفوظة</button></div>
     <div class="notice">الأسئلة والاختيارات بالإنجليزي، ومع كل سؤال لمحة عربية صغيرة من غير كشف الحل. في وضع الاختبار يظهر الشرح الكامل بعد الجولة. المؤقت والانتقال التلقائي وحفظ التقدم شغالين كالمعتاد.</div>
+    <div class="loading-notice muted" id="loadStatus" role="status">جاري تحميل بنك الأسئلة…</div>
   </div>
-  <div class="loading-notice muted" id="loadStatus" role="status">جاري تحميل بنك الأسئلة…</div>
-  <div class="card"><h2>ملف المهارات</h2><p class="small muted">مؤشر تدريبي مبني على آخر إجابة لكل سؤال مختلف، مع مراعاة الصعوبة والتلميحات. مش شهادة Senior/Junior، وبيكون غير دقيق لو الأسئلة قليلة.</p><div class="skill-profile" id="skillProfile"></div><p class="small muted" id="profileMessage"></p></div>
-  <div class="card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة تمت تجربتها</span><strong id="triedCount">0</strong></div><div class="stat"><span>مفاهيم تحتاج مراجعة</span><strong id="needsCount">0</strong></div><div class="stat"><span>تم تثبيتها</span><strong id="masteredCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">مسح تقدم هذه النسخة</button><button class="btn ghost" id="exportProgress">تصدير التقدم</button><button class="btn ghost" id="importProgress">استيراد التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
+  <div class="card setup-card setup-skills-card"><h2>ملف المهارات</h2><p class="small muted">مؤشر تدريبي مبني على آخر إجابة لكل سؤال مختلف، مع مراعاة الصعوبة والتلميحات. مش شهادة Senior/Junior، وبيكون غير دقيق لو الأسئلة قليلة.</p><div class="skill-profile" id="skillProfile"></div><p class="small muted" id="profileMessage"></p></div>
+  <div class="card setup-card setup-progress-card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة تمت تجربتها</span><strong id="triedCount">0</strong></div><div class="stat"><span>مفاهيم تحتاج مراجعة</span><strong id="needsCount">0</strong></div><div class="stat"><span>تم تثبيتها</span><strong id="masteredCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">مسح تقدم هذه النسخة</button><button class="btn ghost" id="exportProgress">تصدير التقدم</button><button class="btn ghost" id="importProgress">استيراد التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
 </section>
 <section id="quiz" class="hidden" aria-label="سؤال الاختبار">
   <div class="assessment-shell">
