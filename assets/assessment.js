@@ -15,17 +15,36 @@
     return a;
   };
 
+  function latestCorrect(record) {
+    if (record.lastStatus === 'skip' || record.lastStatus === 'timeout') return false;
+    return record.lastCorrect ?? (record.streak > 0 || (record.correct > 0 && !record.wrong));
+  }
+
+  function masteryStatus(record) {
+    if (!record || !(record.lastStatus || typeof record.lastCorrect === 'boolean' || record.correct > 0 || record.wrong > 0)) return 'unseen';
+    if (!latestCorrect(record)) return 'review';
+    const { lastSeconds, lastDuration, lastHint } = record;
+    if (record.lastCorrect === true && lastHint === false && Number.isFinite(lastDuration) && lastDuration > 0 &&
+        Number.isFinite(lastSeconds) && lastSeconds >= 0 && lastSeconds <= lastDuration / 2) return 'mastered';
+    return 'reinforcement';
+  }
+
+  function selectRound(bank, history, pool, rng = Math.random) {
+    const groups = pool === 'standard' ? ['unseen', 'review', 'reinforcement'] : [pool];
+    return groups.flatMap(status => randomSort(bank.filter(q => masteryStatus(history[q.id]) === status), rng));
+  }
+
   function buildProfile(bank, history = {}) {
     const categories = unique(bank.map(q => q.category));
     const report = categories.map(category => {
       const pool = bank.filter(q => q.category === category);
-      const attempted = pool.filter(q => history[q.id] && Number(history[q.id].correct || 0) + Number(history[q.id].wrong || 0) > 0);
+      const attempted = pool.filter(q => masteryStatus(history[q.id]) !== 'unseen');
       let earned = 0, available = 0, hardCorrect = 0, mediumCorrect = 0, assisted = 0;
       const difficulties = new Set();
       for (const q of attempted) {
         const item = history[q.id];
         const weight = WEIGHT[rank(q)];
-        const correct = item.lastCorrect === true;
+        const correct = latestCorrect(item);
         difficulties.add(rank(q));
         earned += weight * (correct ? (item.lastHint ? 0.75 : 1) : 0);
         available += weight;
@@ -43,7 +62,7 @@
       } else if (attempted.length) level = 'بيانات محدودة';
       const confidence = attempted.length >= 9 && difficulties.size >= 2 ? 'تغطية أفضل' : attempted.length >= 5 && difficulties.size >= 2 ? 'مبدئي' : 'منخفض';
       return { category, count: attempted.length, total: pool.length, score, level, confidence,
-        assisted, difficultyCoverage: difficulties.size, weak: attempted.filter(q => !history[q.id].lastCorrect).length };
+        assisted, difficultyCoverage: difficulties.size, weak: attempted.filter(q => !latestCorrect(history[q.id])).length };
     });
     const tested = report.filter(x => x.count > 0);
     return { categories: report, assessed: tested.length,
@@ -52,12 +71,14 @@
   }
 
   function buildTopicQueue(bank, history, kind, target, category = 'all', rng = Math.random) {
-    const all = unique(bank.map(q => q.category));
+    // Placement samples the whole bank, including mastered questions, for reassessment.
+    const eligible = kind === 'adaptive' ? bank.filter(q => masteryStatus(history[q.id]) !== 'mastered') : bank;
+    const all = unique(eligible.map(q => q.category));
     const names = category !== 'all' ? all.filter(c => c === category) : all;
     if (!names.length || target < 1) return [];
     const profile = buildProfile(bank, history);
     const info = new Map(profile.categories.map(p => [p.category, p]));
-    const poolLimit = new Map(names.map(c => [c, bank.filter(q => q.category === c).length]));
+    const poolLimit = new Map(names.map(c => [c, eligible.filter(q => q.category === c).length]));
     const counts = new Map(names.map(c => [c, 0]));
     const queue = [];
     const tie = new Map(randomSort(names, rng).map((c, i) => [c, i]));
@@ -79,11 +100,14 @@
 
   function chooseQuestion(bank, history, state, rng = Math.random) {
     const used = new Set(state.ids);
-    const nextCategory = state.topicQueue?.[state.ids.length];
+    const scheduledCategory = state.topicQueue?.[state.ids.length];
+    if (!scheduledCategory) return null;
+    const available = bank.filter(q => !used.has(q.id) &&
+      (!state.skillFilter || state.skillFilter === 'all' || q.skill === state.skillFilter) &&
+      (state.plan !== 'adaptive' || masteryStatus(history[q.id]) !== 'mastered'));
+    const nextCategory = available.some(q => q.category === scheduledCategory) ? scheduledCategory : available[0]?.category;
     if (!nextCategory) return null;
-    const candidates = bank.filter(q => q.category === nextCategory && !used.has(q.id) &&
-      (!state.skillFilter || state.skillFilter === 'all' || q.skill === state.skillFilter));
-    if (!candidates.length) return null;
+    const candidates = available.filter(q => q.category === nextCategory);
     const attempts = state.ids
       .map(id => bank.find(q => q.id === id))
       .filter(q => q && q.category === nextCategory && state.answers[q.id])
@@ -105,5 +129,5 @@
     return scored[0].q;
   }
 
-  root.GymAssessment = Object.freeze({ buildProfile, buildTopicQueue, chooseQuestion });
+  root.GymAssessment = Object.freeze({ buildProfile, buildTopicQueue, chooseQuestion, masteryStatus, selectRound });
 }(typeof window === 'undefined' ? globalThis : window));

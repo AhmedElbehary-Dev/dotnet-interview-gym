@@ -4,10 +4,40 @@ import assert from 'node:assert/strict';
 const engine = fs.readFileSync('assets/assessment.js', 'utf8');
 const sandbox = vm.createContext({ Math });
 vm.runInContext(engine, sandbox);
-const { buildProfile, buildTopicQueue, chooseQuestion } = sandbox.GymAssessment;
+const { buildProfile, buildTopicQueue, chooseQuestion, masteryStatus, selectRound } = sandbox.GymAssessment;
 const manifest = JSON.parse(fs.readFileSync('questions/manifest.json', 'utf8'));
 const bank = manifest.files.flatMap(file => JSON.parse(fs.readFileSync(file.path, 'utf8')).questions);
 const histogram = count => Object.fromEntries([...new Set(count)].map(x => [x, count.filter(y => y === x).length]));
+
+const fast = { lastCorrect: true, lastStatus: 'answered', lastHint: false, lastSeconds: 15, lastDuration: 30 };
+for (const [label, attempt, expected] of [
+  ['fast', { ...fast, lastSeconds: 14 }, 'mastered'],
+  ['exactly half', fast, 'mastered'],
+  ['slow', { ...fast, lastSeconds: 15.001 }, 'reinforcement'],
+  ['hint', { ...fast, lastHint: true }, 'reinforcement'],
+  ['untimed', { ...fast, lastDuration: 0 }, 'reinforcement'],
+  ['wrong', { ...fast, lastCorrect: false }, 'review'],
+  ['skip', { ...fast, lastStatus: 'skip' }, 'review'],
+  ['timeout', { ...fast, lastStatus: 'timeout' }, 'review'],
+  ['legacy correct', { correct: 3, streak: 3 }, 'reinforcement'],
+  ['legacy wrong', { correct: 8, wrong: 1, streak: 0 }, 'review'],
+  ['legacy mixed', { correct: 8, wrong: 1, streak: 2 }, 'reinforcement'],
+  ['missing evidence', { ...fast, lastSeconds: null, masteryStatus: 'mastered' }, 'reinforcement'],
+  ['unseen', undefined, 'unseen']
+]) assert.equal(masteryStatus(attempt), expected, label);
+
+const [a, b, c, d] = bank;
+const masteryHistory = { [a.id]: fast, [b.id]: { correct: 1 }, [c.id]: { wrong: 1 } };
+assert.deepEqual(Array.from(selectRound([a, b, c, d], masteryHistory, 'standard', () => .5), q => q.id), [d.id, c.id, b.id]);
+assert.deepEqual(Array.from(selectRound([a, b, c, d], masteryHistory, 'mastered'), q => q.id), [a.id]);
+assert.equal(selectRound([a], masteryHistory, 'standard').length, 0);
+assert.equal(buildTopicQueue([a], masteryHistory, 'placement', 1).length, 1);
+assert.equal(buildTopicQueue([a], masteryHistory, 'adaptive', 1).length, 0);
+assert.equal(chooseQuestion([a], masteryHistory, { plan: 'placement', ids: [], answers: {}, topicQueue: [a.category] }).id, a.id);
+const other = bank.find(q => q.category !== a.category);
+assert.deepEqual(Array.from(buildTopicQueue([a, other], masteryHistory, 'adaptive', 2)), [other.category]);
+assert.equal(chooseQuestion([a, other], masteryHistory, { plan: 'adaptive', ids: [], answers: {}, topicQueue: [a.category] }).id, other.id);
+assert.equal(chooseQuestion([a, other], masteryHistory, { plan: 'adaptive', ids: [other.id], answers: {}, topicQueue: [other.category, a.category] }), null);
 
 const placement = [...buildTopicQueue(bank, {}, 'placement', 30, 'all', () => 0.33)];
 assert.equal(placement.length, 30);
