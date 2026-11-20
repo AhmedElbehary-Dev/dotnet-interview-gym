@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync, readdirSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { generateBatch, readGenerationArgs, requestCompletion, validateCandidates } from './generate-question-candidates.mjs';
@@ -108,9 +109,9 @@ test('rejects invalid shape, mismatched targets and within-batch and bank duplic
   ]) {
     assert.throws(() => validate([{ ...candidates[0], ...patch }, ...candidates.slice(1)]), /candidate/i);
   }
-  assert.throws(() => validate([{ ...candidates[0], q: candidates[1].q }, ...candidates.slice(1)]), /duplicate/i);
+  assert.throws(() => validate([{ ...candidates[0], q: candidates[1].q }, ...candidates.slice(1)]), { category: 'duplicate_fingerprint' });
   fingerprints.add(questionFingerprint(candidates[0]));
-  assert.throws(() => validate(candidates), /duplicate/i);
+  assert.throws(() => validate(candidates), { category: 'duplicate_fingerprint' });
 });
 
 test('missing and invalid credentials fail before any request', async () => {
@@ -318,4 +319,106 @@ test('a duplicate from an earlier accepted pair rejects the entire later pair', 
   assert.deepEqual(batch.candidates.map(q => q.q), raw.slice(0, 2).map(q => q.q));
   assert.equal(batch.failure.category, 'duplicate_fingerprint');
   assert.equal(log[1].failureCategory, 'duplicate_fingerprint');
+  const validation = { candidateIndex: 4, field: 'fingerprint', rule: 'unique_fingerprint' };
+  assert.deepEqual(log[1].validation, validation);
+  assert.deepEqual(batch.failure.validation, validation);
+});
+
+test('identifies candidate collection shape and the first missing or extra candidate', () => {
+  const plan = { targets: planGeneration(root, batchOptions).targets.slice(0, 1) };
+  const [valid] = mockCandidates(plan);
+  for (const [input, candidateIndex, rule] of [
+    [{}, null, 'array'], [[], 3, 'count'], [[valid, valid], 4, 'count']
+  ]) {
+    assert.throws(() => validateCandidates(input, plan, new Set(), 2), {
+      category: 'invalid_schema', validation: { candidateIndex, field: 'candidates', rule }
+    });
+  }
+});
+
+test('identifies every missing required candidate field and target mismatch', () => {
+  const plan = { targets: planGeneration(root, batchOptions).targets.slice(0, 1) };
+  const [valid] = mockCandidates(plan);
+  for (const field of Object.keys(valid)) {
+    const candidate = { ...valid };
+    delete candidate[field];
+    assert.throws(() => validateCandidates([candidate], plan, new Set()), {
+      category: 'invalid_schema', validation: { candidateIndex: 1, field, rule: 'required' }
+    });
+  }
+  for (const field of ['category', 'conceptId', 'difficulty', 'skill']) {
+    assert.throws(() => validateCandidates([{ ...valid, [field]: 'wrong target' }], plan, new Set()), {
+      category: 'invalid_schema', validation: { candidateIndex: 1, field, rule: 'target_match' }
+    });
+  }
+});
+
+test('identifies invalid candidate, option, answer, URL and code rules by safe path', () => {
+  const plan = { targets: planGeneration(root, batchOptions).targets.slice(0, 1) };
+  const [valid] = mockCandidates(plan);
+  const code = { lang: 'C#', prompt: 'What happens?', code: 'Console.WriteLine(1);' };
+  const cases = [
+    [null, '$candidate', 'object'],
+    [{ ...valid, [apiKey]: 'private value' }, '$candidate', 'unexpected_field'],
+    [{ ...valid, q: 3 }, 'q', 'string'],
+    [{ ...valid, q: 'Short?' }, 'q', 'length'],
+    [{ ...valid, q: '123456789' }, 'q', 'latin_letter'],
+    [{ ...valid, q: 'English question سؤال' }, 'q', 'no_arabic_script'],
+    [{ ...valid, options: 'wrong' }, 'options', 'array'],
+    [{ ...valid, options: valid.options.slice(1) }, 'options', 'length'],
+    [{ ...valid, options: ['', ...valid.options.slice(1)] }, 'options[0]', 'length'],
+    [{ ...valid, options: ['خيار', ...valid.options.slice(1)] }, 'options[0]', 'no_arabic_script'],
+    [{ ...valid, options: ['Same', ' same ', 'C', 'D'] }, 'options[1]', 'unique_normalized'],
+    ...[-1, 4, 1.5, '1'].map(answer => [{ ...valid, answer }, 'answer', 'integer_0_to_3']),
+    [{ ...valid, hint: 'English only' }, 'hint', 'arabic_script'],
+    [{ ...valid, why: 'قصير' }, 'why', 'length'],
+    [{ ...valid, why: 'An explanation without any Arabic script whatsoever.' }, 'why', 'arabic_script'],
+    [{ ...valid, sourceUrls: 'https://example.com' }, 'sourceUrls', 'array'],
+    [{ ...valid, sourceUrls: [] }, 'sourceUrls', 'length'],
+    [{ ...valid, sourceUrls: Array(4).fill('https://example.com') }, 'sourceUrls', 'length'],
+    [{ ...valid, sourceUrls: [false] }, 'sourceUrls[0]', 'string'],
+    [{ ...valid, sourceUrls: ['file:///private'] }, 'sourceUrls[0]', 'http_scheme'],
+    [{ ...valid, sourceUrls: ['https://'] }, 'sourceUrls[0]', 'valid_url'],
+    [{ ...valid, sourceUrls: ['https://user:secret@example.com'] }, 'sourceUrls[0]', 'no_url_credentials'],
+    [{ ...valid, code: null }, 'code', 'object'],
+    [{ ...valid, code: { ...code, [apiKey]: true } }, 'code', 'unexpected_field'],
+    ...Object.keys(code).map(key => {
+      const incomplete = { ...code };
+      delete incomplete[key];
+      return [{ ...valid, code: incomplete }, 'code.' + key, 'required'];
+    }),
+    [{ ...valid, code: { ...code, lang: '' } }, 'code.lang', 'length'],
+    [{ ...valid, code: { ...code, prompt: 'سؤال' } }, 'code.prompt', 'latin_letter'],
+    [{ ...valid, code: { ...code, code: 'x'.repeat(1601) } }, 'code.code', 'length']
+  ];
+  for (const [candidate, field, rule] of cases) {
+    assert.throws(() => validateCandidates([candidate], plan, new Set()), {
+      category: 'invalid_schema', validation: { candidateIndex: 1, field, rule }
+    }, field + ' ' + rule);
+  }
+});
+
+test('CLI reports structured validation without echoing model values or credentials', () => {
+  const [candidate] = mockCandidates({ targets: planGeneration(root, batchOptions).targets.slice(0, 1) });
+  const marker = 'Private generated prose';
+  const unexpectedField = 'private-field-value';
+  const payload = { candidates: [{ ...candidate, q: marker, [unexpectedField]: 'private' }] };
+  const preload = 'globalThis.fetch = async () => Response.json(' + JSON.stringify({
+    choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(payload) } }]
+  }) + ')';
+  const result = spawnSync(process.execPath, [
+    '--import', 'data:text/javascript,' + encodeURIComponent(preload),
+    'scripts/generate-question-candidates.mjs', batchOptions.date, batchOptions.seed, '--limit', '1'
+  ], { cwd: root, env: { ...process.env, ...config, OPENROUTER_MODEL: 'openrouter/free' }, encoding: 'utf8' });
+  assert.equal(result.status, 1);
+  assert.equal(result.stdout, '');
+  const [metadata, message] = result.stderr.trim().split(/\r?\n/);
+  assert.equal(JSON.parse(metadata).failureCategory, 'invalid_schema');
+  assert.deepEqual(JSON.parse(metadata).validation, {
+    candidateIndex: 1, field: '$candidate', rule: 'unexpected_field'
+  });
+  assert.match(message, /Candidate 1.*\$candidate.*unexpected_field/);
+  for (const sensitive of [marker, unexpectedField, apiKey, 'Authorization']) {
+    assert(!result.stderr.includes(sensitive));
+  }
 });

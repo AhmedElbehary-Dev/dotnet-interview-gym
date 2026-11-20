@@ -7,15 +7,11 @@ import { isMain, planGeneration, readPlanArgs } from './plan-question-generation
 const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
 const transient = new Set([408, 429, 500, 502, 503, 504]);
 const targetFields = ['category', 'conceptId', 'difficulty', 'skill'];
-const textFields = ['q', 'options', 'answer', 'hint', 'why', 'sourceUrls', 'code'];
+const requiredFields = [...targetFields, 'q', 'options', 'answer', 'hint', 'why', 'sourceUrls'];
+const allowedFields = new Set([...requiredFields, 'code']);
+const codeFields = ['lang', 'prompt', 'code'];
 const arabic = /\p{Script=Arabic}/u;
-const nonempty = (str, max, min = 1) => typeof str === 'string' && str.trim().length >= min && str.length <= max;
-const english = (str, max, min) => nonempty(str, max, min) && /[a-z]/i.test(str) && !arabic.test(str);
-const validUrl = value => {
-  if (!nonempty(value, 500) || !/^https?:\/\//i.test(value)) return false;
-  const url = URL.parse(value);
-  return Boolean(url && url.hostname && !url.username && !url.password);
-};
+const nonempty = (str, max) => typeof str === 'string' && str.trim().length > 0 && str.length <= max;
 
 function settings(env) {
   const key = env.OPENROUTER_API_KEY;
@@ -74,6 +70,13 @@ class GenerationError extends Error {
   }
 }
 
+class CandidateValidationError extends GenerationError {
+  constructor(candidateIndex, field, rule, category = 'invalid_schema', message) {
+    super(category, message ?? `Candidate ${candidateIndex} failed validation at ${field} (${rule}).`);
+    this.validation = { candidateIndex, field, rule };
+  }
+}
+
 const finishReasons = new Set(['stop', 'length', 'content_filter', 'tool_calls', 'error']);
 const modelPattern = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.:-]+$/;
 
@@ -120,7 +123,8 @@ function parseCompletion(content, key, diagnostics) {
     throw new GenerationError('invalid_json', 'OpenRouter returned invalid JSON output.');
   }
   if (!isRecord(parsed) || !Array.isArray(parsed.candidates)) {
-    throw new GenerationError('invalid_schema', 'OpenRouter returned an invalid candidate schema.');
+    throw new CandidateValidationError(null, 'candidates', 'array', 'invalid_schema',
+      'OpenRouter returned an invalid candidate schema at candidates (array).');
   }
   rejectSecret(decoded, key);
   rejectSecret(parsed, key);
@@ -182,7 +186,10 @@ export async function requestCompletion(payload, env, {
         error = new GenerationError('read_error', 'Could not read the OpenRouter response.');
       }
     }
-    log({ ...diagnostics, failureCategory: error.category });
+    log({
+      ...diagnostics, failureCategory: error.category,
+      ...(error instanceof CandidateValidationError && { validation: error.validation })
+    });
     if (!retry || attempt === 2 || budget.remaining === 0) throw error;
     const wait = retryDelay(response?.headers.get('retry-after'), attempt);
     if (wait > 5000) throw error;
@@ -190,29 +197,84 @@ export async function requestCompletion(payload, env, {
   }
 }
 
-export function validateCandidates(candidates, plan, bankFingerprints) {
-  if (!Array.isArray(candidates) || candidates.length !== plan.targets.length) {
-    throw new GenerationError('invalid_schema', `Expected ${plan.targets.length} candidates.`);
+export function validateCandidates(candidates, plan, bankFingerprints, offset = 0) {
+  if (!Array.isArray(candidates)) {
+    throw new CandidateValidationError(null, 'candidates', 'array', 'invalid_schema', 'Expected a candidates array.');
   }
+  if (candidates.length !== plan.targets.length) {
+    const firstMismatch = offset + Math.min(candidates.length, plan.targets.length) + 1;
+    throw new CandidateValidationError(firstMismatch, 'candidates', 'count', 'invalid_schema',
+      `Expected ${plan.targets.length} candidates. First count mismatch at candidate ${firstMismatch}.`);
+  }
+
   const seen = new Set();
-  const allowed = new Set([...targetFields, ...textFields]);
   return candidates.map((q, i) => {
-    const target = plan.targets[i];
-    const code = q?.code;
-    if (!isRecord(q) || Object.keys(q).some(field => !allowed.has(field)) ||
-        targetFields.some(field => q[field] !== target[field]) || !english(q.q, 600, 9) ||
-        !Array.isArray(q.options) || q.options.length !== 4 || !q.options.every(option => nonempty(option, 300) && !arabic.test(option)) ||
-        new Set(q.options.map(normalizePrompt)).size !== 4 || !Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3 ||
-        !nonempty(q.hint, 220) || !arabic.test(q.hint) || !nonempty(q.why, 1500, 40) || !arabic.test(q.why) ||
-        !Array.isArray(q.sourceUrls) || q.sourceUrls.length < 1 || q.sourceUrls.length > 3 ||
-        !q.sourceUrls.every(validUrl) ||
-        (code !== undefined && (!isRecord(code) || Object.keys(code).length !== 3 ||
-          !nonempty(code.lang, 30) || !english(code.prompt, 300) || !nonempty(code.code, 1600)))) {
-      throw new GenerationError('invalid_schema', `Candidate ${i + 1} failed validation.`);
+    const candidateIndex = offset + i + 1;
+    const fail = (field, rule) => { throw new CandidateValidationError(candidateIndex, field, rule); };
+    const checkText = (value, field, max, min = 1) => {
+      if (typeof value !== 'string') fail(field, 'string');
+      if (value.trim().length < min || value.length > max) fail(field, 'length');
+    };
+    const checkEnglish = (value, field, max, min) => {
+      checkText(value, field, max, min);
+      if (!/[a-z]/i.test(value)) fail(field, 'latin_letter');
+      if (arabic.test(value)) fail(field, 'no_arabic_script');
+    };
+
+    if (!isRecord(q)) fail('$candidate', 'object');
+    // Unknown keys can contain generated text, so report the enclosing object.
+    if (Object.keys(q).some(field => !allowedFields.has(field))) fail('$candidate', 'unexpected_field');
+    for (const field of requiredFields) {
+      if (!Object.hasOwn(q, field)) fail(field, 'required');
     }
+    for (const field of targetFields) {
+      if (q[field] !== plan.targets[i][field]) fail(field, 'target_match');
+    }
+
+    checkEnglish(q.q, 'q', 600, 9);
+    if (!Array.isArray(q.options)) fail('options', 'array');
+    if (q.options.length !== 4) fail('options', 'length');
+    const options = new Set();
+    for (const [index, option] of q.options.entries()) {
+      const field = `options[${index}]`;
+      checkText(option, field, 300);
+      if (arabic.test(option)) fail(field, 'no_arabic_script');
+      const normalized = normalizePrompt(option);
+      if (options.has(normalized)) fail(field, 'unique_normalized');
+      options.add(normalized);
+    }
+    if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3) fail('answer', 'integer_0_to_3');
+    checkText(q.hint, 'hint', 220);
+    if (!arabic.test(q.hint)) fail('hint', 'arabic_script');
+    checkText(q.why, 'why', 1500, 40);
+    if (!arabic.test(q.why)) fail('why', 'arabic_script');
+
+    if (!Array.isArray(q.sourceUrls)) fail('sourceUrls', 'array');
+    if (q.sourceUrls.length < 1 || q.sourceUrls.length > 3) fail('sourceUrls', 'length');
+    q.sourceUrls.forEach((value, index) => {
+      const field = `sourceUrls[${index}]`;
+      checkText(value, field, 500);
+      if (!/^https?:\/\//i.test(value)) fail(field, 'http_scheme');
+      const url = URL.parse(value);
+      if (!url?.hostname) fail(field, 'valid_url');
+      if (url.username || url.password) fail(field, 'no_url_credentials');
+    });
+
+    const code = q.code;
+    if (code !== undefined) {
+      if (!isRecord(code)) fail('code', 'object');
+      if (Object.keys(code).some(field => !codeFields.includes(field))) fail('code', 'unexpected_field');
+      for (const field of codeFields) {
+        if (!Object.hasOwn(code, field)) fail(`code.${field}`, 'required');
+      }
+      checkText(code.lang, 'code.lang', 30);
+      checkEnglish(code.prompt, 'code.prompt', 300);
+      checkText(code.code, 'code.code', 1600);
+    }
+
     const fingerprint = questionFingerprint(q);
     if (seen.has(fingerprint) || bankFingerprints.has(fingerprint)) {
-      throw new GenerationError('duplicate_fingerprint', `Candidate ${i + 1} has a duplicate fingerprint.`);
+      throw new CandidateValidationError(candidateIndex, 'fingerprint', 'unique_fingerprint', 'duplicate_fingerprint');
     }
     seen.add(fingerprint);
     return { ...q, fingerprint };
@@ -273,7 +335,7 @@ export async function generateBatch(root, options, { env = process.env, ...trans
       const output = await requestCompletion({
         messages: buildMessages(root, index, { targets }),
         maxTokens: 1600 * targets.length,
-        validate: raw => validateCandidates(raw, { targets }, fingerprints)
+        validate: raw => validateCandidates(raw, { targets }, fingerprints, candidates.length)
       }, env, { ...transport, budget });
       const generation = { provider: 'openrouter', requestedModel: model, reportedModel: output.reportedModel, seed: plan.seed };
       for (const q of output.candidates) {
@@ -287,7 +349,10 @@ export async function generateBatch(root, options, { env = process.env, ...trans
         continue;
       }
       if (!(error instanceof GenerationError) || candidates.length === 0) throw error;
-      failure = { category: error.category, message: error.message };
+      failure = {
+        category: error.category, message: error.message,
+        ...(error instanceof CandidateValidationError && { validation: error.validation })
+      };
       break;
     }
   }
