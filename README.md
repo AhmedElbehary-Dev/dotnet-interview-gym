@@ -79,7 +79,7 @@ node scripts/analyze-coverage.mjs
 
 Register stable concept IDs such as `linq.deferred-execution` in `questions/topic-taxonomy.json`. Classify existing questions by ID in `questions/concept-map.json`, or provide an optional `conceptId` on the question. Leave uncertain classifications absent.
 
-### V8.2 candidate generation
+### V8.2.3 candidate generation
 
 Use Node.js 22 from the repository root. The planner reads the current index and report, checks them for staleness, and emits ten targets as JSON. A date and seed reproduce the plan offline.
 
@@ -87,22 +87,29 @@ Use Node.js 22 from the repository root. The planner reads the current index and
 node scripts/plan-question-generation.mjs 2026-11-21 review
 ```
 
-For a controlled live run in PowerShell 7:
+Groq is the default when `QUESTION_AI_PROVIDER` is unset. Set `GROQ_API_KEY` for authentication. `GROQ_MODEL` defaults to `qwen/qwen3.8-27b`, and `GROQ_REASONING_EFFORT` defaults to `none` for that model. For another Groq model, leave the effort unset or choose a value the model supports.
+
+Generate one candidate from the repository root in PowerShell 7 with Node.js 22:
 
 ```powershell
-$env:OPENROUTER_API_KEY = Read-Host 'OpenRouter API key' -MaskInput
-$env:OPENROUTER_MODEL = 'openrouter/free'
-$env:OPENROUTER_TIMEOUT_MS = '45000'
+$env:QUESTION_AI_PROVIDER = 'groq'
+$env:GROQ_MODEL = 'qwen/qwen3.8-27b'
+$env:GROQ_REASONING_EFFORT = 'none'
+$env:GROQ_API_KEY = Read-Host 'Groq API key' -MaskInput
 try {
-    node scripts/generate-question-candidates.mjs 2026-11-21 review
+    node scripts/generate-question-candidates.mjs 2026-11-21 review --limit 1
 } finally {
-    Remove-Item Env:OPENROUTER_API_KEY
+    Remove-Item Env:GROQ_API_KEY
 }
 ```
 
-The generator sends ten compact briefs with selected fingerprints and short examples. It allows up to three attempts, including transient retries, with a 7,600-token completion cap per attempt. A model override makes an explicit model selection and may incur charges. The request uses prompt-based JSON, so models that return prose, Markdown fences, truncated output or invalid candidates can fail the batch. The fixed seed reproduces target selection, while live model output can vary.
+For OpenRouter, set `QUESTION_AI_PROVIDER=openrouter` and supply `OPENROUTER_API_KEY` with the same masked prompt and cleanup pattern. `OPENROUTER_MODEL` defaults to `openrouter/free`, which selects among compatible free models. A model override may incur charges. `OPENROUTER_TIMEOUT_MS` defaults to 45000. Both providers request JSON object mode and validate the candidate schema locally. Requests stay on the selected provider and model, and OpenRouter routing requires support for the requested parameters.
 
-A successful run prints the path to `candidates.json` in a new sibling staging directory named `interview-gym-candidate-staging-*`. Only complete, schema-valid batches are stored there. Proposed answers, dialect quality, semantic duplicates and source claims still need independent review.
+Keep API keys in the local CLI environment or GitHub Actions secrets. The validation workflow uses mocked requests and needs no credentials.
+
+The generator sends up to two briefs per request with a 1,600-token completion cap per candidate. It can split a truncated pair into single requests. Transient failures allow up to three attempts per request within a shared budget of the selected candidate count plus two. The seed fixes target selection, while live model output can vary.
+
+The CLI prints the path to `candidates.json` in a new sibling staging directory named `interview-gym-candidate-staging-*`. If a later request fails, the CLI can stage earlier validated candidates as an incomplete batch and exit with an error. Review proposed answers, dialect quality, semantic duplicates and source claims before adding any candidate to the bank.
 
 ## Progress and privacy
 

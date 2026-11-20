@@ -52,10 +52,61 @@ function mockCandidates(plan) {
 
 const apiKey = 'sk-or-v1-mock-secret';
 const batchOptions = { date: '2026-11-21', seed: 'review' };
-const config = { OPENROUTER_API_KEY: apiKey };
-const completion = candidates => Response.json({
-  model: 'example/free:free',
+const config = { QUESTION_AI_PROVIDER: 'openrouter', OPENROUTER_API_KEY: apiKey };
+const groqConfig = { GROQ_API_KEY: apiKey };
+const completion = (candidates, model = 'example/free:free') => Response.json({
+  model,
   choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ candidates }) } }]
+});
+
+test('defaults to Groq with Qwen JSON mode and reasoning disabled', async t => {
+  const targets = planGeneration(root, batchOptions).targets.slice(0, 1);
+  const requests = [];
+  const path = await generateBatch(root, { ...batchOptions, limit: 1 }, {
+    env: groqConfig,
+    fetchImpl: async (url, request) => {
+      requests.push({ url, authorization: request.headers.Authorization, payload: JSON.parse(request.body) });
+      return completion(mockCandidates({ targets }), 'qwen/qwen3.8-27b');
+    }
+  });
+  t.after(() => rmSync(dirname(path), { recursive: true }));
+  assert.equal(requests.length, 1);
+  const { url, authorization, payload } = requests[0];
+  assert.equal(url, 'https://api.groq.com/openai/v1/chat/completions');
+  assert.equal(authorization, `Bearer ${apiKey}`);
+  assert.equal(payload.model, 'qwen/qwen3.8-27b');
+  assert.equal(payload.reasoning_effort, 'none');
+  assert.equal(payload.max_completion_tokens, 1600);
+  assert.deepEqual(payload.response_format, { type: 'json_object' });
+  for (const field of ['max_tokens', 'provider', 'models']) assert(!Object.hasOwn(payload, field));
+  assert.deepEqual(JSON.parse(readFileSync(path)).candidates[0].generation, {
+    provider: 'groq', requestedModel: 'qwen/qwen3.8-27b', reportedModel: 'qwen/qwen3.8-27b', seed: batchOptions.seed
+  });
+});
+
+test('invalid provider settings fail without trying another provider', async () => {
+  for (const [env, message] of [
+    [{ OPENROUTER_API_KEY: apiKey }, /GROQ_API_KEY/],
+    [{ ...groqConfig, QUESTION_AI_PROVIDER: 'auto' }, /QUESTION_AI_PROVIDER/],
+    [{ ...groqConfig, GROQ_REASONING_EFFORT: 'invalid' }, /GROQ_REASONING_EFFORT/],
+    [{ ...groqConfig, QUESTION_AI_PROVIDER: 'openrouter' }, /OPENROUTER_API_KEY/]
+  ]) {
+    await assert.rejects(requestCompletion({}, env, { fetchImpl: () => assert.fail('unexpected fetch') }), message);
+  }
+});
+
+test('Groq model overrides accept unqualified IDs and omit the Qwen reasoning default', async () => {
+  const model = 'llama-3.3-70b-versatile';
+  let payload;
+  const result = await requestCompletion({}, { ...groqConfig, GROQ_MODEL: model }, {
+    fetchImpl: async (_url, { body }) => {
+      payload = JSON.parse(body);
+      return providerResponse('{"candidates":[]}', 'stop', model);
+    }
+  });
+  assert.equal(payload.model, model);
+  assert(!Object.hasOwn(payload, 'reasoning_effort'));
+  assert.equal(result.reportedModel, model);
 });
 
 test('uses five bounded two-candidate requests and stages a complete batch outside the checkout', async t => {
@@ -73,7 +124,9 @@ test('uses five bounded two-candidate requests and stages a complete batch outsi
     const payload = JSON.parse(request.body);
     assert.equal(payload.model, 'openrouter/free');
     assert(!Object.hasOwn(payload, 'models'));
-    assert(!Object.hasOwn(payload, 'response_format'));
+    assert.deepEqual(payload.response_format, { type: 'json_object' });
+    assert.deepEqual(payload.provider, { require_parameters: true });
+    assert(!Object.hasOwn(payload, 'reasoning_effort'));
     assert(payload.max_tokens <= 3200);
     assert(request.body.length < 10000);
     assert(!request.body.includes(apiKey));
@@ -115,7 +168,7 @@ test('rejects invalid shape, mismatched targets and within-batch and bank duplic
 });
 
 test('missing and invalid credentials fail before any request', async () => {
-  for (const env of [{}, { OPENROUTER_API_KEY: 'bad\r\nsecret' }]) {
+  for (const env of [{ QUESTION_AI_PROVIDER: 'openrouter' }, { ...config, OPENROUTER_API_KEY: 'bad\r\nsecret' }]) {
     await assert.rejects(generateBatch(root, batchOptions, { env, fetchImpl: () => assert.fail('unexpected fetch') }),
       /OPENROUTER_API_KEY/);
   }
@@ -216,6 +269,24 @@ const providerResponse = (content, finishReason = 'stop', model = 'example/free:
   model,
   usage: { prompt_tokens: 20, completion_tokens: 12, total_tokens: 32, extra: 'ignored metadata' },
   choices: [{ finish_reason: finishReason, message: { content } }]
+});
+
+test('Groq classifies invalid JSON, schema errors and truncation and retries rate limits on Groq only', async () => {
+  const [candidate] = mockCandidates({ targets: planGeneration(root, batchOptions).targets.slice(0, 1) });
+  for (const [respond, category] of [
+    [() => providerResponse('{'), 'invalid_json'],
+    [() => completion([{ ...candidate, answer: 4 }]), 'invalid_schema'],
+    [() => providerResponse('{', 'length'), 'truncated'],
+    [() => new Response(null, { status: 429 }), 'rate_limit']
+  ]) {
+    const urls = [];
+    await assert.rejects(generateBatch(root, { ...batchOptions, limit: 1 }, {
+      env: { ...config, ...groqConfig, QUESTION_AI_PROVIDER: 'groq' },
+      fetchImpl: async url => { urls.push(url); return respond(); },
+      delay: async () => {}
+    }), { category });
+    assert.deepEqual(urls, Array(category === 'rate_limit' ? 3 : 1).fill('https://api.groq.com/openai/v1/chat/completions'));
+  }
 });
 
 test('accepts complete fenced JSON and logs only whitelisted metadata', async () => {

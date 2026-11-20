@@ -4,7 +4,9 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { isRecord, normalizePrompt, questionFingerprint, readJson } from './build-question-index.mjs';
 import { isMain, planGeneration, readPlanArgs } from './plan-question-generation.mjs';
 
-const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+const groqModel = 'qwen/qwen3.8-27b';
+const groqModelPattern = /^(?:[a-zA-Z0-9_.-]+\/)?[a-zA-Z0-9_.-]+$/;
+const openRouterModelPattern = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.:-]+$/;
 const transient = new Set([408, 429, 500, 502, 503, 504]);
 const targetFields = ['category', 'conceptId', 'difficulty', 'skill'];
 const requiredFields = [...targetFields, 'q', 'options', 'answer', 'hint', 'why', 'sourceUrls'];
@@ -14,20 +16,34 @@ const arabic = /\p{Script=Arabic}/u;
 const nonempty = (str, max) => typeof str === 'string' && str.trim().length > 0 && str.length <= max;
 
 function settings(env) {
-  const key = env.OPENROUTER_API_KEY;
+  const provider = env.QUESTION_AI_PROVIDER ?? 'groq';
+  if (provider !== 'groq' && provider !== 'openrouter') {
+    throw new Error('QUESTION_AI_PROVIDER must be groq or openrouter.');
+  }
+  const groq = provider === 'groq';
+  const name = groq ? 'Groq' : 'OpenRouter';
+  const prefix = provider.toUpperCase();
+  const key = env[`${prefix}_API_KEY`];
   if (typeof key !== 'string' || !/^[a-zA-Z0-9_-]{1,256}$/.test(key)) {
-    throw new Error('Set OPENROUTER_API_KEY to a valid API token.');
+    throw new Error(`Set ${prefix}_API_KEY to a valid API token.`);
   }
-  const model = env.OPENROUTER_MODEL ?? 'openrouter/free';
-  if (typeof model !== 'string' || !/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.:-]+$/.test(model) ||
+  const model = env[`${prefix}_MODEL`] ?? (groq ? groqModel : 'openrouter/free');
+  const modelPattern = groq ? groqModelPattern : openRouterModelPattern;
+  if (typeof model !== 'string' || !modelPattern.test(model) ||
       model.length > 160 || model.includes(key)) {
-    throw new Error('Invalid OPENROUTER_MODEL.');
+    throw new Error(`Invalid ${prefix}_MODEL.`);
   }
-  const timeout = Number(env.OPENROUTER_TIMEOUT_MS ?? 45000);
+  const timeout = Number((groq ? undefined : env.OPENROUTER_TIMEOUT_MS) ?? 45000);
   if (!Number.isSafeInteger(timeout) || timeout < 1 || timeout > 120000) {
     throw new Error('OPENROUTER_TIMEOUT_MS must be an integer from 1 to 120000.');
   }
-  return { key, model, timeout };
+  const reasoningEffort = groq ? env.GROQ_REASONING_EFFORT ?? (model === groqModel ? 'none' : undefined) : undefined;
+  if (reasoningEffort !== undefined && !['none', 'default', 'low', 'medium', 'high', 'xhigh'].includes(reasoningEffort)) {
+    throw new Error('Invalid GROQ_REASONING_EFFORT.');
+  }
+  const endpoint = groq ? 'https://api.groq.com/openai/v1/chat/completions' :
+    'https://openrouter.ai/api/v1/chat/completions';
+  return { provider, groq, name, endpoint, key, model, modelPattern, timeout, reasoningEffort };
 }
 
 function rejectSecret(value, key) {
@@ -78,15 +94,13 @@ class CandidateValidationError extends GenerationError {
 }
 
 const finishReasons = new Set(['stop', 'length', 'content_filter', 'tool_calls', 'error']);
-const modelPattern = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.:-]+$/;
-
-function parseCompletion(content, key, diagnostics) {
+function parseCompletion(content, { key, name, modelPattern }, diagnostics) {
   let decoded;
-  if (!content.trim()) throw new GenerationError('empty_response', 'OpenRouter returned an empty response.');
+  if (!content.trim()) throw new GenerationError('empty_response', `${name} returned an empty response.`);
   try {
     decoded = JSON.parse(content);
   } catch {
-    throw new GenerationError('invalid_json', 'OpenRouter returned an invalid JSON response envelope.');
+    throw new GenerationError('invalid_json', `${name} returned an invalid JSON response envelope.`);
   }
   const choice = decoded?.choices?.[0];
   const output = choice?.message?.content;
@@ -102,16 +116,16 @@ function parseCompletion(content, key, diagnostics) {
   }
 
   if (choice?.finish_reason === 'length') {
-    throw new GenerationError('truncated', 'OpenRouter output was truncated (finish_reason=length).');
+    throw new GenerationError('truncated', `${name} output was truncated (finish_reason=length).`);
   }
   if (decoded?.error) {
-    throw new GenerationError('provider_error', 'OpenRouter reported a completion error.');
+    throw new GenerationError('provider_error', `${name} reported a completion error.`);
   }
   if (output == null || typeof output === 'string' && !output.trim()) {
-    throw new GenerationError('empty_response', 'OpenRouter returned empty output.');
+    throw new GenerationError('empty_response', `${name} returned empty output.`);
   }
   if (choice.finish_reason !== 'stop') {
-    throw new GenerationError('unexpected_finish', 'OpenRouter completion did not finish with stop.');
+    throw new GenerationError('unexpected_finish', `${name} completion did not finish with stop.`);
   }
 
   let parsed;
@@ -120,11 +134,11 @@ function parseCompletion(content, key, diagnostics) {
     const fenced = /^\s*```(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```\s*$/i.exec(output);
     parsed = JSON.parse(fenced ? fenced[1] : output);
   } catch {
-    throw new GenerationError('invalid_json', 'OpenRouter returned invalid JSON output.');
+    throw new GenerationError('invalid_json', `${name} returned invalid JSON output.`);
   }
   if (!isRecord(parsed) || !Array.isArray(parsed.candidates)) {
     throw new CandidateValidationError(null, 'candidates', 'array', 'invalid_schema',
-      'OpenRouter returned an invalid candidate schema at candidates (array).');
+      `${name} returned an invalid candidate schema at candidates (array).`);
   }
   rejectSecret(decoded, key);
   rejectSecret(parsed, key);
@@ -134,14 +148,20 @@ function parseCompletion(content, key, diagnostics) {
 export async function requestCompletion(payload, env, {
   fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }
 } = {}) {
-  const { key, model, timeout } = settings(env);
-  const body = JSON.stringify({ messages: payload.messages, model, max_tokens: payload.maxTokens ?? 3200, temperature: 0.2 });
-  if (Buffer.byteLength(body) > 16 * 1024) throw new Error('OpenRouter request exceeds the size limit.');
+  const config = settings(env);
+  const { groq, name, endpoint, key, model, timeout, reasoningEffort } = config;
+  const maxTokens = payload.maxTokens ?? 3200;
+  const body = JSON.stringify({
+    messages: payload.messages, model, temperature: 0.2, response_format: { type: 'json_object' },
+    ...(groq ? { max_completion_tokens: maxTokens, reasoning_effort: reasoningEffort } :
+      { max_tokens: maxTokens, provider: { require_parameters: true } })
+  });
+  if (Buffer.byteLength(body) > 16 * 1024) throw new Error(`${name} request exceeds the size limit.`);
   if (body.includes(key)) throw new Error('Rejected request containing credentials.');
   for (let attempt = 0; attempt < 3; attempt++) {
     if (budget.remaining === 0) {
       log({ failureCategory: 'request_budget' });
-      throw new GenerationError('request_budget', 'OpenRouter request budget exhausted.');
+      throw new GenerationError('request_budget', `${name} request budget exhausted.`);
     }
     budget.remaining--;
     const signal = AbortSignal.timeout(timeout);
@@ -155,7 +175,7 @@ export async function requestCompletion(payload, env, {
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
       });
       if (response.ok) {
-        const candidates = parseCompletion(await readCompletion(response), key, diagnostics);
+        const candidates = parseCompletion(await readCompletion(response), config, diagnostics);
         const validated = payload.validate ? payload.validate(candidates) : candidates;
         log({ ...diagnostics, failureCategory: null });
         return { candidates: validated, reportedModel: diagnostics.reportedModel };
@@ -165,25 +185,25 @@ export async function requestCompletion(payload, env, {
       const status = response.status;
       retry = transient.has(status);
       if (status === 401 || status === 403) {
-        error = new GenerationError('authentication', `OpenRouter authentication failed (HTTP ${status}).`);
+        error = new GenerationError('authentication', `${name} authentication failed (HTTP ${status}).`);
       } else if (status === 429) {
-        error = new GenerationError('rate_limit', 'OpenRouter rate limit reached (HTTP 429).');
+        error = new GenerationError('rate_limit', `${name} rate limit reached (HTTP 429).`);
       } else if (status === 408) {
-        error = new GenerationError('timeout', 'OpenRouter request timed out (HTTP 408).');
+        error = new GenerationError('timeout', `${name} request timed out (HTTP 408).`);
       } else {
-        error = new GenerationError('http_error', `OpenRouter returned HTTP ${status}.`);
+        error = new GenerationError('http_error', `${name} returned HTTP ${status}.`);
       }
     } catch (cause) {
       if (cause instanceof GenerationError) {
         error = cause;
       } else if (signal.aborted) {
         retry = true;
-        error = new GenerationError('timeout', 'OpenRouter request timed out.');
+        error = new GenerationError('timeout', `${name} request timed out.`);
       } else if (!response) {
         retry = true;
-        error = new GenerationError('transport', 'OpenRouter transport failed.');
+        error = new GenerationError('transport', `${name} transport failed.`);
       } else {
-        error = new GenerationError('read_error', 'Could not read the OpenRouter response.');
+        error = new GenerationError('read_error', `Could not read the ${name} response.`);
       }
     }
     log({
@@ -312,7 +332,7 @@ function buildMessages(root, index, plan) {
 }
 
 export async function generateBatch(root, options, { env = process.env, ...transport } = {}) {
-  const { key, model } = settings(env);
+  const { key, model, provider } = settings(env);
   const checkout = realpathSync(root);
   const parent = dirname(checkout);
   if (parent === checkout) throw new Error('Cannot stage candidates outside this checkout.');
@@ -337,7 +357,7 @@ export async function generateBatch(root, options, { env = process.env, ...trans
         maxTokens: 1600 * targets.length,
         validate: raw => validateCandidates(raw, { targets }, fingerprints, candidates.length)
       }, env, { ...transport, budget });
-      const generation = { provider: 'openrouter', requestedModel: model, reportedModel: output.reportedModel, seed: plan.seed };
+      const generation = { provider, requestedModel: model, reportedModel: output.reportedModel, seed: plan.seed };
       for (const q of output.candidates) {
         fingerprints.add(q.fingerprint);
         candidates.push({ ...q, batchDate: plan.date, generation, sourceVerification: 'unverified' });
@@ -384,8 +404,8 @@ export function readGenerationArgs([date, seed, ...extra]) {
 }
 
 if (isMain(import.meta.url)) {
-  const key = process.env.OPENROUTER_API_KEY;
-  const redact = message => key ? message.replaceAll(key, '[REDACTED]') : message;
+  const keys = [process.env.GROQ_API_KEY, process.env.OPENROUTER_API_KEY].filter(Boolean);
+  const redact = message => keys.reduce((result, key) => result.replaceAll(key, '[REDACTED]'), message);
   try {
     const path = await generateBatch(resolve('.'), readGenerationArgs(process.argv.slice(2)), {
       log: metadata => console.error(redact(JSON.stringify(metadata)))
