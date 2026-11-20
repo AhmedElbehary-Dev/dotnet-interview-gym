@@ -64,6 +64,19 @@ node scripts/smoke-test.mjs
 
 **Content quality first:** Verify factual correctness and code behavior against official documentation and executable examples where possible, avoid leaked copyrighted interview question dumps, and favor scenario-based questions over memorized trivia. Community contributions are reviewed before merging.
 
+### Question index and coverage
+
+After changing the bank or coverage targets, regenerate and commit both artifacts.
+
+```sh
+node scripts/build-question-index.mjs
+node scripts/analyze-coverage.mjs
+```
+
+`questions/index.json` stores IDs, metadata, shard paths and SHA-256 fingerprints of prompts after Unicode NFC normalization, lowercasing and whitespace folding. The report groups exact matches for review. `scripts/coverage-targets.json` defines minimums per category. Gaps rank by descending shortfall, then by category, dimension and label.
+
+For a question with a known concept, register a stable dotted ID such as `linq.deferred-execution` with a display label in `questions/topic-taxonomy.json`, then add that ID as the question's optional `conceptId`. Omit the field when classification is uncertain. The report lists those IDs as having unknown classification.
+
 ## Progress and privacy
 
 All history is stored in browser `localStorage` as `interview_gym_history_v2`; current round in `interview_gym_session_v2`. No cloud syncing is used. An exported progress file is the only portable record of completed questions. Different site origins (e.g., `file://` and `github.io`) do not share browser storage. Don't import progress JSON from untrusted sources.

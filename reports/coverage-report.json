@@ -1,0 +1,431 @@
+{
+  "schemaVersion": 1,
+  "totalQuestions": 120,
+  "byCategory": {
+    "ASP.NET Core وAPIs": 12,
+    "C# المتقدم وLINQ": 12,
+    "React والواجهات": 12,
+    "Transactions والتزامن": 12,
+    "أساسيات C#": 12,
+    "استعلامات SQL Server": 12,
+    "الأمان وGit والتسليم": 12,
+    "التزامن والأداء": 12,
+    "الفهارس وخطط التنفيذ": 12,
+    "الوصول للبيانات": 12
+  },
+  "byDifficulty": {
+    "أساسي": 33,
+    "متقدم": 43,
+    "متوسط": 44
+  },
+  "bySkill": {
+    "حل مشكلة": 42,
+    "فهم الكود": 22,
+    "مفهوم": 56
+  },
+  "categoryByDifficulty": {
+    "ASP.NET Core وAPIs": {
+      "أساسي": 4,
+      "متقدم": 3,
+      "متوسط": 5
+    },
+    "C# المتقدم وLINQ": {
+      "أساسي": 0,
+      "متقدم": 4,
+      "متوسط": 8
+    },
+    "React والواجهات": {
+      "أساسي": 0,
+      "متقدم": 7,
+      "متوسط": 5
+    },
+    "Transactions والتزامن": {
+      "أساسي": 2,
+      "متقدم": 7,
+      "متوسط": 3
+    },
+    "أساسيات C#": {
+      "أساسي": 12,
+      "متقدم": 0,
+      "متوسط": 0
+    },
+    "استعلامات SQL Server": {
+      "أساسي": 7,
+      "متقدم": 5,
+      "متوسط": 0
+    },
+    "الأمان وGit والتسليم": {
+      "أساسي": 8,
+      "متقدم": 2,
+      "متوسط": 2
+    },
+    "التزامن والأداء": {
+      "أساسي": 0,
+      "متقدم": 4,
+      "متوسط": 8
+    },
+    "الفهارس وخطط التنفيذ": {
+      "أساسي": 0,
+      "متقدم": 7,
+      "متوسط": 5
+    },
+    "الوصول للبيانات": {
+      "أساسي": 0,
+      "متقدم": 4,
+      "متوسط": 8
+    }
+  },
+  "categoryBySkill": {
+    "ASP.NET Core وAPIs": {
+      "حل مشكلة": 4,
+      "فهم الكود": 0,
+      "مفهوم": 8
+    },
+    "C# المتقدم وLINQ": {
+      "حل مشكلة": 1,
+      "فهم الكود": 6,
+      "مفهوم": 5
+    },
+    "React والواجهات": {
+      "حل مشكلة": 5,
+      "فهم الكود": 4,
+      "مفهوم": 3
+    },
+    "Transactions والتزامن": {
+      "حل مشكلة": 8,
+      "فهم الكود": 0,
+      "مفهوم": 4
+    },
+    "أساسيات C#": {
+      "حل مشكلة": 0,
+      "فهم الكود": 7,
+      "مفهوم": 5
+    },
+    "استعلامات SQL Server": {
+      "حل مشكلة": 1,
+      "فهم الكود": 4,
+      "مفهوم": 7
+    },
+    "الأمان وGit والتسليم": {
+      "حل مشكلة": 4,
+      "فهم الكود": 0,
+      "مفهوم": 8
+    },
+    "التزامن والأداء": {
+      "حل مشكلة": 6,
+      "فهم الكود": 0,
+      "مفهوم": 6
+    },
+    "الفهارس وخطط التنفيذ": {
+      "حل مشكلة": 7,
+      "فهم الكود": 1,
+      "مفهوم": 4
+    },
+    "الوصول للبيانات": {
+      "حل مشكلة": 6,
+      "فهم الكود": 0,
+      "مفهوم": 6
+    }
+  },
+  "gaps": [
+    {
+      "category": "C# المتقدم وLINQ",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "React والواجهات",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "skill",
+      "label": "حل مشكلة",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "dimension": "skill",
+      "label": "حل مشكلة",
+      "observed": 1,
+      "target": 3,
+      "deficit": 2
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 2,
+      "target": 4,
+      "deficit": 2
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "dimension": "skill",
+      "label": "حل مشكلة",
+      "observed": 1,
+      "target": 3,
+      "deficit": 2
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 2,
+      "target": 4,
+      "deficit": 2
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 2,
+      "target": 4,
+      "deficit": 2
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 1,
+      "target": 3,
+      "deficit": 2
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 3,
+      "target": 4,
+      "deficit": 1
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 3,
+      "target": 4,
+      "deficit": 1
+    }
+  ],
+  "potentialDuplicates": [],
+  "missingConceptClassification": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109,
+    110,
+    111,
+    112,
+    113,
+    114,
+    115,
+    116,
+    117,
+    118,
+    119,
+    120
+  ]
+}
