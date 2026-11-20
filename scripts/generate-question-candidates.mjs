@@ -1,4 +1,4 @@
-import { mkdtempSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { isRecord, normalizePrompt, questionFingerprint, readJson } from './build-question-index.mjs';
@@ -35,7 +35,7 @@ function settings(env) {
 }
 
 function rejectSecret(value, key) {
-  if (JSON.stringify(value).includes(key)) throw new Error('Rejected payload containing credentials.');
+  if (JSON.stringify(value).includes(key)) throw new GenerationError('credentials_in_payload', 'Rejected payload containing credentials.');
 }
 
 async function readCompletion(response) {
@@ -67,63 +67,132 @@ function retryDelay(header, attempt) {
   return Number.isNaN(requested) ? backoff : Math.max(backoff, requested);
 }
 
-export async function requestCompletion(payload, env, { fetchImpl = fetch, delay = sleep } = {}) {
+class GenerationError extends Error {
+  constructor(category, message) {
+    super(message);
+    this.category = category;
+  }
+}
+
+const finishReasons = new Set(['stop', 'length', 'content_filter', 'tool_calls', 'error']);
+const modelPattern = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.:-]+$/;
+
+function parseCompletion(content, key, diagnostics) {
+  let decoded;
+  if (!content.trim()) throw new GenerationError('empty_response', 'OpenRouter returned an empty response.');
+  try {
+    decoded = JSON.parse(content);
+  } catch {
+    throw new GenerationError('invalid_json', 'OpenRouter returned an invalid JSON response envelope.');
+  }
+  const choice = decoded?.choices?.[0];
+  const output = choice?.message?.content;
+  const reportedModel = decoded?.model;
+  diagnostics.reportedModel = nonempty(reportedModel, 160) && modelPattern.test(reportedModel) &&
+    !reportedModel.includes(key) ? reportedModel : null;
+  diagnostics.finishReason = finishReasons.has(choice?.finish_reason) && !choice.finish_reason.includes(key)
+    ? choice.finish_reason : null;
+  diagnostics.outputLength = typeof output === 'string' ? output.length : 0;
+  for (const field of ['prompt_tokens', 'completion_tokens', 'total_tokens']) {
+    const count = decoded?.usage?.[field];
+    if (Number.isSafeInteger(count) && count >= 0 && !String(count).includes(key)) diagnostics.usage[field] = count;
+  }
+
+  if (choice?.finish_reason === 'length') {
+    throw new GenerationError('truncated', 'OpenRouter output was truncated (finish_reason=length).');
+  }
+  if (decoded?.error) {
+    throw new GenerationError('provider_error', 'OpenRouter reported a completion error.');
+  }
+  if (output == null || typeof output === 'string' && !output.trim()) {
+    throw new GenerationError('empty_response', 'OpenRouter returned empty output.');
+  }
+  if (choice.finish_reason !== 'stop') {
+    throw new GenerationError('unexpected_finish', 'OpenRouter completion did not finish with stop.');
+  }
+
+  let parsed;
+  try {
+    if (typeof output !== 'string') throw new Error();
+    const fenced = /^\s*```(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```\s*$/i.exec(output);
+    parsed = JSON.parse(fenced ? fenced[1] : output);
+  } catch {
+    throw new GenerationError('invalid_json', 'OpenRouter returned invalid JSON output.');
+  }
+  if (!isRecord(parsed) || !Array.isArray(parsed.candidates)) {
+    throw new GenerationError('invalid_schema', 'OpenRouter returned an invalid candidate schema.');
+  }
+  rejectSecret(decoded, key);
+  rejectSecret(parsed, key);
+  return parsed.candidates;
+}
+
+export async function requestCompletion(payload, env, {
+  fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }
+} = {}) {
   const { key, model, timeout } = settings(env);
-  const body = JSON.stringify({ messages: payload.messages, model, max_tokens: 7600, temperature: 0.2 });
+  const body = JSON.stringify({ messages: payload.messages, model, max_tokens: payload.maxTokens ?? 3200, temperature: 0.2 });
   if (Buffer.byteLength(body) > 16 * 1024) throw new Error('OpenRouter request exceeds the size limit.');
   if (body.includes(key)) throw new Error('Rejected request containing credentials.');
   for (let attempt = 0; attempt < 3; attempt++) {
+    if (budget.remaining === 0) {
+      log({ failureCategory: 'request_budget' });
+      throw new GenerationError('request_budget', 'OpenRouter request budget exhausted.');
+    }
+    budget.remaining--;
     const signal = AbortSignal.timeout(timeout);
+    const diagnostics = { reportedModel: null, finishReason: null, usage: {}, outputLength: 0 };
     let response;
-    let content;
+    let error;
+    let retry = false;
     try {
       response = await fetchImpl(endpoint, {
         method: 'POST', redirect: 'error', signal, body,
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
       });
-      if (response.ok) content = await readCompletion(response);
-    } catch {
-      if (signal.aborted || !response) {
-        if (attempt === 2) throw new Error(signal.aborted ? 'OpenRouter request timed out.' : 'OpenRouter transport failed.');
-        await delay(retryDelay(null, attempt));
-        continue;
+      if (response.ok) {
+        const candidates = parseCompletion(await readCompletion(response), key, diagnostics);
+        const validated = payload.validate ? payload.validate(candidates) : candidates;
+        log({ ...diagnostics, failureCategory: null });
+        return { candidates: validated, reportedModel: diagnostics.reportedModel };
       }
-      throw new Error('Could not read the OpenRouter response.');
-    }
-    if (!response.ok) {
+
       void response.body?.cancel().catch(() => {});
-      const wait = retryDelay(response.headers.get('retry-after'), attempt);
-      if (!transient.has(response.status) || attempt === 2 || wait > 5000) {
-        throw new Error(`OpenRouter returned HTTP ${response.status}.`);
+      const status = response.status;
+      retry = transient.has(status);
+      if (status === 401 || status === 403) {
+        error = new GenerationError('authentication', `OpenRouter authentication failed (HTTP ${status}).`);
+      } else if (status === 429) {
+        error = new GenerationError('rate_limit', 'OpenRouter rate limit reached (HTTP 429).');
+      } else if (status === 408) {
+        error = new GenerationError('timeout', 'OpenRouter request timed out (HTTP 408).');
+      } else {
+        error = new GenerationError('http_error', `OpenRouter returned HTTP ${status}.`);
       }
-      await delay(wait);
-      continue;
-    }
-    let decoded;
-    let output;
-    try {
-      decoded = JSON.parse(content);
-      const choice = decoded.choices?.[0];
-      if (decoded.error || choice?.finish_reason !== 'stop' || typeof choice.message?.content !== 'string') {
-        throw new Error();
+    } catch (cause) {
+      if (cause instanceof GenerationError) {
+        error = cause;
+      } else if (signal.aborted) {
+        retry = true;
+        error = new GenerationError('timeout', 'OpenRouter request timed out.');
+      } else if (!response) {
+        retry = true;
+        error = new GenerationError('transport', 'OpenRouter transport failed.');
+      } else {
+        error = new GenerationError('read_error', 'Could not read the OpenRouter response.');
       }
-      output = JSON.parse(choice.message.content);
-      if (!isRecord(output) || !Array.isArray(output.candidates)) throw new Error();
-    } catch {
-      throw new Error('OpenRouter returned a malformed, incomplete, or non-JSON completion.');
     }
-    rejectSecret(decoded, key);
-    rejectSecret(output, key);
-    return {
-      candidates: output.candidates,
-      reportedModel: nonempty(decoded.model, 160) ? decoded.model : null
-    };
+    log({ ...diagnostics, failureCategory: error.category });
+    if (!retry || attempt === 2 || budget.remaining === 0) throw error;
+    const wait = retryDelay(response?.headers.get('retry-after'), attempt);
+    if (wait > 5000) throw error;
+    await delay(wait);
   }
 }
 
 export function validateCandidates(candidates, plan, bankFingerprints) {
   if (!Array.isArray(candidates) || candidates.length !== plan.targets.length) {
-    throw new Error(`Expected ${plan.targets.length} candidates.`);
+    throw new GenerationError('invalid_schema', `Expected ${plan.targets.length} candidates.`);
   }
   const seen = new Set();
   const allowed = new Set([...targetFields, ...textFields]);
@@ -139,11 +208,11 @@ export function validateCandidates(candidates, plan, bankFingerprints) {
         !q.sourceUrls.every(validUrl) ||
         (code !== undefined && (!isRecord(code) || Object.keys(code).length !== 3 ||
           !nonempty(code.lang, 30) || !english(code.prompt, 300) || !nonempty(code.code, 1600)))) {
-      throw new Error(`Candidate ${i + 1} failed validation.`);
+      throw new GenerationError('invalid_schema', `Candidate ${i + 1} failed validation.`);
     }
     const fingerprint = questionFingerprint(q);
     if (seen.has(fingerprint) || bankFingerprints.has(fingerprint)) {
-      throw new Error(`Candidate ${i + 1} has a duplicate fingerprint.`);
+      throw new GenerationError('duplicate_fingerprint', `Candidate ${i + 1} has a duplicate fingerprint.`);
     }
     seen.add(fingerprint);
     return { ...q, fingerprint };
@@ -185,13 +254,45 @@ export async function generateBatch(root, options, { env = process.env, ...trans
   const checkout = realpathSync(root);
   const parent = dirname(checkout);
   if (parent === checkout) throw new Error('Cannot stage candidates outside this checkout.');
-  const plan = planGeneration(root, options);
+  const fullPlan = planGeneration(root, options);
+  const limit = options.limit ?? fullPlan.targets.length;
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > fullPlan.targets.length) {
+    throw new Error('--limit must be an integer from 1 to 10.');
+  }
+  const plan = { ...fullPlan, targets: fullPlan.targets.slice(0, limit) };
   const index = readJson(root, 'questions/index.json');
-  const output = await requestCompletion({ messages: buildMessages(root, index, plan) }, env, transport);
-  const generation = { provider: 'openrouter', requestedModel: model, reportedModel: output.reportedModel, seed: plan.seed };
-  const candidates = validateCandidates(output.candidates, plan, new Set(index.questions.map(q => q.fingerprint)))
-    .map(q => ({ ...q, batchDate: plan.date, generation, sourceVerification: 'unverified' }));
-  const batch = { schemaVersion: 1, plan, candidates };
+  const fingerprints = new Set(index.questions.map(q => q.fingerprint));
+  const candidates = [];
+  // Allow at most one request per target plus two extra requests across the run.
+  const budget = { remaining: limit + 2 };
+  let failure = null;
+  let singlesRemaining = 0;
+  while (candidates.length < limit) {
+    const targets = plan.targets.slice(candidates.length, candidates.length + (singlesRemaining ? 1 : 2));
+    try {
+      const output = await requestCompletion({
+        messages: buildMessages(root, index, { targets }),
+        maxTokens: 1600 * targets.length,
+        validate: raw => validateCandidates(raw, { targets }, fingerprints)
+      }, env, { ...transport, budget });
+      const generation = { provider: 'openrouter', requestedModel: model, reportedModel: output.reportedModel, seed: plan.seed };
+      for (const q of output.candidates) {
+        fingerprints.add(q.fingerprint);
+        candidates.push({ ...q, batchDate: plan.date, generation, sourceVerification: 'unverified' });
+      }
+      if (singlesRemaining) singlesRemaining--;
+    } catch (error) {
+      if (error.category === 'truncated' && targets.length === 2 && budget.remaining > 0) {
+        singlesRemaining = 2;
+        continue;
+      }
+      if (!(error instanceof GenerationError) || candidates.length === 0) throw error;
+      failure = { category: error.category, message: error.message };
+      break;
+    }
+  }
+  const batch = { schemaVersion: 1, status: failure ? 'incomplete' : 'complete', plan, candidates };
+  if (failure) batch.failure = failure;
   rejectSecret(batch, key);
 
   // A fresh sibling directory keeps generated content outside the site's checkout.
@@ -208,12 +309,28 @@ export async function generateBatch(root, options, { env = process.env, ...trans
   }
 }
 
+export function readGenerationArgs([date, seed, ...extra]) {
+  const options = readPlanArgs([date, seed]);
+  if (!extra.length) return options;
+  if (extra.length !== 2 || extra[0] !== '--limit' || !/^(?:[1-9]|10)$/.test(extra[1])) {
+    throw new Error('Usage: node generate-question-candidates.mjs YYYY-MM-DD SEED [--limit 1-10]');
+  }
+  return { ...options, limit: Number(extra[1]) };
+}
+
 if (isMain(import.meta.url)) {
   const key = process.env.OPENROUTER_API_KEY;
   const redact = message => key ? message.replaceAll(key, '[REDACTED]') : message;
   try {
-    const path = await generateBatch(resolve('.'), readPlanArgs(process.argv.slice(2)));
-    console.log(redact(`Staged 10 candidates in ${path}`));
+    const path = await generateBatch(resolve('.'), readGenerationArgs(process.argv.slice(2)), {
+      log: metadata => console.error(redact(JSON.stringify(metadata)))
+    });
+    const { status, candidates, plan, failure } = JSON.parse(readFileSync(path, 'utf8'));
+    console.log(redact(`Staged ${candidates.length}/${plan.targets.length} candidates (${status}) in ${path}`));
+    if (failure) {
+      console.error(redact(failure.message));
+      process.exitCode = 1;
+    }
   } catch (error) {
     console.error(redact(error.message));
     process.exitCode = 1;
