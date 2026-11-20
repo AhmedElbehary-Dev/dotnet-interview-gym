@@ -1,6 +1,6 @@
 import { buildQuestionIndex, compareText, isRecord, readJson, runArtifactCli } from './build-question-index.mjs';
 
-function summarizeDimension(index, dimension, targets) {
+function summarizeDimension(index, dimension, targets, policies) {
   if (!isRecord(targets)) throw new Error(`Missing targets for ${dimension}`);
   for (const [label, minimum] of Object.entries(targets)) {
     if (!label.trim() || !Number.isSafeInteger(minimum) || minimum < 0) {
@@ -16,18 +16,36 @@ function summarizeDimension(index, dimension, targets) {
     byCategory[q.category][q[dimension]]++;
   }
   const gaps = [];
+  const excluded = [];
   for (const category of index.categories) {
-    for (const [label, target] of Object.entries(targets)) {
+    const configured = policies?.[category]?.[dimension];
+    if (configured && (!isRecord(configured) || Object.entries(configured).some(([label, minimum]) =>
+        !Object.hasOwn(targets, label) || !Number.isSafeInteger(minimum) || minimum < 0))) {
+      throw new Error(`invalid target for ${category} ${dimension}`);
+    }
+    for (const [label, target] of Object.entries(configured ?? targets)) {
       const observed = byCategory[category][label];
       if (observed < target) gaps.push({ category, dimension, label, observed, target, deficit: target - observed });
     }
+    if (configured) {
+      for (const label of Object.keys(targets).filter(label => !Object.hasOwn(configured, label))) {
+        excluded.push({ category, dimension, label, observed: byCategory[category][label] });
+      }
+    }
   }
-  return { totals, byCategory, gaps };
+  return { totals, byCategory, gaps, excluded };
 }
 
-export function analyzeCoverage(index, targets) {
-  const difficulty = summarizeDimension(index, 'difficulty', targets?.difficulty);
-  const skill = summarizeDimension(index, 'skill', targets?.skill);
+export function analyzeCoverage(index, targets, taxonomy) {
+  const policies = targets?.categories;
+  if (policies !== undefined && (!isRecord(policies) || index.categories.some(category =>
+      !isRecord(policies[category]) || !['difficulty', 'skill', 'concepts'].every(key =>
+        isRecord(policies[category][key])) || !Object.keys(policies[category].difficulty).length ||
+        !Object.keys(policies[category].skill).length))) {
+    throw new Error('Missing or invalid category coverage policy');
+  }
+  const difficulty = summarizeDimension(index, 'difficulty', targets?.difficulty, targets?.categories);
+  const skill = summarizeDimension(index, 'skill', targets?.skill, targets?.categories);
   const byCategory = Object.fromEntries(index.categories.map(category => [category, 0]));
   const byFingerprint = new Map();
   const missingConceptClassification = [];
@@ -40,7 +58,31 @@ export function analyzeCoverage(index, targets) {
   const potentialDuplicates = [...byFingerprint]
     .filter(([, ids]) => ids.length > 1)
     .map(([fingerprint, questionIds]) => ({ fingerprint, questionIds }));
-  const gaps = [...difficulty.gaps, ...skill.gaps].sort((a, b) =>
+  const conceptCoverage = [];
+  const conceptGaps = [];
+  for (const category of index.categories) {
+    const questions = index.questions.filter(q => q.category === category);
+    const configured = policies?.[category]?.concepts;
+    const unknown = questions.filter(q => q.conceptId === undefined).length;
+    const concepts = new Set([...Object.keys(configured ?? {}), ...questions.map(q => q.conceptId).filter(Boolean)]);
+    for (const conceptId of [...concepts].sort(compareText)) {
+      const observed = questions.filter(q => q.conceptId === conceptId).length;
+      const hasTarget = configured !== undefined && Object.hasOwn(configured, conceptId);
+      const target = hasTarget ? configured[conceptId] : null;
+      if ((taxonomy && !Object.hasOwn(taxonomy.concepts, conceptId)) ||
+          (hasTarget && (!Number.isSafeInteger(target) || target < 1))) {
+        throw new Error(`invalid concept target for ${category}: ${conceptId}`);
+      }
+      const status = target === null ? 'unplanned' : observed >= target ? 'met' :
+        observed + unknown >= target ? 'unknown' : 'gap';
+      conceptCoverage.push({ category, conceptId, observed, unknown, target, status });
+      if (status === 'gap') {
+        conceptGaps.push({ category, dimension: 'concept', label: conceptId, observed, target,
+          deficit: target - observed - unknown });
+      }
+    }
+  }
+  const gaps = [...difficulty.gaps, ...skill.gaps, ...conceptGaps].sort((a, b) =>
     b.deficit - a.deficit || compareText(a.category, b.category) ||
     compareText(a.dimension, b.dimension) || compareText(a.label, b.label));
   return {
@@ -52,10 +94,13 @@ export function analyzeCoverage(index, targets) {
     categoryByDifficulty: difficulty.byCategory,
     categoryBySkill: skill.byCategory,
     gaps,
+    excluded: [...difficulty.excluded, ...skill.excluded],
+    conceptCoverage,
     potentialDuplicates,
     missingConceptClassification
   };
 }
 
 runArtifactCli(import.meta.url, 'reports/coverage-report.json', () =>
-  analyzeCoverage(buildQuestionIndex(), readJson(process.cwd(), 'scripts/coverage-targets.json')));
+  analyzeCoverage(buildQuestionIndex(), readJson(process.cwd(), 'scripts/coverage-targets.json'),
+    readJson(process.cwd(), 'questions/topic-taxonomy.json')));

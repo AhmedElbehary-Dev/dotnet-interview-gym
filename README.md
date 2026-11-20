@@ -34,7 +34,7 @@ Then open `http://localhost:5500/`. Node alternatives like `npx serve .` also wo
 
 ## Add questions
 
-Each `questions/*.json` file (except `manifest.json`) looks like:
+Each question shard listed in `questions/manifest.json` uses this format:
 
 ```json
 {
@@ -73,9 +73,36 @@ node scripts/build-question-index.mjs
 node scripts/analyze-coverage.mjs
 ```
 
-`questions/index.json` stores IDs, metadata, shard paths and SHA-256 fingerprints of prompts after Unicode NFC normalization, lowercasing and whitespace folding. The report groups exact matches for review. `scripts/coverage-targets.json` defines minimums per category. Gaps rank by descending shortfall, then by category, dimension and label.
+`questions/index.json` stores IDs, metadata, shard paths and SHA-256 fingerprints. Prompts are normalized with Unicode NFC, case folding and whitespace folding. Structured code samples also contribute their language, prompt and snippet. Snippets preserve case and whitespace apart from CRLF normalization.
 
-For a question with a known concept, register a stable dotted ID such as `linq.deferred-execution` with a display label in `questions/topic-taxonomy.json`, then add that ID as the question's optional `conceptId`. Omit the field when classification is uncertain. The report lists those IDs as having unknown classification.
+`scripts/coverage-targets.json` defines allowed difficulties, skill minimums and concept targets for each category. Omitted difficulties appear under `excluded`. The report ranks confirmed gaps by descending shortfall, then by category, dimension and label. If unclassified questions could meet a concept target, the report marks it `unknown`.
+
+Register stable concept IDs such as `linq.deferred-execution` in `questions/topic-taxonomy.json`. Classify existing questions by ID in `questions/concept-map.json`, or provide an optional `conceptId` on the question. Leave uncertain classifications absent.
+
+### V8.2 candidate generation
+
+Use Node.js 22 from the repository root. The planner reads the current index and report, checks them for staleness, and emits ten targets as JSON. A date and seed reproduce the plan offline.
+
+```sh
+node scripts/plan-question-generation.mjs 2026-11-21 review
+```
+
+For a controlled live run in PowerShell 7:
+
+```powershell
+$env:OPENROUTER_API_KEY = Read-Host 'OpenRouter API key' -MaskInput
+$env:OPENROUTER_MODEL = 'openrouter/free'
+$env:OPENROUTER_TIMEOUT_MS = '45000'
+try {
+    node scripts/generate-question-candidates.mjs 2026-11-21 review
+} finally {
+    Remove-Item Env:OPENROUTER_API_KEY
+}
+```
+
+The generator sends ten compact briefs with selected fingerprints and short examples. It allows up to three attempts, including transient retries, with a 7,600-token completion cap per attempt. A model override makes an explicit model selection and may incur charges. The request uses prompt-based JSON, so models that return prose, Markdown fences, truncated output or invalid candidates can fail the batch. The fixed seed reproduces target selection, while live model output can vary.
+
+A successful run prints the path to `candidates.json` in a new sibling staging directory named `interview-gym-candidate-staging-*`. Only complete, schema-valid batches are stored there. Proposed answers, dialect quality, semantic duplicates and source claims still need independent review.
 
 ## Progress and privacy
 

@@ -8,5 +8,244 @@
     "فهم الكود": 3,
     "مفهوم": 3,
     "حل مشكلة": 3
+  },
+  "categories": {
+    "أساسيات C#": {
+      "difficulty": {
+        "أساسي": 6,
+        "متوسط": 3
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "csharp.value-types": 1,
+        "csharp.reference-semantics": 1,
+        "csharp.nullable-values": 1,
+        "csharp.strings": 1,
+        "csharp.type-inference": 1,
+        "csharp.checked-arithmetic": 1,
+        "csharp.accessibility": 1,
+        "csharp.readonly-fields": 1,
+        "csharp.pattern-matching": 1,
+        "csharp.generics": 1
+      }
+    },
+    "C# المتقدم وLINQ": {
+      "difficulty": {
+        "متوسط": 4,
+        "متقدم": 4
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "linq.deferred-execution": 1,
+        "linq.materialization": 1,
+        "linq.enumeration": 1,
+        "linq.element-operators": 1,
+        "linq.closures": 1,
+        "linq.equality": 1,
+        "linq.disposal": 1,
+        "linq.grouping": 1,
+        "linq.query-composition": 1
+      }
+    },
+    "التزامن والأداء": {
+      "difficulty": {
+        "متوسط": 4,
+        "متقدم": 5
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "runtime.async-await": 1,
+        "runtime.task-composition": 1,
+        "runtime.cancellation": 1,
+        "runtime.race-conditions": 1,
+        "runtime.deadlocks": 1,
+        "runtime.throttling": 1,
+        "runtime.pooling": 1,
+        "runtime.measurement": 1,
+        "runtime.thread-pool": 1,
+        "runtime.garbage-collection": 1
+      }
+    },
+    "ASP.NET Core وAPIs": {
+      "difficulty": {
+        "أساسي": 3,
+        "متوسط": 4,
+        "متقدم": 4
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "aspnet.http-status-codes": 1,
+        "aspnet.idempotency": 1,
+        "aspnet.middleware": 1,
+        "aspnet.dependency-injection": 1,
+        "aspnet.dto-contracts": 1,
+        "aspnet.pagination": 1,
+        "aspnet.problem-details": 1,
+        "aspnet.rate-limiting": 1,
+        "aspnet.model-binding": 1,
+        "aspnet.integration-testing": 1
+      }
+    },
+    "الوصول للبيانات": {
+      "difficulty": {
+        "متوسط": 4,
+        "متقدم": 5
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "data.tracking": 1,
+        "data.related-data": 1,
+        "data.projection": 1,
+        "data.optimistic-concurrency": 1,
+        "data.dapper": 1,
+        "data.parameterization": 1,
+        "data.transactions": 1,
+        "data.context-lifetime": 1,
+        "data.bulk-updates": 1,
+        "data.query-diagnostics": 1,
+        "data.query-splitting": 1,
+        "data.migrations": 1
+      }
+    },
+    "استعلامات SQL Server": {
+      "difficulty": {
+        "أساسي": 4,
+        "متوسط": 4,
+        "متقدم": 4
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "sql.sargability": 1,
+        "sql.aggregation": 1,
+        "sql.joins": 1,
+        "sql.window-functions": 1,
+        "sql.existence": 1,
+        "sql.null-semantics": 1,
+        "sql.set-operators": 1,
+        "sql.ordering": 1,
+        "sql.common-table-expressions": 1,
+        "sql.conditional-aggregation": 1
+      }
+    },
+    "الفهارس وخطط التنفيذ": {
+      "difficulty": {
+        "متوسط": 4,
+        "متقدم": 4
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "indexes.composite-indexes": 1,
+        "indexes.covering-indexes": 1,
+        "indexes.clustered-indexes": 1,
+        "indexes.execution-plans": 1,
+        "indexes.parameter-sensitivity": 1,
+        "indexes.sargability": 1,
+        "indexes.maintenance-tradeoffs": 1,
+        "indexes.statistics": 1,
+        "indexes.filtered-indexes": 1,
+        "indexes.paging-indexes": 1
+      }
+    },
+    "Transactions والتزامن": {
+      "difficulty": {
+        "أساسي": 2,
+        "متوسط": 4,
+        "متقدم": 4
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "transactions.deadlocks": 1,
+        "transactions.isolation": 1,
+        "transactions.lost-updates": 1,
+        "transactions.lock-duration": 1,
+        "transactions.optimistic-concurrency": 1,
+        "transactions.atomicity": 1,
+        "transactions.savepoints": 1,
+        "transactions.lock-escalation": 1
+      }
+    },
+    "React والواجهات": {
+      "difficulty": {
+        "أساسي": 3,
+        "متوسط": 4,
+        "متقدم": 4
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "react.list-identity": 1,
+        "react.state-updates": 1,
+        "react.effects": 1,
+        "react.controlled-inputs": 1,
+        "react.memoization": 1,
+        "react.stale-closures": 1,
+        "react.error-boundaries": 1,
+        "react.debouncing": 1,
+        "react.safe-rendering": 1,
+        "react.component-composition": 1,
+        "react.accessible-forms": 1
+      }
+    },
+    "الأمان وGit والتسليم": {
+      "difficulty": {
+        "أساسي": 4,
+        "متوسط": 3,
+        "متقدم": 2
+      },
+      "skill": {
+        "فهم الكود": 2,
+        "مفهوم": 3,
+        "حل مشكلة": 3
+      },
+      "concepts": {
+        "delivery.sql-injection-prevention": 1,
+        "delivery.tls": 1,
+        "delivery.identity": 1,
+        "delivery.undo": 1,
+        "delivery.history": 1,
+        "delivery.merge-conflicts": 1,
+        "delivery.review": 1,
+        "delivery.scrum": 1,
+        "delivery.continuous-integration": 1,
+        "delivery.deployment": 1,
+        "delivery.log-redaction": 1,
+        "delivery.secret-management": 1
+      }
+    }
   }
 }

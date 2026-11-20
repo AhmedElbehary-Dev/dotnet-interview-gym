@@ -10,6 +10,8 @@ import { analyzeCoverage } from './analyze-coverage.mjs';
 const readJson = path => JSON.parse(readFileSync(path, 'utf8'));
 const manifest = readJson('questions/manifest.json');
 const targets = readJson('scripts/coverage-targets.json');
+const { categories, ...fixtureTargets } = targets;
+const mapping = readJson('questions/concept-map.json').questions;
 const question = { id: 1, q: 'Explain deferred execution.', category: 'LINQ', difficulty: 'أساسي', skill: 'مفهوم' };
 const source = 'questions/sample.json';
 
@@ -37,7 +39,8 @@ test('indexes the original 120 IDs and maps each entry to its source question', 
       category: original.category, difficulty: original.difficulty, skill: original.skill
     });
     assert.match(fingerprint, /^[a-f0-9]{64}$/);
-    assert.deepEqual(extra, original.conceptId === undefined ? {} : { conceptId: original.conceptId });
+    const conceptId = original.conceptId ?? mapping[id];
+    assert.deepEqual(extra, conceptId === undefined ? {} : { conceptId });
   }
 });
 
@@ -69,7 +72,7 @@ test('committed artifacts match deterministic CLI output', () => {
 test('generates identical bytes and rejects stale files without rewriting them', t => {
   const root = fixture(t, [question]);
   mkdirSync(join(root, 'scripts'));
-  writeFileSync(join(root, 'scripts/coverage-targets.json'), JSON.stringify(targets));
+  writeFileSync(join(root, 'scripts/coverage-targets.json'), JSON.stringify(fixtureTargets));
   for (const [script, path] of [
     ['build-question-index', 'questions/index.json'],
     ['analyze-coverage', 'reports/coverage-report.json']
@@ -91,7 +94,7 @@ test('generates identical bytes and rejects stale files without rewriting them',
 });
 
 test('handles empty shards with zero counts and configured gaps', t => {
-  const report = analyzeCoverage(buildQuestionIndex(fixture(t, [])), targets);
+  const report = analyzeCoverage(buildQuestionIndex(fixture(t, [])), fixtureTargets);
   assert.equal(report.totalQuestions, 0);
   assert.deepEqual(report.byCategory, { LINQ: 0 });
   assert.deepEqual(report.byDifficulty, Object.fromEntries(Object.keys(targets.difficulty).map(label => [label, 0])));
@@ -120,7 +123,7 @@ test('flags normalized prompt duplicates and preserves distinct questions', t =>
     { ...question, id: 3, q: 'Explain immediate café execution.' }
   ]);
   const index = buildQuestionIndex(root);
-  const report = analyzeCoverage(index, targets);
+  const report = analyzeCoverage(index, fixtureTargets);
   assert.deepEqual(report.potentialDuplicates, [
     { fingerprint: index.questions[0].fingerprint, questionIds: [1, 2] }
   ]);
@@ -133,7 +136,7 @@ test('uses explicit registered concepts and reports absent concept IDs as unknow
   const index = buildQuestionIndex(root);
   assert.equal(index.questions[0].conceptId, undefined);
   assert.equal(index.questions[1].conceptId, conceptId);
-  assert.deepEqual(analyzeCoverage(index, targets).missingConceptClassification, [1]);
+  assert.deepEqual(analyzeCoverage(index, fixtureTargets).missingConceptClassification, [1]);
   assert.throws(() => buildQuestionIndex(fixture(t, [{ ...question, conceptId }])), /unregistered conceptId/);
 });
 
@@ -153,4 +156,24 @@ test('ranks gaps by deficit with deterministic category, dimension, and label ti
     ['Z', 'difficulty', 'a'], ['Z', 'difficulty', 'z'], ['Z', 'skill', 'z']
   ]);
   assert.throws(() => analyzeCoverage(index, { difficulty: { beginner: -1 }, skill: {} }), /invalid target/);
+});
+
+test('reports an observed excluded combination and a conservative concept deficit', t => {
+  const concept = 'linq.deferred-execution';
+  const index = buildQuestionIndex(fixture(t, [
+    { ...question, conceptId: concept }, { ...question, id: 2, difficulty: 'متقدم' }
+  ], { [concept]: 'Deferred execution' }));
+  const policy = { difficulty: { 'أساسي': 1, 'متقدم': 1 }, skill: { 'مفهوم': 1 }, categories: {
+    LINQ: { difficulty: { 'أساسي': 1 }, skill: { 'مفهوم': 1 }, concepts: { [concept]: 3 } }
+  } };
+  const report = analyzeCoverage(index, policy);
+  assert.deepEqual(report.excluded, [{ category: 'LINQ', dimension: 'difficulty', label: 'متقدم', observed: 1 }]);
+  assert.deepEqual(report.conceptCoverage, [
+    { category: 'LINQ', conceptId: concept, observed: 1, unknown: 1, target: 3, status: 'gap' }
+  ]);
+  assert.deepEqual(report.gaps.map(g => [g.dimension, g.deficit]), [['concept', 1]]);
+  policy.categories.LINQ.concepts[concept] = 2;
+  const uncertain = analyzeCoverage(index, policy);
+  assert.equal(uncertain.conceptCoverage[0].status, 'unknown');
+  assert.deepEqual(uncertain.gaps, []);
 });

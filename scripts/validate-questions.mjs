@@ -1,3 +1,4 @@
+import { questionFingerprint } from './build-question-index.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -26,8 +27,8 @@ for (const entry of manifest.files) {
     if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer > 3) errors.push(`${where}: invalid answer index`);
     for (const field of ['category','difficulty','skill','why','hint']) if (typeof q[field] !== 'string'||!q[field].trim()) errors.push(`${where}: missing ${field}`);
     if (q.code && (typeof q.code.code !== 'string'||typeof q.code.prompt !== 'string'||typeof q.code.lang !== 'string')) errors.push(`${where}: malformed code sample`);
-    const key = String(q.q).toLowerCase().replace(/\s+/g,' ').trim();
-    if(normalizedQuestions.has(key)) errors.push(`${where}: duplicated question text`);
+    const key = questionFingerprint({ ...q, q: String(q.q) });
+    if(normalizedQuestions.has(key)) errors.push(`${where}: duplicated question fingerprint`);
     normalizedQuestions.add(key);
   }
 }
