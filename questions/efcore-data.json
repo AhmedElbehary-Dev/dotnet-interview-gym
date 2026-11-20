@@ -1,0 +1,207 @@
+{
+  "category": "الوصول للبيانات",
+  "questions": [
+    {
+      "id": 49,
+      "category": "الوصول للبيانات",
+      "q": "What does AsNoTracking() generally improve for read-only EF queries?",
+      "options": [
+        "Starts transactions",
+        "More entity updates",
+        "Avoids change-tracking overhead",
+        "Creates indexes"
+      ],
+      "answer": 2,
+      "why": "بتقلل تكلفة Change Tracking في الذاكرة والمعالج لما مش محتاج تعدّل الكيانات وترجع تعمل SaveChanges.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "اسأل إذا كنت محتاج الـ Change Tracker للقراءة فقط."
+    },
+    {
+      "id": 50,
+      "category": "الوصول للبيانات",
+      "q": "What is an N+1 query problem?",
+      "options": [
+        "A deadlock",
+        "Missing primary key",
+        "One large SQL statement",
+        "Additional query per related item"
+      ],
+      "answer": 3,
+      "why": "بدل Query واحدة أو عدد قليل، بنجيب قائمة وبعدين Query إضافية لكل عنصر لجلب علاقاته، فبيزيد عدد مرات الاتصال بقاعدة البيانات.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "تخيّل جلب قائمة ثم طلب بيانات إضافية لكل عنصر."
+    },
+    {
+      "id": 51,
+      "category": "الوصول للبيانات",
+      "q": "What is the purpose of Include in EF Core?",
+      "options": [
+        "Eager-load related data",
+        "Create index",
+        "Validate DTO",
+        "Run migrations"
+      ],
+      "answer": 0,
+      "why": "Include بتطلب تحميل الـRelated Entities مع الاستعلام. استخدمها عند الحاجة، لأنها أحيانًا تنتج بيانات أو Joins أكبر من المطلوب.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فرّق بين جلب العلاقات مسبقًا وتحميلها عند الحاجة."
+    },
+    {
+      "id": 52,
+      "category": "الوصول للبيانات",
+      "q": "Why project to a DTO in a read query?",
+      "options": [
+        "Always slower",
+        "Select only needed columns and shape",
+        "Disable SQL",
+        "Create tracking"
+      ],
+      "answer": 1,
+      "why": "Projection بتختار الأعمدة اللي الشاشة محتاجاها بس، وبتقلل نقل البيانات وتكلفة إنشاء الـObjects.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "هل واجهة القراءة محتاجة كل أعمدة الـ Entity؟",
+      "code": {
+        "prompt": "Why project into a DTO for a read-only query?",
+        "lang": "C#",
+        "code": "var orders = await db.Orders\n    .Select(o => new OrderDto(o.Id, o.Total))\n    .ToListAsync();"
+      }
+    },
+    {
+      "id": 53,
+      "category": "الوصول للبيانات",
+      "q": "What does SaveChangesAsync normally do?",
+      "options": [
+        "Clears cache",
+        "Only tracks changes",
+        "Persists tracked changes to database",
+        "Drops tables"
+      ],
+      "answer": 2,
+      "why": "بتبعت التغييرات المتتبعة لقاعدة البيانات بشكل Async. توقيت الـTransaction وحدودها بيعتمد على العمليات والإعدادات.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "افصل بين تتبّع التغيير وحفظه في قاعدة البيانات."
+    },
+    {
+      "id": 54,
+      "category": "الوصول للبيانات",
+      "q": "What is optimistic concurrency commonly implemented with in SQL Server EF Core?",
+      "options": [
+        "Static field",
+        "Thread.Sleep",
+        "Rowversion token",
+        "NOLOCK"
+      ],
+      "answer": 2,
+      "why": "rowversion بتتخزن كـConcurrency Token، ولو القيمة اتغيرت من آخر قراءة، EF Core تقدر تكشف تعارض التعديل.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "في التحديثات المتزامنة، لازم تكشف تغيّر الصف من غيرك."
+    },
+    {
+      "id": 55,
+      "category": "الوصول للبيانات",
+      "q": "What is Dapper primarily?",
+      "options": [
+        "Lightweight SQL object mapper",
+        "Database engine",
+        "Migration host",
+        "Full ORM change tracker"
+      ],
+      "answer": 0,
+      "why": "Dapper عبارة عن Lightweight Object Mapper: ينفذ SQL ويربط النتائج بـ.NET Objects، مش Database Engine ولا Full Change Tracker.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "قارن مسؤولية مكتبة Mapper بمسؤولية ORM كاملة."
+    },
+    {
+      "id": 56,
+      "category": "الوصول للبيانات",
+      "q": "What is SQL parameterization important for?",
+      "options": [
+        "Only formatting",
+        "Preventing injection and improving plan reuse",
+        "Encrypting all data",
+        "Eliminating indexes"
+      ],
+      "answer": 1,
+      "why": "Parameters بتفصل القيم عن SQL Code فتقلل خطر SQL Injection، وغالبًا بتساعد في إعادة استخدام خطط التنفيذ.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "خلّي قيم المستخدم منفصلة عن نص SQL نفسه."
+    },
+    {
+      "id": 57,
+      "category": "الوصول للبيانات",
+      "q": "What does a database transaction guarantee under ACID atomicity?",
+      "options": [
+        "Infinite retries",
+        "All-or-nothing changes",
+        "No locks",
+        "Faster reads always"
+      ],
+      "answer": 1,
+      "why": "التغييرات جوّه Transaction تنجح كلها سوا أو ترجع كلها لو فشلت، مش إن مفيش Locks.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فكّر في فشل خطوة داخل عملية بتغيّر أكتر من جدول."
+    },
+    {
+      "id": 58,
+      "category": "الوصول للبيانات",
+      "q": "Why avoid sharing a DbContext across concurrent tasks?",
+      "options": [
+        "Always deadlocks",
+        "No transactions",
+        "No LINQ support",
+        "DbContext is not thread-safe"
+      ],
+      "answer": 3,
+      "why": "DbContext مش Thread-safe، ومش بيدعم Concurrent Operations على نفس الـInstance. استخدم Context منفصل لكل عملية أو نفذ بشكل متتابع.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "راجع هل DbContext ينفع يستخدمه أكثر من Task في نفس الوقت.",
+      "code": {
+        "prompt": "What is the concurrency risk in this code?",
+        "lang": "C#",
+        "code": "await Task.WhenAll(\n    db.Products.ToListAsync(),\n    db.Orders.ToListAsync());"
+      }
+    },
+    {
+      "id": 59,
+      "category": "الوصول للبيانات",
+      "q": "What can ExecuteUpdateAsync do in EF Core?",
+      "options": [
+        "Update only tracked entities",
+        "Run migrations",
+        "Create tables",
+        "Update rows without loading/tracking entities"
+      ],
+      "answer": 3,
+      "why": "بتنفذ Set-based Update في DB مباشرة، من غير Materialization أو Tracking للـEntities. خلي بالك إنها مش بتنتظر SaveChanges.",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "hint": "مش كل تحديث محتاج تحميل الـ Entities أولًا."
+    },
+    {
+      "id": 60,
+      "category": "الوصول للبيانات",
+      "q": "Why inspect generated SQL from EF Core?",
+      "options": [
+        "To avoid testing",
+        "To catch inefficient joins, projections, or filters",
+        "To disable indexes",
+        "To change HTTP headers"
+      ],
+      "answer": 1,
+      "why": "لأن الكود العالي المستوى ممكن يتحول لـSQL مكلفة؛ افحص النص الفعلي وExecution Plan لو عايز تعرف المشكلة فين.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "الكود LINQ مش دايمًا بيعكس تكلفة SQL الناتجة."
+    }
+  ]
+}

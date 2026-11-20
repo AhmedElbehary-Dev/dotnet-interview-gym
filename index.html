@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FEF3E2">
+<link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+<title>.NET Interview Gym — English + Arabic Hints (V6)</title>
+<script>try{const t=localStorage.getItem("interview_gym_theme")||(window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.documentElement.dataset.theme=t}catch{document.documentElement.dataset.theme="light"}</script>
+<link rel="stylesheet" href="assets/styles.css"><style id="dotnet-2026-overrides">
+/* v5 • Fluent-informed editorial test layout with .NET purple accent */
+:root{color-scheme:light;--cream:#F6F6FA;--sun:#DDD4FF;--clay:#512BD4;--clay-ink:#512BD4;--ink:#22223A;--card:#FFFFFF;--surface:#F3F3F9;--border:#D9D9E5;--muted:#5A5C71;--success:#176F52;--success-bg:#EAF7F1;--danger:#B3354A;--danger-bg:#FFF0F2;--studio-grid:#E4E4EC;--studio-edge:#DADBE6;--studio-muted:#65657C;--studio-paper:#FFFFFF;--studio-cream:#F2F0FE;--studio-mark:#512BD4;--font:'Segoe UI',Tahoma,Arial,sans-serif}
+html[data-theme="dark"]{color-scheme:dark;--cream:#151522;--sun:#B8A5FF;--clay:#AD97FF;--clay-ink:#D1C5FF;--ink:#F1F0FA;--card:#242438;--surface:#2B2B42;--border:#43435E;--muted:#BAB9CF;--success:#8CE5B7;--success-bg:#19392F;--danger:#FF9BAA;--danger-bg:#44232F;--studio-grid:#36364C;--studio-edge:#3B3B55;--studio-muted:#BAB9D1;--studio-paper:#232336;--studio-cream:#25233C;--studio-mark:#B8A5FF}
+body{background:var(--cream);font-family:var(--font)} body::before{display:none}
+.app{width:min(1310px,calc(100% - 64px));padding:24px 0 50px}
+.brand{border-bottom:1px solid var(--studio-edge);margin-bottom:26px;min-height:66px}
+.brand-logo{width:43px;height:43px;border-radius:10px}
+.brand-name{font-size:1.06rem;letter-spacing:0}
+.brand-name span{max-width:270px}
+.meta-chip{border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--muted);letter-spacing:0;text-transform:none}
+.theme-toggle,.btn{border-radius:5px}
+.theme-toggle{background:var(--studio-paper);border:1px solid var(--border)}
+.theme-toggle:hover{background:var(--surface)}
+:focus-visible{outline:3px solid var(--clay);outline-offset:3px}
+.btn{background:var(--card);border-color:var(--border);color:var(--ink)}
+.btn:hover:not(:disabled){background:var(--surface);border-color:var(--clay)}
+.btn.primary,.tab[aria-pressed="true"]{background:#512BD4;color:#fff;border-color:#512BD4}
+.btn.primary:hover:not(:disabled){background:#3F1CAD;color:#fff}
+.btn.secondary{background:var(--studio-cream);border-color:var(--border);color:var(--ink)}
+.btn.secondary:hover:not(:disabled){border-color:var(--clay);background:var(--sun)}
+html[data-theme="dark"] .btn.primary,html[data-theme="dark"] .tab[aria-pressed="true"]{background:#B49FFF;color:#161325;border-color:#B49FFF}
+html[data-theme="dark"] .btn.primary:hover:not(:disabled){background:#D1C5FF;color:#161325}
+html[data-theme="dark"] .btn:hover:not(:disabled){background:var(--surface);border-color:var(--clay)}
+html[data-theme="dark"] .btn.primary:hover:not(:disabled){background:#D1C5FF;color:#161325}
+.extra-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));max-width:100%;margin-top:-2px;margin-bottom:15px}
+#setup>.hero{background:#4322A8;color:#fff;border:0;border-radius:0;min-height:430px;padding:50px clamp(28px,4vw,58px)}
+#setup>.hero::before{content:'.NET';color:#C2B6FF;opacity:.11;font-size:clamp(9rem,15vw,15rem);letter-spacing:-.11em;bottom:-44px;right:-5px}
+#setup>.hero::after{background:#DDD4FF;height:5px;width:63px}
+#setup>.hero h1{color:#fff;font-size:clamp(2.2rem,3.55vw,3.8rem);font-weight:790;line-height:1.36;max-width:13ch;letter-spacing:0}
+#setup>.hero .eyebrow{color:#DED6FF;letter-spacing:0;text-transform:none;font-size:.94rem}
+#setup>.hero .lede{color:#EFEAFF;font-size:1.02rem;line-height:2}
+html[data-theme="dark"] #setup>.hero{background:#40279B;color:#fff;border-color:#4C3B79}
+html[data-theme="dark"] #setup>.hero h1{color:#fff}
+#setup>.card{background:var(--studio-paper);border-color:var(--border)}
+#setup h2::after{background:#512BD4}
+html[data-theme="dark"] #setup h2::after{background:#B49FFF}
+.mode-option{background:var(--card);border:1px solid var(--border)}
+.mode-option:has(input:checked),html[data-theme="dark"] .mode-option:has(input:checked){border-color:var(--clay);background:var(--studio-cream);box-shadow:inset 0 0 0 1px var(--clay)}
+.mode-option input{accent-color:#512BD4}
+select,html[data-theme="dark"] select{background:var(--card);border-color:var(--border);color:var(--ink)}
+.notice,html[data-theme="dark"] .notice{background:var(--studio-cream);border-color:var(--clay);color:var(--ink)}
+.stats .stat,#setup .stat{background:var(--surface);border:1px solid var(--border)}
+#quiz .assessment-top{border-color:var(--studio-edge)}
+.run-index{direction:rtl;letter-spacing:0;background:var(--studio-paper);font-size:.76rem}
+.assessment-body{direction:rtl;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;min-height:555px}
+.question-pane{background:var(--studio-cream);border-color:var(--studio-edge);padding:36px clamp(24px,3.3vw,48px) 28px;direction:rtl}
+.question-pane::before{display:none}
+.answer-pane{background:var(--studio-paper);border-color:var(--studio-edge);padding:36px clamp(23px,3vw,43px) 28px;direction:rtl}
+.pane-kicker{direction:rtl;color:var(--muted);letter-spacing:0;font-weight:730;font-size:.84rem}
+.pane-dot{background:#512BD4;width:7px;height:7px;transform:none;border-radius:50%}
+html[data-theme="dark"] .pane-dot{background:#B49FFF}
+.question-pane .q-category,html[data-theme="dark"] .question-pane .q-category{direction:rtl;text-align:right;margin:35px 0 8px;font-size:.9rem;letter-spacing:0;color:var(--clay-ink)}
+.question-tags{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 18px}
+.question-tags span{display:inline-flex;border:1px solid var(--border);background:var(--card);padding:3px 8px;border-radius:3px;font-size:.73rem;color:var(--muted)}
+.question-pane .q-text{direction:rtl;text-align:right;unicode-bidi:plaintext;font-size:clamp(1.24rem,1.75vw,1.64rem);line-height:1.78;max-width:57ch;font-weight:770;letter-spacing:0;overflow-wrap:break-word;margin:0 0 20px}
+.question-pane .code-block{margin:5px 0 30px;direction:ltr;border-radius:6px;border:1px solid #4F4E75;box-shadow:none}
+.question-footer{border-color:var(--studio-edge)}.pane-foot-index{letter-spacing:0;font-size:.72rem}
+.answer-instructions{text-align:right;direction:rtl;margin:23px 0 19px}
+.answer-pane .choices{gap:10px}
+.answer-pane .choice{direction:rtl;text-align:right;padding:13px 15px;min-height:63px;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:5px;gap:13px}
+.choice .letter,.answer-pane .choice .letter,html[data-theme="dark"] .answer-pane .choice .letter{background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:4px;width:36px;height:36px}
+.choice .answer-text{font-size:1rem;font-weight:580;line-height:1.7;direction:rtl;text-align:right;unicode-bidi:plaintext}
+.choice:hover:not(:disabled),html[data-theme="dark"] .answer-pane .choice:hover:not(:disabled){border-color:var(--clay);background:var(--studio-cream);transform:none}
+.choice.selected,html[data-theme="dark"] .answer-pane .choice.selected{background:var(--studio-cream);border:2px solid var(--clay);box-shadow:none;padding:12px 14px}
+.choice.selected .letter,html[data-theme="dark"] .answer-pane .choice.selected .letter{background:var(--clay);border-color:var(--clay);color:#fff}
+html[data-theme="dark"] .answer-pane .choice{background:var(--card);border-color:var(--border)}
+html[data-theme="dark"] .choice.selected .letter{background:var(--clay);color:#1E1535}
+.time-led{background:var(--clay);box-shadow:0 0 0 4px #512bd420}
+.timer,html[data-theme="dark"] .timer{background:var(--studio-paper);color:var(--ink);border:1px solid var(--border);border-radius:4px}
+.timer.warning,html[data-theme="dark"] .timer.warning{border-color:var(--danger);color:var(--danger)}
+.progress,.progress>div{border-radius:1px}.progress{background:var(--border)}.progress>div{background:var(--clay)}
+.progress-label{letter-spacing:0}
+.answer-pane .q-actions .btn.primary{min-height:49px}
+.answer-pane .q-actions .left-actions{gap:8px}
+.answer-pane .keyboard-help{text-align:right}
+.code-block,.question-pane .code-block,html[data-theme="dark"] .code-block{background:#1C1D30;color:#F0EEFF;border-color:#43425D}
+.code-toolbar{background:#25263E;border-color:#41425D;color:#C9C8DD}
+.code-block pre{line-height:1.75;padding:18px 21px}
+.syntax-keyword{color:#B5A0FF}.syntax-string{color:#9FE5C7}.syntax-num{color:#F3CD85}.syntax-comment{color:#9FA4C0}
+.code-lang{color:#CEC2FF}
+.editor-dots i,.editor-dots i:nth-child(2),.editor-dots i:nth-child(3){background:#6C688F}
+.editor-dots i:nth-child(2){background:#9C82F6}
+.copy-code{color:#E2D9FF;border-color:#625A90}
+.copy-code:hover{background:#343052}
+.review-body .prompt{direction:rtl;text-align:right;line-height:1.9}
+.review-body .explain,html[data-theme="dark"] .review-body .explain{direction:rtl;text-align:right;unicode-bidi:plaintext;background:var(--studio-cream);border-radius:3px;padding:15px;line-height:1.95}
+.review-item,html[data-theme="dark"] .review-item{background:var(--studio-paper);border-color:var(--border);border-radius:5px}
+.review-item summary:hover,html[data-theme="dark"] .review-item summary:hover{background:var(--surface)}
+#results>.card{background:var(--studio-paper);border-color:var(--border)}
+#results .review-item{border-inline-start:3px solid var(--clay);border-left:1px solid var(--border)}
+#results .stat{background:var(--surface)}
+.report-tabs .tab[aria-pressed="true"]{background:#512BD4;color:#fff;border-color:#512BD4}
+html[data-theme="dark"] .report-tabs .tab[aria-pressed="true"]{background:#B49FFF;color:#171528;border-color:#B49FFF}
+.explain-label,.explain-reason{direction:rtl;text-align:right}
+html[data-theme="dark"] .q-category{color:var(--clay-ink)}
+html[data-theme="dark"] .progress{background:var(--border)}
+html[data-theme="dark"] .progress>div{background:var(--clay)}
+@media(max-width:1080px){.app{width:min(100% - 40px,1020px)}.question-pane .q-text{font-size:1.32rem}.assessment-body{gap:12px}.question-pane,.answer-pane{padding:28px 23px}}
+@media(max-width:760px){.app{width:calc(100% - 22px);padding:12px 0 30px}.brand{margin-bottom:20px}.assessment-body{grid-template-columns:1fr;gap:10px}.question-pane,.answer-pane{padding:25px 21px;min-height:0}.question-pane .q-category{margin-top:20px}.question-pane .q-text{font-size:1.35rem;line-height:1.75;max-width:none}.question-footer{display:none}.question-pane .code-block pre{font-size:.88rem}.answer-pane .q-actions{margin-top:24px}.mode-wrap,.form-row{grid-template-columns:1fr}.answer-pane .choice{min-height:58px}#setup>.hero{min-height:auto;padding:38px 28px}#setup>.hero h1{max-width:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+</style>
+
+<style id="v6-reading-overrides">
+/* Keep the app layout RTL, but all examinable material in normal English reading order. */
+.question-pane .q-text {direction:ltr;text-align:left;unicode-bidi:isolate;letter-spacing:-.012em;line-height:1.52;max-width:62ch;overflow-wrap:anywhere;font-size:clamp(1.22rem,1.8vw,1.65rem)}
+.answer-instructions{direction:ltr;text-align:left;letter-spacing:.01em;color:var(--muted);font-size:.88rem}
+.answer-pane .choice,html[data-theme="dark"] .answer-pane .choice {direction:ltr;text-align:left}
+.choice .answer-text,.answer-pane .choice .answer-text{direction:ltr;text-align:left;unicode-bidi:isolate;font-size:1rem;line-height:1.5;}
+.question-pane .q-category{margin-top:22px}
+.micro-hint{margin:8px 0 23px;direction:rtl;text-align:right;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-size:.78rem;line-height:1.85;font-weight:450;color:var(--muted);max-width:100%;border-top:1px solid var(--studio-edge);padding-top:12px}
+.micro-hint-label{font-size:.7rem;font-weight:750;color:var(--clay-ink);white-space:nowrap}
+#microHintText{flex:1;min-width:180px}
+html[data-theme="dark"] .micro-hint{color:#B6B1CB}
+html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
+.review-body .prompt{direction:ltr;text-align:left;unicode-bidi:isolate;line-height:1.65;}
+.review-body .answer-code{direction:ltr}
+.review-item summary{unicode-bidi:plaintext}
+.review-item .explain{direction:rtl;text-align:right;unicode-bidi:plaintext}
+.question-pane .pane-kicker,.answer-pane .pane-kicker{font-size:.75rem;letter-spacing:.075em}
+@media(max-width:760px){.question-pane .q-text{font-size:1.22rem;line-height:1.56}.micro-hint{font-size:.75rem;padding-top:10px;margin-bottom:9px}.answer-pane .choice{min-height:55px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="brand"><div class="brand-name"><img class="brand-logo" src="assets/logo.png" alt="" width="44" height="44"><span>.NET Interview Gym</span></div><div class="brand-actions"><span class="meta-chip">120 سؤال • أوفلاين</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل مظهر التطبيق" aria-pressed="false">☾ الوضع الداكن</button></div></header>
+<section id="setup" class="stack" aria-labelledby="setup-title">
+  <div class="hero"><div class="eyebrow">تدريب يومي لمهندس .NET</div><h1 id="setup-title">استرجع معلوماتك. سؤال ورا سؤال.</h1><p class="lede">بنك أسئلة متجدد بالإنجليزي مع لمحات عربية قصيرة. جاوب بالمؤقت، وبعد الجولة راجع الشرح الكامل بالعربي، وركّز على نقاط ضعفك.</p></div>
+  <div class="card"><h2>إعداد الجولة</h2>
+    <div class="mode-wrap" role="group" aria-label="وضع المراجعة">
+      <label class="mode-option"><input type="radio" name="mode" value="exam" checked><span><strong>وضع الاختبار</strong><span class="muted">بدون إجابات أثناء الجولة. انتقال فوري بعد التأكيد أو انتهاء الوقت.</span></span></label>
+      <label class="mode-option"><input type="radio" name="mode" value="learn"><span><strong>وضع المذاكرة</strong><span class="muted">اعرض التفسير بعد كل إجابة، وافهم السبب قبل الانتقال.</span></span></label>
+    </div>
+    <div class="form-row">
+      <label class="field">وقت السؤال<select id="seconds"><option value="45">45 ثانية</option><option value="60">60 ثانية</option><option value="75" selected>75 ثانية</option><option value="90">90 ثانية</option><option value="120">120 ثانية</option><option value="0">بدون مؤقت</option></select></label>
+      <label class="field">الموضوع<select id="category"><option value="all">كل المجالات</option></select></label>
+      <label class="field">عدد الأسئلة<select id="size"><option value="10">10 أسئلة</option><option value="20">20 سؤال</option><option value="30" selected>30 سؤالًا</option><option value="40">40 سؤالًا</option><option value="120">120 سؤالًا</option></select></label>
+    </div>
+    <div class="form-row extra-filters"><label class="field">الصعوبة<select id="difficulty"><option value="all">كل المستويات</option><option value="أساسي">أساسي</option><option value="متوسط">متوسط</option><option value="متقدم">متقدم</option></select></label><label class="field">نوع المهارة<select id="skill"><option value="all">كل الأنواع</option><option value="مفهوم">فهم المفاهيم</option><option value="فهم الكود">قراءة الكود</option><option value="حل مشكلة">حل مشكلات</option></select></label></div><div class="action-row"><button class="btn primary" id="start" disabled>ابدأ الجولة ←</button><button class="btn secondary" id="retry" disabled>راجع نقاط الضعف</button><button class="btn" id="resume" disabled>استكمال الجولة المحفوظة</button></div>
+    <div class="notice">الأسئلة والاختيارات بالإنجليزي، ومع كل سؤال لمحة عربية صغيرة من غير كشف الحل. في وضع الاختبار يظهر الشرح الكامل بعد الجولة. المؤقت والانتقال التلقائي وحفظ التقدم شغالين كالمعتاد.</div>
+  </div>
+  <div class="loading-notice muted" id="loadStatus" role="status">جاري تحميل بنك الأسئلة…</div>
+  <div class="card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة تمت تجربتها</span><strong id="triedCount">0</strong></div><div class="stat"><span>مفاهيم تحتاج مراجعة</span><strong id="needsCount">0</strong></div><div class="stat"><span>تم تثبيتها</span><strong id="masteredCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">مسح تقدم هذه النسخة</button><button class="btn ghost" id="exportProgress">تصدير التقدم</button><button class="btn ghost" id="importProgress">استيراد التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
+</section>
+<section id="quiz" class="hidden" aria-label="سؤال الاختبار">
+  <div class="assessment-shell">
+    <div class="assessment-top">
+      <div class="assessment-topline">
+        <div class="run-identity"><span class="run-index">جولة جارية</span><div class="run-meta"><span class="eyebrow" id="questionNo"></span><div class="small muted" id="runMode"></div></div></div>
+        <div class="time-wrap"><span class="time-label">الوقت المتبقي <span class="time-led" aria-hidden="true"></span></span><div class="timer" id="timer" dir="ltr" role="timer">01:15</div></div>
+      </div>
+      <div class="progress-row"><div class="progress" aria-hidden="true"><div id="progressBar"></div></div><span class="progress-label">نسبة التقدم</span></div>
+    </div>
+    <div class="assessment-body">
+      <div class="question-pane">
+        <div class="pane-kicker"><span class="pane-dot"></span> QUESTION</div>
+        <div class="q-category" id="topic"></div><div class="question-tags" id="qTags" aria-label="تصنيف السؤال"></div>
+        <h2 class="q-text" id="questionText"></h2>
+        <div class="code-block hidden" id="questionCode">
+          <div class="code-toolbar"><span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="code-lang" id="codeLang">C#</span><button class="copy-code" id="copyCode" aria-label="نسخ الكود" type="button">نسخ الكود</button></div>
+          <pre><code dir="ltr" id="codeText"></code></pre>
+        </div>
+        <p class="micro-hint" id="microHint" dir="rtl" aria-label="لمحة قصيرة بالعربي"><span class="micro-hint-label">لمحة بالعربي</span><span id="microHintText"></span></p>
+        <div class="question-footer"><span class="pane-foot-index">مراجعة .NET • ركّز وفكّر</span><span class="pane-foot-shape" aria-hidden="true">⌁</span></div>
+      </div>
+      <div class="answer-pane">
+        <div class="pane-kicker"><span class="pane-dot"></span> YOUR ANSWER</div>
+        <div class="answer-instructions">Choose the best answer</div>
+        <div id="choices" class="choices" role="group" aria-label="اختيارات السؤال"></div>
+        <div id="feedback" class="feedback hidden" aria-live="polite"></div>
+        <div class="q-actions">
+          <div class="right-actions"><button id="submit" class="btn primary" disabled>تأكيد والانتقال ←</button><button id="next" class="btn primary hidden">السؤال التالي ←</button><button id="skip" class="btn">مش عارف</button></div>
+          <div class="left-actions"><button id="pause" class="btn ghost">إيقاف مؤقت</button><button id="exit" class="btn ghost">حفظ وخروج</button></div>
+        </div>
+        <p class="keyboard-help" id="shortcuts">اختصارات: 1–4 للاختيار، Enter للتأكيد</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="results" class="hidden" aria-label="تقرير الجولة">
+  <div class="hero"><div class="eyebrow">انتهت الجولة</div><h1>التقرير والمراجعة</h1><p class="lede">شوف نقاط القوة والضعف، واقرأ شرح الأسئلة براحتك من غير مؤقت.</p></div>
+  <div class="card"><div class="stats"><div class="stat"><span>النتيجة</span><strong id="score">—</strong></div><div class="stat"><span>صحيح</span><strong id="right">0</strong></div><div class="stat"><span>إجابة خاطئة</span><strong id="wrongCount">0</strong></div><div class="stat"><span>انتهى الوقت / تخطي</span><strong id="unanswered">0</strong></div></div><p class="small muted" id="runInfo"></p><h3>النتيجة حسب المجال</h3><div class="topics" id="breakdown"></div></div>
+  <div class="card" style="margin-top:16px"><h2>راجع الإجابات</h2><div class="report-tabs" role="group" aria-label="تصفية النتائج"><button class="btn tab" data-filter="weak" aria-pressed="true">الأسئلة اللي وقعت فيها</button><button class="btn tab" data-filter="timeout" aria-pressed="false">انتهى الوقت</button><button class="btn tab" data-filter="all" aria-pressed="false">كل الأسئلة</button></div><div id="reviewList"></div><div class="action-row"><button class="btn secondary" id="again">راجع نقاط الضعف</button><button class="btn primary" id="newRound">جولة جديدة</button><button class="btn" id="copy">نسخ التقرير</button></div></div>
+</section>
+<p class="footer">Interview Gym • تدريب عملي ومراجعة مفاهيم .NET وSQL Server</p>
+</main>
+
+
+<div class="gym-modal" id="gym-confirm" aria-hidden="true">
+  <div class="gym-modal__overlay" tabindex="-1" data-micromodal-close></div>
+  <div class="gym-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="gym-modal-title" aria-describedby="gym-modal-message">
+    <div class="gym-modal__eyebrow">INTERVIEW GYM</div>
+    <h2 class="gym-modal__title" id="gym-modal-title">تأكيد العملية</h2>
+    <div class="gym-modal__message" id="gym-modal-message"></div>
+    <div class="gym-modal__buttons">
+      <button class="btn primary" id="gym-modal-yes" type="button">تأكيد</button>
+      <button class="btn" id="gym-modal-no" type="button">إلغاء</button>
+    </div>
+  </div>
+</div>
+<div class="gym-toast-wrap" id="gym-toast-wrap" role="status" aria-live="polite"></div>
+<script defer src="https://cdn.jsdelivr.net/npm/micromodal@0.4.10/dist/micromodal.min.js"></script>
+<script defer src="assets/dialogs.js"></script>
+<script defer src="assets/app.js"></script>
+</body></html>

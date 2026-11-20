@@ -1,0 +1,217 @@
+{
+  "category": "ASP.NET Core وAPIs",
+  "questions": [
+    {
+      "id": 37,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What does HTTP 201 Created indicate?",
+      "options": [
+        "Unauthorized",
+        "Accepted for later processing",
+        "Resource created",
+        "No content"
+      ],
+      "answer": 2,
+      "why": "201 Created معناها إن الطلب نجح وأنشأ Resource جديدة، وغالبًا بنرفق Location Header يشير للمورد.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "اربط معنى الـ Status Code بما حصل للـ Resource.",
+      "code": {
+        "prompt": "What does this HTTP status indicate?",
+        "lang": "HTTP",
+        "code": "POST /api/orders\nHTTP/1.1 201 Created"
+      }
+    },
+    {
+      "id": 38,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What does HTTP 204 mean?",
+      "options": [
+        "Validation error",
+        "Server error",
+        "Resource not found",
+        "Success without response body"
+      ],
+      "answer": 3,
+      "why": "204 No Content يعني العملية نجحت، لكن مفيش Response Body. شائعة مع Delete أو Update مفيش حاجة ترجعها.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "هل الاستجابة الناجحة لازم يبقى فيها Body؟"
+    },
+    {
+      "id": 39,
+      "category": "ASP.NET Core وAPIs",
+      "q": "Which status usually fits failed request validation?",
+      "options": [
+        "201",
+        "304",
+        "503",
+        "400"
+      ],
+      "answer": 3,
+      "why": "400 Bad Request رد شائع لخطأ في بيانات الطلب أو Validation. بعض الأنظمة بتختار 422 حسب العقد، لكن من الاختيارات دي 400.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "اختار رمزًا يناسب خطأ البيانات المرسلة من العميل."
+    },
+    {
+      "id": 40,
+      "category": "ASP.NET Core وAPIs",
+      "q": "Which status indicates authenticated user lacks permission?",
+      "options": [
+        "401",
+        "403",
+        "404 always",
+        "500"
+      ],
+      "answer": 1,
+      "why": "403 Forbidden معناها إن الهوية معروفة لكن العملية غير مسموح بيها. 401 غالبًا معناها غياب أو عدم صحة المصادقة.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فرّق بين معرفة هوية المستخدم والسماح له بالعملية."
+    },
+    {
+      "id": 41,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What makes PUT idempotent?",
+      "options": [
+        "Uses JSON",
+        "Always returns 200",
+        "Repeated identical requests have same intended effect",
+        "Never updates"
+      ],
+      "answer": 2,
+      "why": "لو كررت نفس طلب PUT، الحالة المقصودة للمورد بتفضل نفسها بعد أول تنفيذ؛ مش لازم كل Response تكون متطابقة.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "اسأل عن أثر تكرار نفس الطلب أكثر من مرة.",
+      "code": {
+        "prompt": "Why is this HTTP method considered idempotent?",
+        "lang": "HTTP",
+        "code": "PUT /api/products/42\nContent-Type: application/json\n{ \"name\": \"Keyboard\" }"
+      }
+    },
+    {
+      "id": 42,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What is the purpose of middleware ordering?",
+      "options": [
+        "Changes C# compilation",
+        "Disables routing",
+        "Only aesthetics",
+        "Order controls request/response pipeline behavior"
+      ],
+      "answer": 3,
+      "why": "كل Middleware جزء من Request/Response Pipeline، وترتيبها بيأثر على المصادقة، والتفويض، والتوجيه، والتعامل مع الأخطاء.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الـ Middleware بيمشي في Pipeline بترتيب معين."
+    },
+    {
+      "id": 43,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What is a scoped service lifetime in ASP.NET Core HTTP requests?",
+      "options": [
+        "Typically one instance per request scope",
+        "New per injection always",
+        "One per thread",
+        "One instance per app"
+      ],
+      "answer": 0,
+      "why": "Scoped Lifetime غالبًا معناها Instance واحد داخل Scope الطلب، وتختلف عن Transient لكل Resolve وSingleton للتطبيق.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "راجع دورة حياة الخدمة جوّه طلب HTTP الواحد.",
+      "code": {
+        "prompt": "What is the typical lifetime of OrderService per HTTP request?",
+        "lang": "C#",
+        "code": "builder.Services.AddScoped<OrderService>();"
+      }
+    },
+    {
+      "id": 44,
+      "category": "ASP.NET Core وAPIs",
+      "q": "Why avoid injecting scoped DbContext into a singleton?",
+      "options": [
+        "It is always null",
+        "Lifetime mismatch and concurrency risks",
+        "It creates migrations",
+        "It disables caching"
+      ],
+      "answer": 1,
+      "why": "الـSingleton عمره أطول من الـScope، فممكن يحتفظ بـDbContext خارج عمره الطبيعي ويستخدمه بشكل غير آمن بين Requests.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الـ Service طويلة العمر ممكن تحتفظ بمرجع قصير العمر."
+    },
+    {
+      "id": 45,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What is the purpose of DTOs?",
+      "options": [
+        "Store secrets",
+        "Expose EF entities directly",
+        "Define API contract independent of persistence model",
+        "Replace validation"
+      ],
+      "answer": 2,
+      "why": "عشان نفصل شكل الـRequest/Response عن Entities وقواعد التخزين، ونمنع كشف حقول داخلية بالخطأ ونطوّر العقد باستقلال.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فكّر في فصل شكل البيانات الخارجة عن تفاصيل التخزين."
+    },
+    {
+      "id": 46,
+      "category": "ASP.NET Core وAPIs",
+      "q": "Which API pagination is usually more stable for deep sequential browsing?",
+      "options": [
+        "No pagination",
+        "SELECT *",
+        "Huge OFFSET",
+        "Keyset/cursor pagination"
+      ],
+      "answer": 3,
+      "why": "Keyset/Cursor Pagination بتتعامل مع آخر Key شوفتها بدل ما تعمل Skip ضخم؛ أفضل للتصفح المتسلسل لكن مش لكل سيناريو قفز لصفحة رقم N.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "مع الصفحات البعيدة، تكلفة التخطي ممكن تزيد.",
+      "code": {
+        "prompt": "Which pagination approach works best for deep sequential pages?",
+        "lang": "SQL",
+        "code": "SELECT TOP (20) Id, OrderDate\nFROM Orders\nWHERE CustomerId = @id\nORDER BY OrderDate DESC, Id DESC;"
+      }
+    },
+    {
+      "id": 47,
+      "category": "ASP.NET Core وAPIs",
+      "q": "Why use ProblemDetails?",
+      "options": [
+        "Standardize structured HTTP error responses",
+        "Cache all errors",
+        "Replace logs",
+        "Compress JSON"
+      ],
+      "answer": 0,
+      "why": "ProblemDetails شكل قياسي قابل للقراءة آليًا لعرض تفاصيل أخطاء HTTP بصورة متسقة بدل ردود عشوائية.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "وجود شكل ثابت للأخطاء بيسهّل تعامل العميل معها."
+    },
+    {
+      "id": 48,
+      "category": "ASP.NET Core وAPIs",
+      "q": "What is rate limiting intended to do?",
+      "options": [
+        "Guarantee no attacks",
+        "Control request volume and resource usage",
+        "Replace authentication",
+        "Increase database locks"
+      ],
+      "answer": 1,
+      "why": "بتقلل إساءة الاستخدام وتحمي قدرة التطبيق من كثرة الطلبات. لكنها مش بديل عن Authentication أو Authorization.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "تنظيم الاستهلاك مختلف عن التحقق من الصلاحيات."
+    }
+  ]
+}

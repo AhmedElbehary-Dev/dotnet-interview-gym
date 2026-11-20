@@ -1,0 +1,232 @@
+{
+  "category": "أساسيات C#",
+  "questions": [
+    {
+      "id": 1,
+      "category": "أساسيات C#",
+      "q": "What is printed? int x=5; int y=x; y=9; Console.Write(x);",
+      "options": [
+        "Compilation error",
+        "5",
+        "9",
+        "0"
+      ],
+      "answer": 1,
+      "why": "المتغير int من نوع قيمة (Value Type). السطر y = x نسخ الرقم 5، مش ربط المتغيرين ببعض؛ تغيير y لـ 9 مش بيغيّر x.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "فكّر في الفرق بين نسخ قيمة المتغير ومشاركة كائن.",
+      "code": {
+        "prompt": "What does this code print?",
+        "lang": "C#",
+        "code": "int x = 5;\nint y = x;\ny = 9;\nConsole.Write(x);"
+      }
+    },
+    {
+      "id": 2,
+      "category": "أساسيات C#",
+      "q": "A method receives Product p (class), then sets p.Price=20. What happens to the caller object?",
+      "options": [
+        "The caller variable becomes null",
+        "Compilation error",
+        "Nothing",
+        "Its Price becomes 20"
+      ],
+      "answer": 3,
+      "why": "الـReference نفسه بيتنسخ عند تمريره للـMethod، لكن النسختين بيشاوروا على نفس الـObject. عشان كده تعديل Price هيظهر عند المستدعي.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "لاحظ إن تعديل خاصية شيء مختلف عن تغيير المتغير نفسه.",
+      "code": {
+        "prompt": "What happens to the caller's Product after this method executes?",
+        "lang": "C#",
+        "code": "void Update(Product p)\n{\n    p.Price = 20;\n}"
+      }
+    },
+    {
+      "id": 3,
+      "category": "أساسيات C#",
+      "q": "A method receives Product p (without ref), then assigns p=new Product(). What happens to the caller reference?",
+      "options": [
+        "It becomes null",
+        "It is unchanged",
+        "It is disposed",
+        "It points to the new object"
+      ],
+      "answer": 1,
+      "why": "هنا غيرنا الـReference المحلي p فقط. متغير المستدعي لسه بيشاور على الـObject القديم؛ ده مختلف عن تعديل p.Price.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "راقب المتغير داخل الدالة والمتغير عند المستدعي.",
+      "code": {
+        "prompt": "Does assigning a new Product to p change the caller's reference?",
+        "lang": "C#",
+        "code": "void Replace(Product p)\n{\n    p = new Product();\n}"
+      }
+    },
+    {
+      "id": 4,
+      "category": "أساسيات C#",
+      "q": "Which statement about ref parameters is correct?",
+      "options": [
+        "They copy objects deeply",
+        "They allow reassignment of the caller variable",
+        "They require a reference type",
+        "They are read-only"
+      ],
+      "answer": 1,
+      "why": "ref بتسمح للـMethod إنها تعدّل متغير المستدعي نفسه، بما فيها تغيير الـReference اللي شايلها. مش معناها Deep Copy ومش مقتصرة على الـClasses.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "المهم هنا: هل الدالة تقدر تغيّر متغير المستدعي نفسه؟"
+    },
+    {
+      "id": 5,
+      "category": "أساسيات C#",
+      "q": "What is the default value of int? in a nullable local initialized to null?",
+      "options": [
+        "undefined",
+        "0",
+        "null",
+        "-1"
+      ],
+      "answer": 2,
+      "why": "int? اختصار لـNullable<int>، وبيدعم null كحالة مختلفة تمامًا عن الصفر.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "فرق بين القيمة الافتراضية والنوع القابل لاستقبال null.",
+      "code": {
+        "prompt": "What is the value of x?",
+        "lang": "C#",
+        "code": "int? x = null;\nConsole.WriteLine(x);"
+      }
+    },
+    {
+      "id": 6,
+      "category": "أساسيات C#",
+      "q": "What does string.IsNullOrWhiteSpace(\"  \") return?",
+      "options": [
+        "true",
+        "Exception",
+        "false",
+        "null"
+      ],
+      "answer": 0,
+      "why": "الدالة بترجع true لو النص null أو فاضي أو مكوّن بالكامل من مسافات/Whitespace.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "المسافات والأحرف المرئية مش حاجة واحدة.",
+      "code": {
+        "prompt": "What does this expression return?",
+        "lang": "C#",
+        "code": "string.IsNullOrWhiteSpace(\"  \")"
+      }
+    },
+    {
+      "id": 7,
+      "category": "أساسيات C#",
+      "q": "Which is immutable?",
+      "options": [
+        "StringBuilder",
+        "string",
+        "Dictionary<string,int>",
+        "List<int>"
+      ],
+      "answer": 1,
+      "why": "الـstring مش بتتعدل في مكانها. أي عملية تبدو إنها بتغيّر النص بتنشئ قيمة string جديدة؛ عكس StringBuilder وList.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "اسأل: هل تعديل المحتوى بيغيّر نفس الكائن؟"
+    },
+    {
+      "id": 8,
+      "category": "أساسيات C#",
+      "q": "What does var determine in C#?",
+      "options": [
+        "Dynamic runtime type",
+        "Compile-time inferred type",
+        "Nullable reference",
+        "Object type always"
+      ],
+      "answer": 1,
+      "why": "الـCompiler بيستنتج النوع وقت الـCompilation؛ var مش زي dynamic ومش معناه إن النوع بيتغيّر وقت التشغيل.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "ركّز على وقت تحديد النوع: أثناء الترجمة ولا التشغيل؟"
+    },
+    {
+      "id": 9,
+      "category": "أساسيات C#",
+      "q": "What happens when a checked int addition overflows?",
+      "options": [
+        "Promotes to long",
+        "Wraps silently",
+        "Returns null",
+        "Throws OverflowException"
+      ],
+      "answer": 3,
+      "why": "داخل checked، تجاوز الحد المسموح للعدد الصحيح بيرمي OverflowException بدل الالتفاف الصامت للقيمة.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "الكود المحدد بـ checked بيتعامل بشكل مخصوص مع تجاوز المدى.",
+      "code": {
+        "prompt": "What happens when this code runs?",
+        "lang": "C#",
+        "code": "int max = int.MaxValue;\nint one = 1;\nchecked { Console.Write(max + one); }"
+      }
+    },
+    {
+      "id": 10,
+      "category": "أساسيات C#",
+      "q": "Which access modifier allows access from derived types outside the assembly?",
+      "options": [
+        "protected",
+        "file",
+        "private",
+        "internal"
+      ],
+      "answer": 0,
+      "why": "protected بيسمح بالوصول من الـDerived Classes حتى خارج نفس الـAssembly، مع قواعد الوصول الخاصة بالوراثة.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فرّق بين الوراثة والوصول من نفس Assembly."
+    },
+    {
+      "id": 11,
+      "category": "أساسيات C#",
+      "q": "A readonly field can be assigned where?",
+      "options": [
+        "Constructor or declaration",
+        "Only property setter",
+        "Never",
+        "Any method"
+      ],
+      "answer": 0,
+      "why": "تقدر تعيّن قيمة readonly field عند تعريفه أو داخل Constructor تابع لنفس النوع، مش في أي Method عادية.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فرّق بين تعيين الحقل أول مرة وتغييره بعد الإنشاء."
+    },
+    {
+      "id": 12,
+      "category": "أساسيات C#",
+      "q": "What does ?? do?",
+      "options": [
+        "Checks reference equality",
+        "Returns right operand when left is null",
+        "Throws if null",
+        "Combines booleans"
+      ],
+      "answer": 1,
+      "why": "لو اللي على الشمال مش null بيرجّعه؛ ولو null بيرجّع التعبير اللي على اليمين. ده اسمه Null-coalescing.",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "hint": "العامل ده بيتعامل مع غياب القيمة، مش مع كل القيم الزائفة.",
+      "code": {
+        "prompt": "What value is assigned to label?",
+        "lang": "C#",
+        "code": "string? name = null;\nvar label = name ?? \"Guest\";"
+      }
+    }
+  ]
+}

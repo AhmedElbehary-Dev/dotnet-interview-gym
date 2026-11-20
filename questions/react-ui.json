@@ -1,0 +1,217 @@
+{
+  "category": "React والواجهات",
+  "questions": [
+    {
+      "id": 97,
+      "category": "React والواجهات",
+      "q": "Best key for a reorderable React list?",
+      "options": [
+        "Current timestamp",
+        "Array index",
+        "Math.random()",
+        "Stable item.id"
+      ],
+      "answer": 3,
+      "why": "استخدم item.id ثابت وفريد بين العناصر الشقيقة. الـIndex أو Math.random ممكن يخلطوا Component State عند إعادة الترتيب.",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "hint": "هوية عنصر القائمة لازم تفضل ثابتة مع إعادة الترتيب."
+    },
+    {
+      "id": 98,
+      "category": "React والواجهات",
+      "q": "What does useState setter do?",
+      "options": [
+        "Updates DOM directly",
+        "Always sends HTTP request",
+        "Mutates state variable immediately in current render",
+        "Schedules a state update and re-render"
+      ],
+      "answer": 3,
+      "why": "React بتجدول State Update وRender جديد. قيمة State داخل الـRender الحالي مش بتتغيّر فورًا بنفس الاستدعاء.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "تحديث State مش بالضرورة يغيّر القيمة في نفس Render.",
+      "code": {
+        "prompt": "What happens after calling the state setter?",
+        "lang": "JSX",
+        "code": "const [count, setCount] = useState(0);\nsetCount(count + 1);"
+      }
+    },
+    {
+      "id": 99,
+      "category": "React والواجهات",
+      "q": "Why use functional state updates for increment?",
+      "options": [
+        "Uses latest queued state safely",
+        "Disables batching",
+        "Avoids render",
+        "Always slower"
+      ],
+      "answer": 0,
+      "why": "الـFunctional Update بتعتمد على آخر State متاح في Queue، وبتساعد لما فيه كذا Update متتابع أو Callback قديم.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "التحديثات المتتالية ممكن تتجمع قبل إعادة الرسم."
+    },
+    {
+      "id": 100,
+      "category": "React والواجهات",
+      "q": "What does useEffect cleanup commonly handle?",
+      "options": [
+        "Render JSX",
+        "Remove subscriptions or cancel work",
+        "Create CSS",
+        "Change props"
+      ],
+      "answer": 1,
+      "why": "بتفك Subscription أو توقف Timer أو Cleanup لعمليات سابقة. React بتناديها قبل إعادة تشغيل Effect وعند Unmount.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "فكّر في الموارد المرتبطة بوجود الـ Component."
+    },
+    {
+      "id": 101,
+      "category": "React والواجهات",
+      "q": "What does an empty dependency array in useEffect mean?",
+      "options": [
+        "Effect only on click",
+        "Effect on every render",
+        "Effect setup after mount, cleanup on unmount (with dev Strict Mode nuances)",
+        "Effect never runs"
+      ],
+      "answer": 2,
+      "why": "الـEffect بتشتغل بعد Mount، وCleanup عند Unmount. في Development Strict Mode ممكن React تعمل Setup/Cleanup إضافي للتحقق.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "قائمة Dependencies بتحدد إمتى الـ Effect يتكرر."
+    },
+    {
+      "id": 102,
+      "category": "React والواجهات",
+      "q": "What is a controlled input?",
+      "options": [
+        "Input using only CSS",
+        "Server-only input",
+        "Input value driven by React state",
+        "Input without events"
+      ],
+      "answer": 2,
+      "why": "قيمة الـInput بتكون جاية من React State، وحدث onChange بيحدث الـState، فالمصدر الأساسي للحقيقة هو الـState.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "مين اللي بيتحكم في قيمة الـ Input: React ولا DOM؟"
+    },
+    {
+      "id": 103,
+      "category": "React والواجهات",
+      "q": "Why avoid mutating state arrays directly?",
+      "options": [
+        "React relies on immutable updates for reliable change detection",
+        "It disables fetch",
+        "It creates XSS",
+        "It is forbidden by JavaScript"
+      ],
+      "answer": 0,
+      "why": "React بتعتمد على المقارنة بالـReference في Updates. الأفضل تعمل Array/Object جديد عشان التغيير يتعرف ويتعرض بشكل سليم.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "طريقة تعديل الـ State بتأثر على اكتشاف التغييرات.",
+      "code": {
+        "prompt": "Why can this state update cause problems?",
+        "lang": "JSX",
+        "code": "// Consider this state update:\nitems.push(newItem);\nsetItems(items);"
+      }
+    },
+    {
+      "id": 104,
+      "category": "React والواجهات",
+      "q": "What does React.memo primarily optimize?",
+      "options": [
+        "SQL queries",
+        "Skipping rerenders when props compare equal",
+        "Network retries",
+        "DOM security"
+      ],
+      "answer": 1,
+      "why": "ممكن تمنع Re-render غير لازم لما Props ما اتغيرتش بالمقارنة المعتمدة. لكنها مش بتمنع Update من State/Context داخلي.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "إعادة الرسم مش لازم تحصل لو المدخلات زي ما هي."
+    },
+    {
+      "id": 105,
+      "category": "React والواجهات",
+      "q": "What can stale closures cause in React?",
+      "options": [
+        "Missing CSS",
+        "Using outdated values in callbacks/effects",
+        "Automatic hydration",
+        "No re-render ever"
+      ],
+      "answer": 1,
+      "why": "Callback أو Effect ممكن تكون ماسكة قيم State/Props من Render قديم. راجع Dependencies أو استخدم Functional Update حسب الحالة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الـ Callback ممكن يحتفظ بقيم من Render قديم.",
+      "code": {
+        "prompt": "What issue can this effect cause?",
+        "lang": "JSX",
+        "code": "useEffect(() => {\n  const id = setInterval(() => console.log(count), 1000);\n  return () => clearInterval(id);\n}, []);"
+      }
+    },
+    {
+      "id": 106,
+      "category": "React والواجهات",
+      "q": "What is the role of an Error Boundary?",
+      "options": [
+        "Catch every async exception",
+        "Replace try/catch everywhere",
+        "Catch all server errors",
+        "Catch rendering errors in descendant tree"
+      ],
+      "answer": 3,
+      "why": "بتلتقط أخطاء Render في شجرة المكونات تحتها؛ مش كل Event Handler أو Async Callback، ودي تحتاج Handling منفصل.",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "hint": "نوع الاستثناء ومكان حدوثه مهم للـ Error Boundary."
+    },
+    {
+      "id": 107,
+      "category": "React والواجهات",
+      "q": "Why debounce search input?",
+      "options": [
+        "Reduce requests while user is typing",
+        "Guarantee server cache",
+        "Improve encryption",
+        "Prevent all API calls"
+      ],
+      "answer": 0,
+      "why": "بنأخّر إرسال الطلب لحد ما المستخدم يوقف كتابة فترة قصيرة، وبكده نقلل عدد الـAPI Requests من غير ما نمنعها بالكامل.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "طلبات البحث أثناء الكتابة ممكن تكون كثيرة جدًا."
+    },
+    {
+      "id": 108,
+      "category": "React والواجهات",
+      "q": "What is a common XSS risk with dangerouslySetInnerHTML?",
+      "options": [
+        "Rendering unsanitized untrusted HTML",
+        "Using state",
+        "Using stable keys",
+        "CSS modules"
+      ],
+      "answer": 0,
+      "why": "لو حقنت HTML غير موثوق من غير Sanitization مناسبة، ممكن تفتح ثغرة XSS وتنفيذ Scripts ضارة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "HTML القادم من مصدر غير موثوق محتاج معالجة أمان.",
+      "code": {
+        "prompt": "What is the security concern with this React code?",
+        "lang": "JSX",
+        "code": "<div dangerouslySetInnerHTML={{ __html: userHtml }} />"
+      }
+    }
+  ]
+}

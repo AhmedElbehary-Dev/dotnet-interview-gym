@@ -1,0 +1,212 @@
+{
+  "category": "الفهارس وخطط التنفيذ",
+  "questions": [
+    {
+      "id": 73,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "For WHERE CustomerId=@id ORDER BY OrderDate DESC, which index is a strong starting point?",
+      "options": [
+        "(TotalAmount) only",
+        "(OrderDate) only",
+        "(CustomerId, OrderDate DESC)",
+        "(Status) only"
+      ],
+      "answer": 2,
+      "why": "Index مركب على CustomerId ثم OrderDate DESC بيسمح غالبًا بعمل Seek للعميل وقراءة الطلبات مرتبة. راجع Actual Plan قبل القرار النهائي.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "ترتيب أعمدة الـ Index لازم يخدم الفلترة والترتيب.",
+      "code": {
+        "prompt": "Which index is a good starting point for this query?",
+        "lang": "SQL",
+        "code": "SELECT TOP (20) Id, OrderDate\nFROM Orders\nWHERE CustomerId = @id\nORDER BY OrderDate DESC;"
+      }
+    },
+    {
+      "id": 74,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What is a covering index?",
+      "options": [
+        "Index with no key",
+        "Only clustered index",
+        "Index on every column",
+        "Index containing all columns needed by a query"
+      ],
+      "answer": 3,
+      "why": "الـIndex يبقى فيه كل الأعمدة اللي الاستعلام محتاجها، سواء Key أو INCLUDE، فيقل احتياجه لـKey Lookups.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "اسأل إذا كان الـ Index فيه كل البيانات المطلوبة للاستعلام."
+    },
+    {
+      "id": 75,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What does INCLUDE in a nonclustered index do?",
+      "options": [
+        "Makes columns part of sort key",
+        "Enforces uniqueness",
+        "Creates trigger",
+        "Adds non-key leaf columns"
+      ],
+      "answer": 3,
+      "why": "INCLUDE بتضيف أعمدة غير Key على مستوى Leaf عشان تغطي Select Columns من غير ما تكبّر مفتاح الـIndex.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "في فرق بين الأعمدة المفتاحية وأعمدة التغطية في الـ Index."
+    },
+    {
+      "id": 76,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What does a clustered index determine?",
+      "options": [
+        "Physical/logical row organization by key",
+        "Encryption key",
+        "Foreign key constraint",
+        "Transaction level"
+      ],
+      "answer": 0,
+      "why": "الـClustered Index بتنظّم بيانات الـTable حسب مفتاح الـClustered Index. ده مختلف عن Foreign Key أو مستوى الـIsolation.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "الـ Clustered Index مرتبط بتنظيم صفوف الجدول."
+    },
+    {
+      "id": 77,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "Why can SELECT * hurt performance?",
+      "options": [
+        "It forces a cursor",
+        "It disables SQL",
+        "It fetches unnecessary data and can prevent index coverage",
+        "It always deadlocks"
+      ],
+      "answer": 2,
+      "why": "بتجيب أعمدة ممكن مش محتاجها، فترفع I/O وNetwork Payload، وممكن تخلي الـQuery تحتاج Lookups بدل Covering Index.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "جلب أعمدة زيادة يستهلك موارد وقد يغيّر خطة التنفيذ.",
+      "code": {
+        "prompt": "What is the main performance risk of this query?",
+        "lang": "SQL",
+        "code": "SELECT * FROM Orders WHERE CustomerId = @id;"
+      }
+    },
+    {
+      "id": 78,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What is an actual execution plan useful for?",
+      "options": [
+        "Guaranteeing optimal plan",
+        "Replacing monitoring",
+        "Showing runtime operators and row counts",
+        "Changing schema automatically"
+      ],
+      "answer": 2,
+      "why": "بتوضح Operators فعلية ومعلومات تنفيذ زي Actual Row Counts، وبتساعدك تكتشف Scans وLookups وSorts المكلفة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "قارن التوقعات ببيانات التنفيذ الفعلية."
+    },
+    {
+      "id": 79,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What is parameter sniffing?",
+      "options": [
+        "Plan compilation influenced by parameter values",
+        "Encrypting parameters",
+        "Missing indexes always",
+        "SQL injection"
+      ],
+      "answer": 0,
+      "why": "SQL Server ممكن تبني Execution Plan وفق قيم Parameters وقت الـCompilation. خطة ممتازة لقيمة معينة ممكن تكون سيئة لقيمة ثانية؛ افحص التوزيع والخطط.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "بعض خطط SQL بتتأثر بقيم الـ Parameters عند الإنشاء."
+    },
+    {
+      "id": 80,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "Why can a function on an indexed column be costly?",
+      "options": [
+        "It always drops the index",
+        "It can make a predicate non-SARGable",
+        "It prevents transactions",
+        "It changes collation always"
+      ],
+      "answer": 1,
+      "why": "الدالة على العمود ممكن تمنع استخدام Seek فعال، وتحوّل الشرط لـNon-SARGable. مش قاعدة مطلقة، فدايمًا افحص الـPlan.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "تطبيق دالة على عمود ممكن يصعّب استخدام الـ Index.",
+      "code": {
+        "prompt": "Why might this predicate perform poorly with an index?",
+        "lang": "SQL",
+        "code": "WHERE YEAR(OrderDate) = 2026"
+      }
+    },
+    {
+      "id": 81,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What is a key lookup in an execution plan?",
+      "options": [
+        "Hashing passwords",
+        "Fetching columns missing from nonclustered index",
+        "Creating a primary key",
+        "Dropping an index"
+      ],
+      "answer": 1,
+      "why": "لما Nonclustered Index تلاقي الصفوف لكن مش كل الأعمدة المطلوبة، SQL Server تضطر ترجع تجيب باقي الأعمدة من البيانات الأساسية.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "لما الـ Index مش مغطّي كل الأعمدة قد نحتاج رجوع للجدول."
+    },
+    {
+      "id": 82,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What is a trade-off of adding many indexes?",
+      "options": [
+        "All queries become faster",
+        "Eliminates backups",
+        "Writes and storage overhead",
+        "No effect on writes"
+      ],
+      "answer": 2,
+      "why": "كل Index إضافية بتاخد Storage وبتحتاج تحديث وقت INSERT وUPDATE وDELETE؛ مش كل Index مفيدة لكل Workload.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "أي Index جديد له تكلفة على الكتابة والتخزين."
+    },
+    {
+      "id": 83,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What can stale statistics cause?",
+      "options": [
+        "Poor cardinality estimates and plans",
+        "Lost transactions",
+        "Disabled primary keys",
+        "Incorrect query results necessarily"
+      ],
+      "answer": 0,
+      "why": "الـOptimizer بيعتمد على Statistics لتقدير Cardinality، ولو التقديرات غلط ممكن يختار Execution Plan سيئة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الـ Optimizer بيعتمد على تقدير عدد الصفوف."
+    },
+    {
+      "id": 84,
+      "category": "الفهارس وخطط التنفيذ",
+      "q": "What is a filtered index?",
+      "options": [
+        "Index for a subset of rows",
+        "Index that hides columns",
+        "Index on all tables",
+        "Index on a view only"
+      ],
+      "answer": 0,
+      "why": "هي Index على جزء محدد من الصفوف بشرط Filter، مفيدة مثلًا للـActive Orders لو نسبتهم صغيرة مقارنة بباقي الجدول.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "مش كل الـ Indexes لازم تشمل كل صفوف الجدول."
+    }
+  ]
+}

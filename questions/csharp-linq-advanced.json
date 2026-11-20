@@ -1,0 +1,237 @@
+{
+  "category": "C# المتقدم وLINQ",
+  "questions": [
+    {
+      "id": 13,
+      "category": "C# المتقدم وLINQ",
+      "q": "What does a deferred LINQ Where query observe when enumerated after the source list changes?",
+      "options": [
+        "Compilation error",
+        "Original snapshot",
+        "Updated source",
+        "Always empty"
+      ],
+      "answer": 2,
+      "why": "Where بتستخدم Deferred Execution؛ الاستعلام بيتنفذ لما تعدّده، وبالتالي هيقرأ حالة الـList وقت التعداد، مش وقت تعريف الـQuery.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "حدّد إمتى الاستعلام بيتنفّذ فعلًا.",
+      "code": {
+        "prompt": "Which values does the query use when it is enumerated?",
+        "lang": "C#",
+        "code": "var list = new List<int> { 1, 2, 3 };\nvar query = list.Where(x => x > 1);\nlist.Add(4);\nforeach (var x in query) Console.Write(x);"
+      }
+    },
+    {
+      "id": 14,
+      "category": "C# المتقدم وLINQ",
+      "q": "Which operation materializes a LINQ sequence?",
+      "options": [
+        "ToList",
+        "OrderBy",
+        "Where",
+        "Select"
+      ],
+      "answer": 0,
+      "why": "ToList بتعمل Enumeration حالًا وتخزّن النتائج. أما Where وSelect وOrderBy فغالبًا بيفضلوا Deferred لحد التعداد.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فرّق بين تكوين استعلام وبين تحويل نتيجته لمجموعة فورية."
+    },
+    {
+      "id": 15,
+      "category": "C# المتقدم وLINQ",
+      "q": "What does IEnumerable<T> mainly describe?",
+      "options": [
+        "Sequence enumeration",
+        "Async disposal",
+        "Thread scheduling",
+        "SQL translation"
+      ],
+      "answer": 0,
+      "why": "IEnumerable<T> بتوفر إمكانية المرور على عناصر Sequence. أما IQueryable<T> فبتضيف Expression Tree ومزوّد يقدر يترجم الاستعلام زي EF Core.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فكّر في فكرة المرور على عناصر مجموعة واحدة تلو التانية."
+    },
+    {
+      "id": 16,
+      "category": "C# المتقدم وLINQ",
+      "q": "What is the result of Enumerable.Empty<int>().First()?",
+      "options": [
+        "0",
+        "null",
+        "InvalidOperationException",
+        "-1"
+      ],
+      "answer": 2,
+      "why": "First() لازم يلاقي عنصر؛ لو الـSequence فاضية بيرمي InvalidOperationException. لو محتاج القيمة الافتراضية استخدم FirstOrDefault().",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "hint": "في فرق بين عنصر مفقود وقيمة افتراضية.",
+      "code": {
+        "prompt": "What happens when this code runs?",
+        "lang": "C#",
+        "code": "var value = Enumerable.Empty<int>().First();"
+      }
+    },
+    {
+      "id": 17,
+      "category": "C# المتقدم وLINQ",
+      "q": "What is the result of Enumerable.Empty<int>().FirstOrDefault()?",
+      "options": [
+        "-1",
+        "0",
+        "null",
+        "Exception"
+      ],
+      "answer": 1,
+      "why": "FirstOrDefault بيرجع default(T) لو مفيش عناصر. وبالنسبة لـint القيمة الافتراضية هي 0.",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "hint": "راجع الفرق بين First وFirstOrDefault مع قائمة فاضية.",
+      "code": {
+        "prompt": "What value does this produce?",
+        "lang": "C#",
+        "code": "var value = Enumerable.Empty<int>().FirstOrDefault();"
+      }
+    },
+    {
+      "id": 18,
+      "category": "C# المتقدم وLINQ",
+      "q": "A closure captures a local variable then the variable changes before invocation. What does it usually read?",
+      "options": [
+        "Always null",
+        "Compilation error",
+        "Original value",
+        "Latest value"
+      ],
+      "answer": 3,
+      "why": "Closure بتحتفظ بإمكانية الوصول للمتغير نفسه، مش Snapshot من قيمته لحظة إنشاء الـLambda.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "فكّر هل الـ Lambda شايفة المتغير ولا نسخة قديمة من قيمته.",
+      "code": {
+        "prompt": "Which price will the lambda print?",
+        "lang": "C#",
+        "code": "int price = 100;\nAction print = () => Console.Write(price);\nprice = 250;\nprint();"
+      }
+    },
+    {
+      "id": 19,
+      "category": "C# المتقدم وLINQ",
+      "q": "In a for loop, three lambdas capture the same i and run after the loop ends at i=3. What do they print?",
+      "options": [
+        "123",
+        "333",
+        "000",
+        "012"
+      ],
+      "answer": 1,
+      "why": "كل الـLambdas هنا شايفة نفس متغير i الخاص بالـfor، وقيمته بعد انتهاء الحلقة أصبحت 3؛ لذلك الناتج 333.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "اتتبع قيمة متغير الحلقة وقت تنفيذ الـ Lambdas.",
+      "code": {
+        "prompt": "What does this code print?",
+        "lang": "C#",
+        "code": "var actions = new List<Action>();\nfor (int i = 0; i < 3; i++)\n    actions.Add(() => Console.Write(i));\nforeach (var action in actions) action();"
+      }
+    },
+    {
+      "id": 20,
+      "category": "C# المتقدم وLINQ",
+      "q": "For a plain class without overloaded ==, what does == compare?",
+      "options": [
+        "All properties",
+        "Reference identity",
+        "Hash codes",
+        "Serialized JSON"
+      ],
+      "answer": 1,
+      "why": "الـ== الافتراضي للـReference Types العادية بيقارن هل المتغيرين بيشاوروا على نفس الـObject، مش تساوي محتوى الخصائص.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "مش كل أنواع C# بتقارن بنفس الطريقة.",
+      "code": {
+        "prompt": "What does a == b compare here?",
+        "lang": "C#",
+        "code": "var a = new Product { Id = 10 };\nvar b = new Product { Id = 10 };\nConsole.WriteLine(a == b);"
+      }
+    },
+    {
+      "id": 21,
+      "category": "C# المتقدم وLINQ",
+      "q": "Overriding Equals without overriding GetHashCode risks what?",
+      "options": [
+        "Memory leak always",
+        "Compile failure",
+        "Broken hash-based collection behavior",
+        "Deadlock"
+      ],
+      "answer": 2,
+      "why": "العقد الأساسي للمساواة بيقول إن الـObjects المتساوية لازم يكون ليها نفس الـHash Code؛ كسره يسبب سلوك غير متوقع في HashSet وDictionary.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "مجموعات الـ Hash محتاجة تعريفًا متسقًا للمساواة."
+    },
+    {
+      "id": 22,
+      "category": "C# المتقدم وLINQ",
+      "q": "Which statement about record class equality is generally true?",
+      "options": [
+        "Not comparable",
+        "Uses JSON",
+        "Always reference-only",
+        "Value-based by synthesized members"
+      ],
+      "answer": 3,
+      "why": "الـrecord class بيولّد Value-based Equality مبنية على الأعضاء المشاركة في المساواة تلقائيًا، إلا لو خصّصت السلوك.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "الـ record له سلوك مقارنة مختلف عن class التقليدية."
+    },
+    {
+      "id": 23,
+      "category": "C# المتقدم وLINQ",
+      "q": "What does using var dispose at?",
+      "options": [
+        "End of containing scope",
+        "Only on GC",
+        "Application shutdown",
+        "Immediately after declaration"
+      ],
+      "answer": 0,
+      "why": "using var بتخلي Dispose تحصل عند نهاية الـScope الحالي، حتى لو خرجت منه بسبب Exception؛ مش فور إنشاء المتغير.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "حدّد نهاية الـ Scope اللي اتعرّف فيه المتغير.",
+      "code": {
+        "prompt": "At what point is stream disposed?",
+        "lang": "C#",
+        "code": "using var stream = File.OpenRead(path);\n// ... extra work here\nConsole.WriteLine(\"Done\");"
+      }
+    },
+    {
+      "id": 24,
+      "category": "C# المتقدم وLINQ",
+      "q": "What interface supports await using?",
+      "options": [
+        "IEnumerable",
+        "IDisposable only",
+        "IAsyncDisposable",
+        "ICloneable"
+      ],
+      "answer": 2,
+      "why": "await using بتستدعي DisposeAsync وبتستنى اكتمالها؛ النوع لازم يدعم IAsyncDisposable.",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "hint": "عملية التنظيف نفسها ممكن تكون غير متزامنة.",
+      "code": {
+        "prompt": "Which interface must AsyncResource implement?",
+        "lang": "C#",
+        "code": "await using var resource = new AsyncResource();"
+      }
+    }
+  ]
+}

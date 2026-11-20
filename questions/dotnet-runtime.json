@@ -1,0 +1,212 @@
+{
+  "category": "التزامن والأداء",
+  "questions": [
+    {
+      "id": 25,
+      "category": "التزامن والأداء",
+      "q": "What does async without await typically cause?",
+      "options": [
+        "New thread",
+        "Automatic parallelism",
+        "Synchronous execution plus warning",
+        "Deadlock always"
+      ],
+      "answer": 2,
+      "why": "غالبًا جسم الـMethod هيتنفذ بشكل متزامن، والـCompiler هيطلع Warning إن مفيش await. وجود async لوحده مش بينشئ Thread جديد.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "كلمة async وحدها مش معناه تشغيل متوازٍ."
+    },
+    {
+      "id": 26,
+      "category": "التزامن والأداء",
+      "q": "What does Task.WhenAll do?",
+      "options": [
+        "Cancels all tasks",
+        "Blocks by default",
+        "Runs all work on one thread",
+        "Waits for all supplied tasks"
+      ],
+      "answer": 3,
+      "why": "WhenAll بترجع Task تكتمل لما كل الـTasks المعطاة تنتهي. هي مش اللي بتبدأ تنفيذ الـTasks من الأصل.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فرّق بين إنشاء الـ Tasks وانتظار اكتمالها.",
+      "code": {
+        "prompt": "What does the await statement do?",
+        "lang": "C#",
+        "code": "await Task.WhenAll(taskA, taskB, taskC);"
+      }
+    },
+    {
+      "id": 27,
+      "category": "التزامن والأداء",
+      "q": "Best choice for I/O-bound HTTP requests in ASP.NET Core?",
+      "options": [
+        "Async I/O with await",
+        "Task.Run around synchronous I/O",
+        "SpinWait",
+        "Thread.Sleep"
+      ],
+      "answer": 0,
+      "why": "استخدم Async I/O مع await عشان الـThread ما يفضلش واقف مستني الشبكة. Task.Run فوق I/O متزامن مش بديل سليم.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "في عمليات الشبكة، المهم ما تعطلش Thread أثناء الانتظار."
+    },
+    {
+      "id": 28,
+      "category": "التزامن والأداء",
+      "q": "What is CancellationToken for?",
+      "options": [
+        "Force-kill threads",
+        "Cooperative cancellation",
+        "Transaction rollback automatically",
+        "GC tuning"
+      ],
+      "answer": 1,
+      "why": "الإلغاء في .NET تعاوني (Cooperative). العملية لازم تستقبل الـToken وتراقبه وتوقف نفسها بطريقة سليمة.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "الإلغاء في .NET بيحتاج تعاون الكود المستقبِل للإشارة."
+    },
+    {
+      "id": 29,
+      "category": "التزامن والأداء",
+      "q": "What does ConfigureAwait(false) primarily control?",
+      "options": [
+        "Timeout",
+        "CPU affinity",
+        "Synchronization-context capture for continuation",
+        "Task creation"
+      ],
+      "answer": 2,
+      "why": "بيطلب عدم محاولة العودة للـSynchronizationContext الملتقط، لما يكون فيه Context؛ مش مسؤول عن Timeout أو إنشاء Tasks.",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "hint": "اسأل نفسك الـ Continuation بيرجع لأي سياق تنفيذ."
+    },
+    {
+      "id": 30,
+      "category": "التزامن والأداء",
+      "q": "What is a race condition?",
+      "options": [
+        "Slow SQL",
+        "Exception handling",
+        "Guaranteed deadlock",
+        "Result depends on interleaving of concurrent operations"
+      ],
+      "answer": 3,
+      "why": "لما كذا تنفيذ يتعامل مع Shared State بدون تنسيق كافي، والنتيجة تختلف حسب توقيت وتداخل العمليات.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الترتيب اللي بتتنفذ بيه العمليات المتزامنة مهم."
+    },
+    {
+      "id": 31,
+      "category": "التزامن والأداء",
+      "q": "Which operation safely increments a shared int across threads?",
+      "options": [
+        "Interlocked.Increment(ref count)",
+        "count = count + 1",
+        "volatile count++",
+        "count++"
+      ],
+      "answer": 0,
+      "why": "Interlocked.Increment بيعمل زيادة Atomic على قيمة int مشتركة. كتابة count++ لوحدها عبارة عن خطوات ومش Atomic.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "التعديل المشترك محتاج عملية آمنة من التداخل.",
+      "code": {
+        "prompt": "Which operation should update count safely across threads?",
+        "lang": "C#",
+        "code": "int count = 0;\n// Multiple threads update count"
+      }
+    },
+    {
+      "id": 32,
+      "category": "التزامن والأداء",
+      "q": "What is a deadlock?",
+      "options": [
+        "Two tasks complete early",
+        "Circular waiting prevents progress",
+        "High CPU alone",
+        "A retry policy"
+      ],
+      "answer": 1,
+      "why": "الـDeadlock بيحصل لما أطراف تفضل مستنية موارد ماسكاها أطراف تانية بشكل دائري، فمحدش يقدر يتقدم.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "فكّر في اعتماد كل طرف على مورد ماسكه الطرف التاني."
+    },
+    {
+      "id": 33,
+      "category": "التزامن والأداء",
+      "q": "What does SemaphoreSlim(3) limit?",
+      "options": [
+        "Three database tables",
+        "Three CPU cores",
+        "Up to three concurrent entrants",
+        "Three processes always"
+      ],
+      "answer": 2,
+      "why": "بتسمح لحد أقصى 3 عمليات تدخل الجزء المحمي في نفس الوقت، بشرط استخدام Wait/Release بشكل سليم.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "فرّق بين عدد المسموح لهم بالدخول وعدد الـ CPU Cores."
+    },
+    {
+      "id": 34,
+      "category": "التزامن والأداء",
+      "q": "Which is a risk of calling .Result on async work?",
+      "options": [
+        "More throughput",
+        "Guaranteed exception",
+        "Automatic cancellation",
+        "Blocking and possible deadlocks in some contexts"
+      ],
+      "answer": 3,
+      "why": "الـ.Result بتحجز الـThread وهي مستنية، وممكن تعمل Deadlock في بيئات فيها Captured SynchronizationContext. في ASP.NET Core المعتاد الخطر الشائع هو Blocking وThread starvation.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الحجب المتزامن والانتظار غير المتزامن مختلفين.",
+      "code": {
+        "prompt": "What is the main risk of this call?",
+        "lang": "C#",
+        "code": "var result = GetOrdersAsync().Result;"
+      }
+    },
+    {
+      "id": 35,
+      "category": "التزامن والأداء",
+      "q": "What is the usual purpose of ArrayPool<T>?",
+      "options": [
+        "Reduce repeated array allocations",
+        "Encrypt arrays",
+        "Sort arrays",
+        "Persist arrays"
+      ],
+      "answer": 0,
+      "why": "بتستعير Arrays مؤقتة بدل ما تعمل Allocations متكررة. مهم ترجع الـArray للـPool وتنتبه لأي بيانات حساسة متبقية.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "تكرار تخصيص الذاكرة ممكن يضغط على GC."
+    },
+    {
+      "id": 36,
+      "category": "التزامن والأداء",
+      "q": "Which measure best validates a performance improvement?",
+      "options": [
+        "Code length",
+        "Representative benchmark and profiling",
+        "Number of comments",
+        "Higher timeout"
+      ],
+      "answer": 1,
+      "why": "قِس نفس سيناريو العمل الحقيقي قبل وبعد، واستخدم Profiling وMetrics لتحديد عنق الزجاجة؛ التخمين أو زيادة Timeout مش دليل.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الأداء بيتقاس على سيناريو حقيقي، مش بالشعور."
+    }
+  ]
+}

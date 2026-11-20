@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "total": 120,
+  "updated": "2026-11-20",
+  "files": [
+    {
+      "path": "questions/csharp-foundations.json",
+      "category": "أساسيات C#",
+      "count": 12
+    },
+    {
+      "path": "questions/csharp-linq-advanced.json",
+      "category": "C# المتقدم وLINQ",
+      "count": 12
+    },
+    {
+      "path": "questions/dotnet-runtime.json",
+      "category": "التزامن والأداء",
+      "count": 12
+    },
+    {
+      "path": "questions/aspnet-apis.json",
+      "category": "ASP.NET Core وAPIs",
+      "count": 12
+    },
+    {
+      "path": "questions/efcore-data.json",
+      "category": "الوصول للبيانات",
+      "count": 12
+    },
+    {
+      "path": "questions/sql-foundations.json",
+      "category": "استعلامات SQL Server",
+      "count": 12
+    },
+    {
+      "path": "questions/sql-performance.json",
+      "category": "الفهارس وخطط التنفيذ",
+      "count": 12
+    },
+    {
+      "path": "questions/sql-scenarios.json",
+      "category": "Transactions والتزامن",
+      "count": 12
+    },
+    {
+      "path": "questions/react-ui.json",
+      "category": "React والواجهات",
+      "count": 12
+    },
+    {
+      "path": "questions/security-git-delivery.json",
+      "category": "الأمان وGit والتسليم",
+      "count": 12
+    }
+  ]
+}

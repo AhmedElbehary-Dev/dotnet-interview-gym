@@ -1,0 +1,222 @@
+{
+  "category": "استعلامات SQL Server",
+  "questions": [
+    {
+      "id": 61,
+      "category": "استعلامات SQL Server",
+      "q": "Which predicate is typically SARGable on OrderDate?",
+      "options": [
+        "FORMAT(OrderDate,'yyyy')='2026'",
+        "YEAR(OrderDate)=2026",
+        "OrderDate >= '20260101' AND OrderDate < '20270101'",
+        "CONVERT(date,OrderDate)='20260101'"
+      ],
+      "answer": 2,
+      "why": "لما تقارن العمود مباشرة بنطاق تاريخ، الشرط غالبًا يبقى SARGable. واستخدام حد نهاية حصري بيشمل كل أوقات 31 ديسمبر بدون مشاكل الكسور الزمنية.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "اسأل إذا كان الـ Index يقدر يستخدم شرط التاريخ مباشرة."
+    },
+    {
+      "id": 62,
+      "category": "استعلامات SQL Server",
+      "q": "Which clause filters grouped aggregate results?",
+      "options": [
+        "ORDER BY",
+        "JOIN",
+        "WHERE",
+        "HAVING"
+      ],
+      "answer": 3,
+      "why": "HAVING بتفلتر الـGroups بعد عملية التجميع، أما WHERE بتفلتر الصفوف قبل التجميع.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "WHERE وHAVING بيشتغلوا في مراحل مختلفة من التجميع.",
+      "code": {
+        "prompt": "How should you filter groups by their aggregate count?",
+        "lang": "SQL",
+        "code": "SELECT CustomerId, COUNT(*) AS Total\nFROM Orders\nGROUP BY CustomerId\n-- Filter customers with 5+ orders"
+      }
+    },
+    {
+      "id": 63,
+      "category": "استعلامات SQL Server",
+      "q": "What does LEFT JOIN preserve?",
+      "options": [
+        "All left-side rows",
+        "All right-side rows",
+        "Only unmatched rows",
+        "Only matched rows"
+      ],
+      "answer": 0,
+      "why": "كل Rows الجدول اللي على الشمال بتظهر. لو مفيش Match، أعمدة الجدول اللي على اليمين هتكون NULL.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "الـ JOIN بيربط الصفوف وفق شرط، ونوعه يحدد غير المتطابق."
+    },
+    {
+      "id": 64,
+      "category": "استعلامات SQL Server",
+      "q": "What does COUNT(*) count?",
+      "options": [
+        "Only non-null values of one column",
+        "All qualifying rows",
+        "Distinct rows only",
+        "Columns"
+      ],
+      "answer": 1,
+      "why": "COUNT(*) بتحسب عدد الصفوف المطابقة للشروط حتى لو أعمدة فيها NULL. مختلفة عن COUNT(SomeColumn) اللي بتتجاهل Null في العمود ده.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فرّق بين عدّ الصفوف وعدّ قيمة في عمود."
+    },
+    {
+      "id": 65,
+      "category": "استعلامات SQL Server",
+      "q": "What does COUNT(SomeNullableColumn) exclude?",
+      "options": [
+        "Negative values",
+        "Duplicates",
+        "Rows where that column is NULL",
+        "Zero values"
+      ],
+      "answer": 2,
+      "why": "COUNT(Column) بتعد القيم غير الـNULL فقط. الصفر والقيم المكررة بيتحسبوا عادي.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "وجود NULL ممكن يغيّر نتيجة التجميع."
+    },
+    {
+      "id": 66,
+      "category": "استعلامات SQL Server",
+      "q": "What does ROW_NUMBER() OVER(PARTITION BY CustomerId ORDER BY OrderDate DESC) do?",
+      "options": [
+        "Deletes duplicates",
+        "Groups into one row",
+        "Global row count",
+        "Numbers rows per customer ordered by date"
+      ],
+      "answer": 3,
+      "why": "بترقّم الطلبات من جديد لكل عميل، من الأحدث للأقدم حسب OrderDate. لو التواريخ متساوية، أضف Tie-breaker عشان ترتيب ثابت.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "فكّر في ترقيم الصفوف داخل كل مجموعة بشكل مستقل.",
+      "code": {
+        "prompt": "What does this ROW_NUMBER expression produce?",
+        "lang": "SQL",
+        "code": "ROW_NUMBER() OVER (\n  PARTITION BY CustomerId\n  ORDER BY OrderDate DESC\n)"
+      }
+    },
+    {
+      "id": 67,
+      "category": "استعلامات SQL Server",
+      "q": "Which is safer for checking existence?",
+      "options": [
+        "EXISTS subquery",
+        "SELECT * into memory",
+        "GROUP BY all columns",
+        "SELECT COUNT(*) then compare"
+      ],
+      "answer": 0,
+      "why": "EXISTS بتعبر عن سؤال الوجود مباشرة. والـOptimizer غالبًا يقدر ينفذها بكفاءة بدون حساب عدد كل الصفوف.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "لو عايز تعرف هل فيه صف، هل محتاج تجيب كل البيانات؟"
+    },
+    {
+      "id": 68,
+      "category": "استعلامات SQL Server",
+      "q": "What is the effect of WHERE x = NULL in SQL?",
+      "options": [
+        "Matches NULL",
+        "Always TRUE for NULL",
+        "UNKNOWN, so rows are not selected",
+        "Throws always"
+      ],
+      "answer": 2,
+      "why": "المقارنة بـNULL باستخدام = بتدي UNKNOWN مش TRUE، فمش هترجع صفوف. الصح تستخدم IS NULL.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "المقارنة مع NULL في SQL لها منطق خاص.",
+      "code": {
+        "prompt": "What is the problem with this predicate?",
+        "lang": "SQL",
+        "code": "SELECT * FROM Orders WHERE Status = NULL;"
+      }
+    },
+    {
+      "id": 69,
+      "category": "استعلامات SQL Server",
+      "q": "Which query gets customers with no orders?",
+      "options": [
+        "RIGHT JOIN only",
+        "INNER JOIN Orders",
+        "LEFT JOIN Orders ... WHERE Orders.Id IS NULL",
+        "CROSS JOIN Orders"
+      ],
+      "answer": 2,
+      "why": "اعمل LEFT JOIN من Customers لـOrders وبعدها اختار الصفوف اللي Orders.Id فيها IS NULL. ده Anti-join شائع؛ NOT EXISTS بديل ممتاز.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "الـ Outer Join مفيد لما تكون بتدور على الغائب."
+    },
+    {
+      "id": 70,
+      "category": "استعلامات SQL Server",
+      "q": "What does UNION do by default?",
+      "options": [
+        "Joins columns",
+        "Sorts by first column only",
+        "Keeps duplicates",
+        "Removes duplicate rows"
+      ],
+      "answer": 3,
+      "why": "UNION بتشيل الصفوف المكررة من النتيجة، أما UNION ALL فبتحافظ عليها وبتوفر عادة تكلفة إزالة التكرار.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "راجع الفرق بين دمج النتائج مع إزالة التكرار أو بدونه."
+    },
+    {
+      "id": 71,
+      "category": "استعلامات SQL Server",
+      "q": "Which SQL construct is useful for top order per customer?",
+      "options": [
+        "COUNT(*) alone",
+        "CROSS JOIN",
+        "DISTINCT CustomerId, OrderDate",
+        "ROW_NUMBER with partition and rn=1"
+      ],
+      "answer": 3,
+      "why": "تقدر تستخدم ROW_NUMBER مع PARTITION BY CustomerId وترتيب OrderDate DESC، وبعدها تختار rn = 1؛ ثبّت الترتيب بـId لو لزم.",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "hint": "اختيار آخر سجل لكل مجموعة محتاج ترتيب داخل المجموعة.",
+      "code": {
+        "prompt": "What SQL technique helps select the latest order per customer?",
+        "lang": "SQL",
+        "code": "ROW_NUMBER() OVER (\n  PARTITION BY CustomerId\n  ORDER BY OrderDate DESC, Id DESC\n) AS rn"
+      }
+    },
+    {
+      "id": 72,
+      "category": "استعلامات SQL Server",
+      "q": "What does TOP (10) without ORDER BY guarantee?",
+      "options": [
+        "Newest ten",
+        "Random ten uniformly",
+        "No deterministic ordering",
+        "Largest ten"
+      ],
+      "answer": 2,
+      "why": "مفيش ترتيب مضمون بدون ORDER BY. الصفوف العشرة ممكن تتغير بسبب اختلاف Execution Plan أو البيانات.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "TOP لوحده مش بيعرّف مين الأول.",
+      "code": {
+        "prompt": "What ordering does this query guarantee?",
+        "lang": "SQL",
+        "code": "SELECT TOP (10) * FROM Orders;"
+      }
+    }
+  ]
+}

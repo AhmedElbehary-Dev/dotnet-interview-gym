@@ -1,0 +1,202 @@
+{
+  "category": "Transactions والتزامن",
+  "questions": [
+    {
+      "id": 85,
+      "category": "Transactions والتزامن",
+      "q": "Two transactions update tables in opposite order and deadlock. Best prevention?",
+      "options": [
+        "Increase command timeout only",
+        "Use NOLOCK everywhere",
+        "Consistent resource order and bounded retry",
+        "Disable all indexes"
+      ],
+      "answer": 2,
+      "why": "وحّد ترتيب الوصول للموارد وقلّل زمن الـTransaction. لو حصل Deadlock، جرّب Retry محدود وآمن للـTransaction كلها بعد Error 1205.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "راقب ترتيب طلب الأقفال عند الـ Transactions المختلفة.",
+      "code": {
+        "prompt": "What is the practical way to reduce deadlocks in this scenario?",
+        "lang": "SQL",
+        "code": "-- T1: UPDATE A, then UPDATE B\n-- T2: UPDATE B, then UPDATE A"
+      }
+    },
+    {
+      "id": 86,
+      "category": "Transactions والتزامن",
+      "q": "Which SQL Server error number commonly signals a deadlock victim?",
+      "options": [
+        "2601",
+        "547",
+        "1205",
+        "404"
+      ],
+      "answer": 2,
+      "why": "Error 1205 معناها إن الـTransaction اتلغت بسبب Deadlock. لازم التطبيق يتعامل مع الفشل ويعيد العملية لو آمن.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "الأخطاء في SQL Server لها أرقام محددة للتشخيص."
+    },
+    {
+      "id": 87,
+      "category": "Transactions والتزامن",
+      "q": "What is a dirty read?",
+      "options": [
+        "Reading only cached data",
+        "Reading a deleted table",
+        "Reading an index",
+        "Reading uncommitted data"
+      ],
+      "answer": 3,
+      "why": "إن Transaction تقرأ تغييرات Transaction ثانية لسه ماعملتش Commit؛ وقد يتم Rollback للتغييرات بعد كده.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فرّق بين البيانات المؤكدة والبيانات اللي لسه في Transaction."
+    },
+    {
+      "id": 88,
+      "category": "Transactions والتزامن",
+      "q": "What is a lost update?",
+      "options": [
+        "A transaction commits twice",
+        "One concurrent write overwrites another unexpectedly",
+        "A query times out",
+        "A table has no index"
+      ],
+      "answer": 1,
+      "why": "لما عمليتين يقرؤوا نفس البيانات ويعدلوها، وبعدين واحدة تكتب فوق تعديل الثانية بدون Concurrency Control.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "اسأل: هل تحديث متزامن ممكن يضيع تعديل تحديث تاني؟"
+    },
+    {
+      "id": 89,
+      "category": "Transactions والتزامن",
+      "q": "What does READ COMMITTED generally prevent?",
+      "options": [
+        "All lost updates",
+        "All phantoms",
+        "Dirty reads",
+        "All deadlocks"
+      ],
+      "answer": 2,
+      "why": "READ COMMITTED بتمنع قراءة بيانات غير معتمدة (Dirty Reads)، لكنها مش بتمنع كل Lost Updates أو Phantom Reads.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "مستوى العزل بيحدد أنواع القراءات غير المسموحة."
+    },
+    {
+      "id": 90,
+      "category": "Transactions والتزامن",
+      "q": "What does snapshot isolation use to provide consistent reads?",
+      "options": [
+        "NOLOCK",
+        "Application cache",
+        "Row versioning",
+        "Exclusive table locks for every read"
+      ],
+      "answer": 2,
+      "why": "بتستخدم نسخ من الصفوف (Row Versioning) عشان الـTransaction تشوف Snapshot متسقة من البيانات التي كانت Committed عند بدايتها.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "في آليات بتوفر قراءة متسقة من غير حبس كل كاتب."
+    },
+    {
+      "id": 91,
+      "category": "Transactions والتزامن",
+      "q": "Why keep transactions short?",
+      "options": [
+        "Reduce lock duration and contention",
+        "To skip logging",
+        "To force scans",
+        "To avoid atomicity"
+      ],
+      "answer": 0,
+      "why": "كل ما تقصر، غالبًا تقل فترة الاحتفاظ بالـLocks والـBlocking وفرص الـDeadlock؛ مش معناها تتخلى عن Atomicity.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "كل ما طوّلت الـ Transaction زاد وقت حجز الموارد."
+    },
+    {
+      "id": 92,
+      "category": "Transactions والتزامن",
+      "q": "What is an optimistic concurrency check?",
+      "options": [
+        "Blind overwrite",
+        "Check rowversion or original value before update",
+        "Lock every table",
+        "Disable retries"
+      ],
+      "answer": 1,
+      "why": "اقرأ RowVersion أو القيمة الأصلية، وبعدين أثناء الـUpdate اتأكد إنها لسه زي ما هي؛ لو اتغيرت عالج التعارض بدل كتابة صامتة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "اسأل هل الصف اتغير بعد ما قرأته وقبل ما تحدّثه."
+    },
+    {
+      "id": 93,
+      "category": "Transactions والتزامن",
+      "q": "Why must deadlock retries be bounded?",
+      "options": [
+        "To disable logging",
+        "SQL Server requires exactly 100",
+        "Avoid endless loops and overload",
+        "Because transactions cannot retry"
+      ],
+      "answer": 2,
+      "why": "عشان ما تدخلش في Loop لا نهائية وتضغط على الـDB أكتر. استخدم عدد محاولات صغير مع Backoff وتأكد إن إعادة العملية آمنة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "إعادة المحاولة لازم تراعي ضغط النظام وإمكانية التكرار."
+    },
+    {
+      "id": 94,
+      "category": "Transactions والتزامن",
+      "q": "What is the safest default approach to moving money between accounts?",
+      "options": [
+        "NOLOCK for both",
+        "Cache-only changes",
+        "Two independent UPDATEs without transaction",
+        "One transaction with appropriate concurrency control"
+      ],
+      "answer": 3,
+      "why": "الخصم والإضافة لازم يحصلوا داخل Transaction واحدة مع Concurrency Control مناسب، عشان يا إما الاتنين ينجحوا يا إما الاتنين يتراجعوا.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "حركة مالية من خطوتين محتاجة حدود عملية واضحة."
+    },
+    {
+      "id": 95,
+      "category": "Transactions والتزامن",
+      "q": "What does ROLLBACK do?",
+      "options": [
+        "Undoes changes in the current transaction",
+        "Drops table",
+        "Rebuilds index",
+        "Commits partial data"
+      ],
+      "answer": 0,
+      "why": "بتلغي التغييرات غير المعتمدة داخل الـTransaction الحالية وترجع الحالة المتسقة، مش بتعمل Commit جزئي.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "راجع معنى إلغاء تغييرات Transaction غير مكتملة."
+    },
+    {
+      "id": 96,
+      "category": "Transactions والتزامن",
+      "q": "What is a phantom read?",
+      "options": [
+        "Reading uncommitted row",
+        "New qualifying rows appear between repeated reads",
+        "Null value appears",
+        "Duplicate index"
+      ],
+      "answer": 1,
+      "why": "داخل Transaction، تعيد نفس Query بشرط معين فتلاقي صفوف جديدة/مختفية مطابقة للشرط بسبب معاملات متزامنة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "فرق بين تغيّر قيمة صف وظهور صفوف جديدة مطابقة."
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "category": "الأمان وGit والتسليم",
+  "questions": [
+    {
+      "id": 109,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is a primary defense against SQL injection?",
+      "options": [
+        "More indexes",
+        "String concatenation",
+        "Parameterized queries",
+        "Escaping only client-side"
+      ],
+      "answer": 2,
+      "why": "استخدم Parameterized Queries بدل تركيب SQL Strings من مدخلات المستخدم. والتحقق من القيم لوحده مش بديل عن الـParameters.",
+      "difficulty": "أساسي",
+      "skill": "حل مشكلة",
+      "hint": "افصل قيمة المستخدم عن SQL Command."
+    },
+    {
+      "id": 110,
+      "category": "الأمان وGit والتسليم",
+      "q": "What does HTTPS protect in transit?",
+      "options": [
+        "Authorization automatically",
+        "All business logic",
+        "Confidentiality and integrity of transport",
+        "All stored secrets"
+      ],
+      "answer": 2,
+      "why": "TLS بتحمي سرية وسلامة البيانات أثناء النقل، لكنها مش بديل عن Authentication/Authorization أو تأمين التخزين.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "تأمين الاتصال مش بديل عن قواعد الصلاحيات داخل التطبيق."
+    },
+    {
+      "id": 111,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is the main difference between authentication and authorization?",
+      "options": [
+        "Identity verification vs permission checking",
+        "Caching vs logging",
+        "Frontend vs backend",
+        "They are identical"
+      ],
+      "answer": 0,
+      "why": "Authentication معناها نعرف مين المستخدم. Authorization معناها نحدد هو مسموح له يعمل إيه بعد تحديد هويته.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فرق بين إثبات هوية المستخدم وتحديد ما يُسمح له به."
+    },
+    {
+      "id": 112,
+      "category": "الأمان وGit والتسليم",
+      "q": "A bad commit was pushed to shared main. Safest common undo?",
+      "options": [
+        "git reset --hard then force push",
+        "git revert <sha> then push",
+        "Delete remote branch",
+        "Edit history on everyone’s machine"
+      ],
+      "answer": 1,
+      "why": "git revert بيعمل Commit عكسي يحافظ على تاريخ الـBranch المشترك. reset + force push ممكن يكسر عمل الآخرين.",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "hint": "لو التاريخ مشترك، فكّر في أثر إعادة كتابته على الفريق.",
+      "code": {
+        "prompt": "How should you safely undo the already-pushed commit?",
+        "lang": "Shell",
+        "code": "git log --oneline -5\n# Commit already pushed to main"
+      }
+    },
+    {
+      "id": 113,
+      "category": "الأمان وGit والتسليم",
+      "q": "What does git rebase do?",
+      "options": [
+        "Merges databases",
+        "Replays commits onto a new base",
+        "Deletes repository",
+        "Encrypts commits"
+      ],
+      "answer": 1,
+      "why": "بتعيد تطبيق Commits فوق Base جديد وبالتالي بتعيد كتابة تاريخ Commits. تجنب Rebase على History مشتركة منشورة بدون تنسيق.",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "hint": "راجع معنى نقل سلسلة Commits فوق نقطة بداية جديدة.",
+      "code": {
+        "prompt": "What does this command do?",
+        "lang": "Shell",
+        "code": "git rebase main"
+      }
+    },
+    {
+      "id": 114,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is a merge conflict?",
+      "options": [
+        "Missing package",
+        "SQL deadlock",
+        "Two changes cannot be automatically reconciled",
+        "Git server offline"
+      ],
+      "answer": 2,
+      "why": "لما Git مش تقدر تدمج تغييرات متعارضة بشكل تلقائي، تحتاج تحلها يدويًا وتختبر الناتج.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "Git محتاج تدخّل لما يعجز يدمج تغييرين بنفسه."
+    },
+    {
+      "id": 115,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is a pull request primarily for?",
+      "options": [
+        "Reviewing and integrating proposed changes",
+        "Running production DB",
+        "Creating secrets",
+        "Replacing tests"
+      ],
+      "answer": 0,
+      "why": "بتتيح مراجعة التغييرات والنقاش وتشغيل Automated Checks قبل دمج الكود في الـBranch المستهدف.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "فكّر في مراجعة التغيير قبل دخوله للفرع الأساسي."
+    },
+    {
+      "id": 116,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is a Sprint in Scrum?",
+      "options": [
+        "Unbounded backlog",
+        "Fixed-length iteration to deliver value",
+        "A production outage",
+        "A Git branch"
+      ],
+      "answer": 1,
+      "why": "Sprint فترة زمنية ثابتة (Time-box) لها هدف واضح وفريق بيشتغل خلالها على إنجاز قيمة قابلة للفحص.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "الـ Sprint له نطاق زمني وأهداف متفق عليها."
+    },
+    {
+      "id": 117,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is the Definition of Done?",
+      "options": [
+        "Only demo-ready UI",
+        "Personal opinion after coding",
+        "Shared quality criteria for completed work",
+        "Only merged code"
+      ],
+      "answer": 2,
+      "why": "هي معايير جودة مشتركة لازم تتحقق عشان نعتبر الشغل Done، مثل الاختبارات والمراجعة والتوثيق المطلوب.",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "hint": "اكتمال المهمة محتاج معيار جودة مش مجرد انتهاء كتابة الكود."
+    },
+    {
+      "id": 118,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is a good CI pipeline baseline?",
+      "options": [
+        "Skip failed tests",
+        "Store secrets in repo",
+        "Only deploy",
+        "Build, tests and quality checks"
+      ],
+      "answer": 3,
+      "why": "كل تغيير مهم يمر على Build وAutomated Tests وQuality Checks مناسبة قبل الدمج أو النشر، مش مجرد تشغيل Deploy.",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "hint": "الـ Pipeline المفيد يكشف المشاكل قبل الدمج أو النشر."
+    },
+    {
+      "id": 119,
+      "category": "الأمان وGit والتسليم",
+      "q": "What is a safe production deployment strategy?",
+      "options": [
+        "Health checks, gradual rollout and rollback capability",
+        "Direct edit binaries",
+        "Deploy without monitoring",
+        "No rollback plan"
+      ],
+      "answer": 0,
+      "why": "Health Checks ومراقبة التشغيل وRollout تدريجي وإمكانية Rollback بتقلل أثر الأعطال، بدل النشر المباشر بدون متابعة.",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "hint": "النشر الآمن بيحتاج مراقبة وإمكانية رجوع."
+    },
+    {
+      "id": 120,
+      "category": "الأمان وGit والتسليم",
+      "q": "What should logs avoid containing?",
+      "options": [
+        "Correlation IDs",
+        "Passwords and access tokens",
+        "Error categories",
+        "Request durations"
+      ],
+      "answer": 1,
+      "why": "ما تسجلش Passwords أو Access Tokens أو Secrets. سجّل IDs وأخطاء وأزمنة بشكل آمن، مع إخفاء البيانات الحساسة.",
+      "difficulty": "أساسي",
+      "skill": "حل مشكلة",
+      "hint": "الـ Logs للتشخيص، مش لتخزين أسرار المستخدم."
+    }
+  ]
+}
