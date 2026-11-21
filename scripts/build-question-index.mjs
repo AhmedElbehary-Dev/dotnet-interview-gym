@@ -38,12 +38,12 @@ export function questionFingerprint(q) {
   return createHash('sha256').update(input).digest('hex');
 }
 
-export function buildQuestionIndex(root = process.cwd()) {
-  const manifest = readJson(root, manifestPath);
+export function buildQuestionIndex(root = process.cwd(), read = path => readJson(root, path)) {
+  const manifest = read(manifestPath);
   if (manifest?.schemaVersion !== 1 || !count(manifest.total) || !Array.isArray(manifest.files)) {
     throw new Error(`${manifestPath}: invalid manifest`);
   }
-  const taxonomy = readJson(root, taxonomyPath);
+  const taxonomy = read(taxonomyPath);
   if (taxonomy?.schemaVersion !== 1 || !isRecord(taxonomy.concepts) ||
       Object.entries(taxonomy.concepts).some(([id, label]) => !conceptPattern.test(id) || !nonempty(label))) {
     throw new Error(`${taxonomyPath}: invalid topic taxonomy`);
@@ -51,7 +51,7 @@ export function buildQuestionIndex(root = process.cwd()) {
 
   let mapping = {};
   try {
-    const document = readJson(root, mappingPath);
+    const document = read(mappingPath);
     if (document?.schemaVersion !== 1 || !isRecord(document.questions) ||
         Object.values(document.questions).some(id => typeof id !== 'string' || !Object.hasOwn(taxonomy.concepts, id))) {
       throw new Error(`${mappingPath}: invalid concept mapping`);
@@ -74,7 +74,7 @@ export function buildQuestionIndex(root = process.cwd()) {
     const { path: source } = entry;
     paths.add(source);
     categories.add(entry.category);
-    const shard = readJson(root, source);
+    const shard = read(source);
     if (!Array.isArray(shard?.questions)) throw new Error(`${source}: expected questions array`);
     if (shard.questions.length !== entry.count) throw new Error(`${source}: manifest count mismatch`);
     for (const q of shard.questions) {
@@ -120,8 +120,12 @@ export function buildQuestionIndex(root = process.cwd()) {
   return { schemaVersion: 1, categories: [...categories].sort(compareText), questions };
 }
 
+export function isMain(url) {
+  return process.argv[1] && fileURLToPath(url) === resolve(process.argv[1]);
+}
+
 export function runArtifactCli(moduleUrl, path, generate) {
-  if (!process.argv[1] || fileURLToPath(moduleUrl) !== resolve(process.argv[1])) return;
+  if (!isMain(moduleUrl)) return;
   try {
     const args = process.argv.slice(2);
     if (args.length && (args.length !== 1 || args[0] !== '--check')) {

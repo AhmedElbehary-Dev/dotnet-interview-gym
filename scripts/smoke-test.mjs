@@ -176,7 +176,7 @@ const saved=store.get(historyKey);
 const savedSession=store.get(sessionKey);
 assert.equal(el('startArrivalsToday').disabled,true);
 run(`for(const [id,publishedOn] of [['arrival-today','2099-07-03'],['arrival-recent','2099-07-02'],
-  ['arrival-old','2099-06-26'],['arrival-future','2099-07-04']]){
+  ['arrival-old','2099-06-26'],['arrival-future','2099-08-04']]){
     const q={...BANK.find(q=>!q.code),id,publishedOn,q:'Question '+id+' <safe>'};
     BANK.push(q);BY_ID.set(q.id,q);
   }
@@ -195,5 +195,27 @@ assert.equal(record('arrival-today').masteryStatus,'mastered');
 for(const [id, entry] of Object.entries(JSON.parse(saved))) assert.deepEqual(record(id),entry);
 await events.get('startArrivalsToday:click')();
 assert.equal(run('current().id'),'arrival-today','mastered arrivals can still be practiced');
+run('leave()');
+
+now=Date.parse('2099-07-22T12:00:00Z');
+const irregularHistory=store.get(historyKey),irregularSession=store.get(sessionKey);
+run(`for(let i=0;i<999;i++){
+    const q={...BY_ID.get('arrival-today'),id:'batch-'+i};
+    BANK.push(q);BY_ID.set(q.id,q);
+  }
+  setup()`);
+assert.equal(el('startArrivalsToday').disabled,true);
+assert.equal(el('startArrivalsRecent').disabled,false);
+assert.match(el('arrivalsRecent').innerHTML,/arrival-today/);
+assert.doesNotMatch(el('arrivalsRecent').innerHTML,/arrival-recent|arrival-old|arrival-future/);
+assert.equal((el('arrivalsRecent').innerHTML.match(/class="prompt"/g)||[]).length,5);
+assert.match(el('arrivalsRecent').innerHTML,/1000/);
+assert.equal(run("filteredBank(arrivalFilters('Recent')).length"),1000);
+assert.equal(store.get(historyKey),irregularHistory);
+assert.equal(store.get(sessionKey),irregularSession);
+await events.get('startArrivalsRecent:click')();
+assert.equal(run('state.target'),30);
+assert.equal(run("state.ids.every(id=>id==='arrival-today'||id.startsWith('batch-'))"),true);
+assert.ok(run("state.ids.some(id=>/^batch-(?:[4-9]|\\d{2,})$/.test(id))"),'practice reaches beyond the displayed previews');
 run('leave()');
 console.log('Smoke test passed: standard, placement, adaptive, timing, review, filters, empty state, reload, backup compatibility, New Arrivals, and mastery persistence.');
