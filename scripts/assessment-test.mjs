@@ -84,5 +84,8 @@ for (const q of sample) h2[q.id] = { correct: q.category === 'أساسيات C#'
 const adaptive = [...buildTopicQueue(sample, h2, 'adaptive', 18, 'all', () => 0.2)];
 const share = histogram(adaptive);
 assert.ok(share['أساسيات C#'] > share['C# المتقدم وLINQ'], JSON.stringify(share));
-assert.ok(Math.max(...Object.values(share)) <= 12);
+assert.equal(adaptive.length, 18);
+for (const [category, count] of Object.entries(share)) {
+  assert.ok(count <= sample.filter(q => q.category === category).length, category);
+}
 console.log('Assessment tests passed: balanced placement, adaptive question choice, distinct attempts, confidence, hints, and weighted focus.');

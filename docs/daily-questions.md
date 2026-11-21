@@ -2,7 +2,7 @@
 
 The engine proposes up to ten prose-only questions for gaps in the current bank. Groq Free Plan runs `qwen/qwen3.8-27b` for generation and `openai/gpt-oss-20b` for strict independent review. A source-only repair gets one fresh review. Questions need an independently solved answer, verified citations and a pass on every review finding. Each question keeps its verified source URLs, a stable fingerprint-based ID and a `publishedOn` date in Africa/Cairo.
 
-The repository can publish at most one batch per Cairo calendar date. GitHub schedules the workflow for local midnight, including daylight-saving transitions. The workflow uses the run's creation timestamp so a delayed job can run later that day and a rerun from a previous day cannot claim today's date. A publication commit consumes its date, even if that commit is later reverted. A zero-approval run leaves the bank unchanged. Rate limits, interruptions and provider errors can reduce output or leave the day without a publication.
+The repository can publish at most one batch per Cairo calendar date. GitHub schedules the workflow for local midnight, including daylight-saving transitions. The workflow uses the run's creation timestamp so a delayed job can run later that day and a rerun from a previous day cannot claim today's date. If GitHub skips a scheduled run, dispatch `publish` the same Cairo day. A publication commit consumes its date, even if that commit is later reverted. A zero-approval run leaves the bank unchanged. Rate limits, interruptions and provider errors can reduce output or leave the day without a publication.
 
 ## Enable
 

@@ -34,7 +34,7 @@ function fixture(t) {
   return { root, git, base: git('rev-parse', 'HEAD') };
 }
 
-function mocks({ repair = false, reject = false, uncertain = false, failReview = false, duplicate,
+function mocks({ repair = false, reject = false, uncertain = false, mixed = false, failReview = false, duplicate,
   withCode = false, partial = false, signal, log } = {}) {
   const requests = [];
   const options = {
@@ -64,12 +64,13 @@ function mocks({ repair = false, reject = false, uncertain = false, failReview =
         if (failReview && requests.length === 3) return Response.json({ error: {
           code: 'invalid_json_schema', type: 'invalid_request_error', message: 'untrusted response body'
         } }, { status: 400 });
-        const hold = reject || uncertain;
-        content = { verdict: reject ? 'reject' : uncertain ? 'uncertain' : 'approve', actualAnswer: hold ? null : 0,
+        const rejected = reject || (mixed && requests.length === 3);
+        const hold = rejected || uncertain;
+        content = { verdict: rejected ? 'reject' : uncertain ? 'uncertain' : 'approve', actualAnswer: hold ? null : 0,
           findings: Object.fromEntries(reviewDimensions.map(name => [name, { status: 'pass',
             reason: 'The evidence supports this finding.' }])), citations: [{ source: 0, quote }] };
         content.findings.documentation.evidence = 'sufficient';
-        if (hold) content.findings.answer.status = reject ? 'fail' : 'uncertain';
+        if (hold) content.findings.answer.status = rejected ? 'fail' : 'uncertain';
       }
       return Response.json({ model: payload.model, choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(content) } }] });
     }
@@ -124,6 +125,20 @@ test('source-only repair goes through a fresh strict independent review before p
   git('checkout', '-q', '--detach', result.commit);
   const { source: shard, id } = readJson(root, 'questions/index.json').questions.find(q => q.publishedOn === day);
   assert.deepEqual(readJson(root, shard).questions.find(q => q.id === id).sourceUrls, [source]);
+});
+
+test('an unlanded retry produces the same tree and excludes rejected candidates', async t => {
+  const { root, git, base } = fixture(t);
+  const { options } = mocks({ mixed: true });
+  const first = await runDailyQuestions(root, options);
+  const second = await runDailyQuestions(root, mocks({ mixed: true }).options);
+  assert.deepEqual(first.decisions, { approved: 1, rejected: 1, needs_review: 0 });
+  assert.equal(second.published, 1);
+  assert.equal(git('rev-parse', `${first.commit}^{tree}`), git('rev-parse', `${second.commit}^{tree}`));
+  assert.equal(git('rev-parse', 'HEAD'), base);
+  git('checkout', '-q', '--detach', second.commit);
+  const dayQuestions = readJson(root, 'questions/index.json').questions.filter(q => q.publishedOn === day);
+  assert.deepEqual(dayQuestions.map(q => q.fingerprint), [questionFingerprint({ q: dailyPrompt(0) })]);
 });
 
 test('a bank duplicate is rejected before review and a different question with the same stable ID is rejected before commit', async t => {

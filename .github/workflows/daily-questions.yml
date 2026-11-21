@@ -16,8 +16,8 @@ on:
 
 permissions: {}
 concurrency:
-  group: main-question-bank-and-pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'preview' && 'daily-questions-preview' || 'main-question-bank-and-pages' }}
+  queue: max
 
 jobs:
   prepare:
