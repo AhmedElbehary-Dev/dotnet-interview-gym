@@ -117,7 +117,7 @@ All history is stored in browser `localStorage` as `interview_gym_history_v2`; c
 
 ## License
 
-The application code is released under the MIT License. Newly contributed original question text and explanations are licensed under CC BY 4.0 unless the contributor states otherwise. Do not submit copied third-party question banks or proprietary interview material.
+The application code is released under the MIT License by [Ahmed Elbehary](https://github.com/AhmedElbehary-Dev). Newly contributed original question text and explanations are licensed under CC BY 4.0 unless the contributor states otherwise. Do not submit copied third-party question banks or proprietary interview material.
 
 ## V7 — Adaptive assessment
 

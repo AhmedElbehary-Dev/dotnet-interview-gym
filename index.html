@@ -47,7 +47,7 @@ html[data-theme="dark"] .setup-grid h2::after,html[data-theme="dark"] #setup h2:
 .mode-option{background:var(--card);border:1px solid var(--border)}
 .mode-option:has(input:checked),html[data-theme="dark"] .mode-option:has(input:checked){border-color:var(--clay);background:var(--studio-cream);box-shadow:inset 0 0 0 1px var(--clay)}
 .mode-option input{accent-color:#512BD4}
-select,html[data-theme="dark"] select{background:var(--card);border-color:var(--border);color:var(--ink)}
+select,.custom-select-trigger,html[data-theme="dark"] select,html[data-theme="dark"] .custom-select-trigger{background:var(--card);border-color:var(--border);color:var(--ink)}
 .notice,html[data-theme="dark"] .notice{background:var(--studio-cream);border-color:var(--clay);color:var(--ink)}
 .stats .stat,#setup .stat{background:var(--surface);border:1px solid var(--border)}
 #quiz .assessment-top{border-color:var(--studio-edge)}
@@ -168,7 +168,7 @@ html[data-theme="dark"] .q-category{color:var(--clay-ink)}
   .answer-pane .q-actions .left-actions .btn{flex:1;min-height:40px;font-size:.82rem}
   .answer-pane .keyboard-help{display:none}
   .mode-wrap,.form-row,.extra-filters{grid-template-columns:1fr;gap:10px}
-  select{font-size:16px;height:48px}
+  select,.custom-select-trigger{font-size:16px;height:48px}
   .stats,#setup .stats,#results .stats{grid-template-columns:repeat(2,1fr);gap:8px}
   .topics{grid-template-columns:1fr}
   .setup-hero,#setup>.hero{min-height:auto;padding:28px 18px 24px}
@@ -295,7 +295,7 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
   <div class="card"><div class="stats"><div class="stat"><span>النتيجة الكلية</span><strong id="score">—</strong></div><div class="stat"><span>إجابات صحيحة</span><strong id="right">0</strong></div><div class="stat"><span>إجابات خاطئة</span><strong id="wrongCount">0</strong></div><div class="stat"><span>نفاد الوقت / تخطي</span><strong id="unanswered">0</strong></div></div><p class="small muted" id="runInfo"></p><h3>النتيجة حسب المجال</h3><div class="topics" id="breakdown"></div></div>
   <div class="card" style="margin-top:16px"><h2>ملف مهاراتك بعد الجولة</h2><div class="skill-profile" id="resultSkills"></div><p class="small muted" id="resultProfileMessage"></p></div><div class="card" style="margin-top:16px"><h2>راجع الإجابات</h2><div class="report-tabs" role="group" aria-label="تصفية النتائج"><button class="btn tab" data-filter="weak" aria-pressed="true">الإجابات غير الموفقة</button><button class="btn tab" data-filter="timeout" aria-pressed="false">الأسئلة المنتهية بالوقت</button><button class="btn tab" data-filter="all" aria-pressed="false">كافة الأسئلة</button></div><div id="reviewList"></div><div class="action-row"><button class="btn secondary" id="again">إعادة تدريب نقاط الضعف</button><button class="btn primary" id="newRound">بدء جولة جديدة</button><button class="btn" id="copy">نسخ نص التقرير</button></div></div>
 </section>
-<p class="footer">Interview Gym • منصة احترافية للتدريب والمراجعة الشاملة لمفاهيم .NET وSQL Server</p>
+<p class="footer">Interview Gym • منصة احترافية للتدريب والمراجعة الشاملة لمفاهيم .NET وSQL Server • © <a href="https://github.com/AhmedElbehary-Dev" target="_blank" rel="noopener noreferrer">Ahmed Elbehary</a></p>
 </main>
 
 
@@ -314,6 +314,7 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 <div class="gym-toast-wrap" id="gym-toast-wrap" role="status" aria-live="polite"></div>
 <script defer src="https://cdn.jsdelivr.net/npm/micromodal@0.4.10/dist/micromodal.min.js"></script>
 <script defer src="assets/dialogs.js"></script>
+<script defer src="assets/dropdown.js"></script>
 <script defer src="assets/assessment.js"></script>
 <script defer src="assets/app.js"></script>
 </body></html>
