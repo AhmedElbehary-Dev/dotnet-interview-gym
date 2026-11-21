@@ -4,8 +4,9 @@ A free, static, community-editable interview practice app with English MCQs, bri
 
 ## Current scope
 
-- **120 real questions** carried from the original app, across C#, .NET, SQL Server, React, security, and delivery topics. **5,000 is a future target, not a published count.**
+- The original 120 questions cover C#, .NET, SQL Server, React, security, and delivery. The app shows the current bank size.
 - Independent JSON question files, with stable IDs and a manifest.
+- **الأسئلة الجديدة** shows additions from today and the previous six Cairo calendar days. Older questions stay in the practice bank.
 - Prefer **unseen questions**; previously answered questions only appear when the matching pool runs out. Review mode selects missed questions.
 - Pause/resume a timed exam; show explanations only during learning mode or in the final report.
 - Export/import your history as JSON; no account, database, or server-side user tracking.
@@ -20,7 +21,7 @@ A free, static, community-editable interview practice app with English MCQs, bri
 4. Select **Branch: `main` / Folder: `/ (root)`**, then save.
 5. The site will be available at `https://YOUR-USERNAME.github.io/dotnet-interview-gym/` after publication. The folder name and repo name must match to use that URL.
 
-No database, environment variables, API keys, build process, or runtime package install is needed. `.nojekyll` prevents Jekyll handling of static files. The GitHub Actions workflow validates JSON data when code is pushed; it is **not** a required deployment workflow.
+The static app runs without a database, API key, or package install. `.nojekyll` prevents Jekyll handling of static files. To enable automated question publishing, follow the [Daily Question Engine setup](docs/daily-questions.md) to switch the Pages source to GitHub Actions.
 
 ## Local development
 
