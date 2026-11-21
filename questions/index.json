@@ -1,0 +1,1096 @@
+{
+  "schemaVersion": 1,
+  "categories": [
+    "ASP.NET Core وAPIs",
+    "C# المتقدم وLINQ",
+    "React والواجهات",
+    "Transactions والتزامن",
+    "أساسيات C#",
+    "استعلامات SQL Server",
+    "الأمان وGit والتسليم",
+    "التزامن والأداء",
+    "الفهارس وخطط التنفيذ",
+    "الوصول للبيانات"
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "a5b0881c0bd86e0406e2043c76c2d6381434d6e05662efd02021e44fa3f60133",
+      "conceptId": "csharp.value-types"
+    },
+    {
+      "id": 2,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "ecf32c146da4ddd1f44a8a44f24824f78327a3fddda803f09b7274c0920af82c",
+      "conceptId": "csharp.reference-semantics"
+    },
+    {
+      "id": 3,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "4170b7d503743f17e81e2084cd32f02eeebeed100168ed665ad01f0dc92f81db",
+      "conceptId": "csharp.reference-semantics"
+    },
+    {
+      "id": 4,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "2a41c957db13570d08b4dec7e782e9a94b3c66e988df4ae6d63739c76d8a2e7c",
+      "conceptId": "csharp.reference-semantics"
+    },
+    {
+      "id": 5,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "45c2bf863dcfedfe1e9607794d2f58c4cadfce52d4977ec332dfaceeceb6c8bf",
+      "conceptId": "csharp.nullable-values"
+    },
+    {
+      "id": 6,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "d443e5b0f8e326712480f2bd2e219437de197ff28624d6b7f7af81d626550edd",
+      "conceptId": "csharp.strings"
+    },
+    {
+      "id": 7,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "75ada33da6af69e83a477010f3bcae8bdb3d3875046b9220e0b7bf5fd88afe22",
+      "conceptId": "csharp.strings"
+    },
+    {
+      "id": 8,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "bcd67ef57f8b93fba0cbdd766efe9823f2ac9dba60b4a6823f64835aab207e43",
+      "conceptId": "csharp.type-inference"
+    },
+    {
+      "id": 9,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "f888e11a65a020feb469976d660479bb79d201a0cdbf075a1d85cf11d8339f5a",
+      "conceptId": "csharp.checked-arithmetic"
+    },
+    {
+      "id": 10,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "ea7540583c0e20b1b4bf0a37368b493d157b295aba9c6a2bca34a35913efa189",
+      "conceptId": "csharp.accessibility"
+    },
+    {
+      "id": 11,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "cfa6a389f5d5d4339e62fcdfc171142fd3bbb3d3a2ded871176affbc906b651a",
+      "conceptId": "csharp.readonly-fields"
+    },
+    {
+      "id": 12,
+      "category": "أساسيات C#",
+      "difficulty": "أساسي",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-foundations.json",
+      "fingerprint": "b2deb8cf70f831c0224e07f3d61e445fa635c42fc5859b9f9d3748249e50db43",
+      "conceptId": "csharp.nullable-values"
+    },
+    {
+      "id": 13,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "a8354397d5e40b9914e5b43442dbbe8316beffe0baa4b24923879aab741218f2",
+      "conceptId": "linq.deferred-execution"
+    },
+    {
+      "id": 14,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "c5081f2da2b02765019476b516d920ff168f99416e6f75cca02784e3c8856d6d",
+      "conceptId": "linq.materialization"
+    },
+    {
+      "id": 15,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "e1468343da1073e21f2fee68b5978c733fecf8fd6dc38696314eed2a730b5f70",
+      "conceptId": "linq.enumeration"
+    },
+    {
+      "id": 16,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "a9109dc3d838b232383a442ae8810b5a6f1a8944f2dc76f612e64ef6b6145e84",
+      "conceptId": "linq.element-operators"
+    },
+    {
+      "id": 17,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "86df8a001128057ac0646a472fa640fb057b7192119a212eb8bfc81c7b3b5f9b",
+      "conceptId": "linq.element-operators"
+    },
+    {
+      "id": 18,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "cd141cb297002fdc75204f4f6d57c9ea6e1067c46eaa5bdd4ee291bd54082619",
+      "conceptId": "linq.closures"
+    },
+    {
+      "id": 19,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "ce6c7b530c1a2d201d86f40e78e562ea6d18d3e39d43f6eba1b44c5050e599c7",
+      "conceptId": "linq.closures"
+    },
+    {
+      "id": 20,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "e96229be185fbf4142b59e0a4bdd9161aa9f358d8052ae8d7c007f93c8eb5c46",
+      "conceptId": "linq.equality"
+    },
+    {
+      "id": 21,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "9ab766c12406fa70a937800f3d5be9beb72712a551113da0cc5afb797a8b16bc",
+      "conceptId": "linq.equality"
+    },
+    {
+      "id": 22,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "b707c39631ce3aa7617a553a8a50263d90765971ab5772995c9e6850cdcbce32",
+      "conceptId": "linq.equality"
+    },
+    {
+      "id": 23,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "ca5dd7135edf9d29e1b2dd1fdbf38c032ad58003ea66fd0234edb136f2284d9f",
+      "conceptId": "linq.disposal"
+    },
+    {
+      "id": 24,
+      "category": "C# المتقدم وLINQ",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "source": "questions/csharp-linq-advanced.json",
+      "fingerprint": "a5b4e1bdb32f8ff64710dada5c309b7b61bd9620cdad47ff2e664eca23f028f4",
+      "conceptId": "linq.disposal"
+    },
+    {
+      "id": 25,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "7eedc4538c86528a0d7f30fec70a3dc39ed0d320cd421120b1b26efb2c35caa8",
+      "conceptId": "runtime.async-await"
+    },
+    {
+      "id": 26,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "ed113c27081141bcdd78867a06a17b445e145c489f5c0af423c231962e926118",
+      "conceptId": "runtime.task-composition"
+    },
+    {
+      "id": 27,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "46971387daf04e488c60b0f5cedd20840ed99c4f36fe78e1791ca962fc6029d8",
+      "conceptId": "runtime.async-await"
+    },
+    {
+      "id": 28,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "179fb4b6883ce7be12eeec659d1ad7624a5b54739eaf5a610b94ec75056e64c8",
+      "conceptId": "runtime.cancellation"
+    },
+    {
+      "id": 29,
+      "category": "التزامن والأداء",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "042ad8ef40f2f105b1f48044b5ae8760860517c8d09842b567291f23b7a77fb3",
+      "conceptId": "runtime.async-await"
+    },
+    {
+      "id": 30,
+      "category": "التزامن والأداء",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "e38b87157a7fa018efcef2ed44cf1a771efaf15f2018654d4d705c769f2173c7",
+      "conceptId": "runtime.race-conditions"
+    },
+    {
+      "id": 31,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "364ef81e8b903a483a582556f23491ea2c5a5115471fc93f0d51fc791cd303d0",
+      "conceptId": "runtime.race-conditions"
+    },
+    {
+      "id": 32,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "6d83835eb989439492336f5d9c6294166f124302a97ecddda9c6f0335cbb1dbf",
+      "conceptId": "runtime.deadlocks"
+    },
+    {
+      "id": 33,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "b6e09ae69e5e6374e7283f25a403db0f050c086517297af51f6f649a779afb46",
+      "conceptId": "runtime.throttling"
+    },
+    {
+      "id": 34,
+      "category": "التزامن والأداء",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "841625564156f588e6dcc962e5930a2c3e4344839e8e17c55bb0ab3fadf1f6c1",
+      "conceptId": "runtime.deadlocks"
+    },
+    {
+      "id": 35,
+      "category": "التزامن والأداء",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "126aa830e2a2a1eeacd1da0df87acbd6f6b67eacac1a85d535d43cc240435b3b",
+      "conceptId": "runtime.pooling"
+    },
+    {
+      "id": 36,
+      "category": "التزامن والأداء",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/dotnet-runtime.json",
+      "fingerprint": "92bfaeaa3d85c90fce92c1e420712bf7532793bb239db8453ba1c65ddadc58ef",
+      "conceptId": "runtime.measurement"
+    },
+    {
+      "id": 37,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "82416ed96bfec48e807bb82b47a96d9beeb1a0e2ccd94a2393dc1fe6805b24c6",
+      "conceptId": "aspnet.http-status-codes"
+    },
+    {
+      "id": 38,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "4e7cd09ca5efac67724bb9bf9e8864e6748d21dbb16845c16943ad7ec7c0ed41",
+      "conceptId": "aspnet.http-status-codes"
+    },
+    {
+      "id": 39,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "6bb747d2833d435c4cf22ff164f977282c2832dd6a2c1e7651f13d94f31b9645",
+      "conceptId": "aspnet.http-status-codes"
+    },
+    {
+      "id": 40,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "8d8ff84a1f32007195911c9ab82567b8b59721cd136461df2d9495746dd334dd",
+      "conceptId": "aspnet.http-status-codes"
+    },
+    {
+      "id": 41,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "15e5c761b25a63eaaa630d87058a94a3fc41ea19a4d6dead442bf8bce8fe1cd7",
+      "conceptId": "aspnet.idempotency"
+    },
+    {
+      "id": 42,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "b3e131cf6f351440b5ae508a0469344689c49c866b8f5ee02c7991ebbcf42ce6",
+      "conceptId": "aspnet.middleware"
+    },
+    {
+      "id": 43,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "1925f4b79099d1bb5f59e66c9fe8f52dfe5e150fc473551756f7dc60e4ce606e",
+      "conceptId": "aspnet.dependency-injection"
+    },
+    {
+      "id": 44,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "4631f2f65c46b8b3a91be0e393c64a0b94b05f837d7b0099bd62a89f7e03ebbb",
+      "conceptId": "aspnet.dependency-injection"
+    },
+    {
+      "id": 45,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "85d3cff24cb4a961c3f936919ff2d5287a1a35a3051af0addeba7d3e720ee511",
+      "conceptId": "aspnet.dto-contracts"
+    },
+    {
+      "id": 46,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "19a753805f0e1b278cb55645de8f072b3cc553dc36f3c843dfefabd93f4a91cf",
+      "conceptId": "aspnet.pagination"
+    },
+    {
+      "id": 47,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "7cbf8b150e22c1cb85666e37401f2e15446e4787d0aba6ccbc0cb0a2a28d1ff8",
+      "conceptId": "aspnet.problem-details"
+    },
+    {
+      "id": 48,
+      "category": "ASP.NET Core وAPIs",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/aspnet-apis.json",
+      "fingerprint": "5efeb95e610f14a75f653908bc051f566a3af78b8acae6adcfc660e5de5e9a3c",
+      "conceptId": "aspnet.rate-limiting"
+    },
+    {
+      "id": 49,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "fbd394e4f33918e88a6aaffe5af6b470f0904866ac031cc14350e48d197f837f",
+      "conceptId": "data.tracking"
+    },
+    {
+      "id": 50,
+      "category": "الوصول للبيانات",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "9b376d8d2d8787f4cc10a36e9c8c15c4ab5d9e9a6f9395dd231643575841dbf6",
+      "conceptId": "data.related-data"
+    },
+    {
+      "id": 51,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "56da8f1415015f5fd00af1e2b34b1ae0242ffecc56389b0bf17f537c0b6f9973",
+      "conceptId": "data.related-data"
+    },
+    {
+      "id": 52,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "d6e4243a92dd107496a6973a50e11df6a31888a69393d7c2a11012082d515255",
+      "conceptId": "data.projection"
+    },
+    {
+      "id": 53,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "955f33805817d07ecf0cbcb49dc22e7cabeb473643a817996e6ea341edea6b42",
+      "conceptId": "data.tracking"
+    },
+    {
+      "id": 54,
+      "category": "الوصول للبيانات",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "83ecd5b67da06d012de7e2de9af8ad06b7e3c0834498669e61841d0e851712c7",
+      "conceptId": "data.optimistic-concurrency"
+    },
+    {
+      "id": 55,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "d7cccf7c7dcd6566aaa319b5e5b233d8bae3f74ec53dc8a64aa2ddbf9ab2a3bd",
+      "conceptId": "data.dapper"
+    },
+    {
+      "id": 56,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "7693a1e50f9819e4c864697f6f2cd41777b74c0e157ae5034c8af5cbb125bc2f",
+      "conceptId": "data.parameterization"
+    },
+    {
+      "id": 57,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "297a860accdc54559d45eee53bcf1bac50d29f37fadf843318e5853fd92796c5",
+      "conceptId": "data.transactions"
+    },
+    {
+      "id": 58,
+      "category": "الوصول للبيانات",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "a952e89c6af49f3081fbb3f32068d0e4f471c9e242bd422dab1c4189f94c54db",
+      "conceptId": "data.context-lifetime"
+    },
+    {
+      "id": 59,
+      "category": "الوصول للبيانات",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "9463480cf92af3b63b6cda5f187c69976e3f54b00ac2e1301e73a9cc8cc5795c",
+      "conceptId": "data.bulk-updates"
+    },
+    {
+      "id": 60,
+      "category": "الوصول للبيانات",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/efcore-data.json",
+      "fingerprint": "d2e6d621888c9dbc63f4e31185379f68acf5f5ea0fdf0edb0d7f1348922d2120",
+      "conceptId": "data.query-diagnostics"
+    },
+    {
+      "id": 61,
+      "category": "استعلامات SQL Server",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "af56cbb25fe42ce19504c4cbe0457ab8ca5e9f486d92ed05a293c1a942568f06",
+      "conceptId": "sql.sargability"
+    },
+    {
+      "id": 62,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "51eafd679de57b31f142440b1ef64a59d839f80c45c351b2ae6c8057f0a472f2",
+      "conceptId": "sql.aggregation"
+    },
+    {
+      "id": 63,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "cafd4706e22f5083d46928f415ae48786c89776bf6651b7c07b45b591e33c8c9",
+      "conceptId": "sql.joins"
+    },
+    {
+      "id": 64,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "ab73018f827b494335bdbdb094c5e1d17e41f1e7b565764b4fe98d553f943a90",
+      "conceptId": "sql.aggregation"
+    },
+    {
+      "id": 65,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "2505d1571689c4139ac4f54714629f0ddab0ef248a1dd75ca7909a0bc293b1f0",
+      "conceptId": "sql.aggregation"
+    },
+    {
+      "id": 66,
+      "category": "استعلامات SQL Server",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "d1536e7df8f08eda32f229764675a3063b6dc017f683c80ab8e4656d6151574e",
+      "conceptId": "sql.window-functions"
+    },
+    {
+      "id": 67,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "381060ff53737cb688faa22ab9d4bffe3fb93bc40f2ce5f1e61fa3b8bb517357",
+      "conceptId": "sql.existence"
+    },
+    {
+      "id": 68,
+      "category": "استعلامات SQL Server",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "5ffcc072f66fc44caf4eff4f64319b6f8e9a35fc244a1b219cfe071e48a30240",
+      "conceptId": "sql.null-semantics"
+    },
+    {
+      "id": 69,
+      "category": "استعلامات SQL Server",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "4b712ac883704939edc9ee981806cd073e9cae5246c41593957e6c4dd0c29978",
+      "conceptId": "sql.joins"
+    },
+    {
+      "id": 70,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "72af9f3b93733b9fc2b489ad6ebef17d00cf9c6b1eebadf25c649d21abebb64d",
+      "conceptId": "sql.set-operators"
+    },
+    {
+      "id": 71,
+      "category": "استعلامات SQL Server",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "6fbf9fdb06df4850028b018467b19c6cfb7828f0ef756b756f68e3ceba7bf8b2",
+      "conceptId": "sql.window-functions"
+    },
+    {
+      "id": 72,
+      "category": "استعلامات SQL Server",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-foundations.json",
+      "fingerprint": "fe1ee65324de53c70bb9e2218319b9a9afdfac22310dcc392fe57703538ef10f",
+      "conceptId": "sql.ordering"
+    },
+    {
+      "id": 73,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "4e18294047869a7258ac9cbc1d2ddd71c2229092ad9041edb90194bf6e1d5bbe",
+      "conceptId": "indexes.composite-indexes"
+    },
+    {
+      "id": 74,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "837e77ef5d624b56182666d462c2e35bf3280cf6665826f0fc7c314981f41eaa",
+      "conceptId": "indexes.covering-indexes"
+    },
+    {
+      "id": 75,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "b9998a432876b269d7d340bde8d993a903ed08a3f2a8eaccc9fc5d18680f54d1",
+      "conceptId": "indexes.covering-indexes"
+    },
+    {
+      "id": 76,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "01f6498c460ef93c945c236bdf89c0f816bbc5c8d695307dad2cffd370d98f31",
+      "conceptId": "indexes.clustered-indexes"
+    },
+    {
+      "id": 77,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "ac99835e0aec98e70b071db38de19f5525561c4e1cebd0d6dd5e104d0e667a5d",
+      "conceptId": "indexes.covering-indexes"
+    },
+    {
+      "id": 78,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "6dcb923287c211d1608249a02a9f4632db79f571de5e21a4407a242ceca53dfe",
+      "conceptId": "indexes.execution-plans"
+    },
+    {
+      "id": 79,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "f223d766b21dcfdbc5a2b2ca38b742997dcc9dcd64a3f2e23a2b2561c1b320b7",
+      "conceptId": "indexes.parameter-sensitivity"
+    },
+    {
+      "id": 80,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "6e56c287ac200981a0e07b4343d572d21a978fe05ddbe4575633f40683864094",
+      "conceptId": "indexes.sargability"
+    },
+    {
+      "id": 81,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "1cef9d1637306c7bf2c5e1ee11eb83b0879098d34fd14a690dd76b2ed09e866c",
+      "conceptId": "indexes.execution-plans"
+    },
+    {
+      "id": 82,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "18ec2f31b45ec18483e31b8436b6acadc33149aa25fefcc6a07ba34b9a7027d7",
+      "conceptId": "indexes.maintenance-tradeoffs"
+    },
+    {
+      "id": 83,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "d84efd05125c27b697d6db3eae1528f7ebfac6e94a7a0fb7ed46c4652fb25040",
+      "conceptId": "indexes.statistics"
+    },
+    {
+      "id": 84,
+      "category": "الفهارس وخطط التنفيذ",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/sql-performance.json",
+      "fingerprint": "e2680b8e1148074a67b1a404b5206182263971fa5d8cf1e2a7fdce3219776a68",
+      "conceptId": "indexes.filtered-indexes"
+    },
+    {
+      "id": 85,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "a0cd5d99fb07c25f7ba3bd3d3e039100e5bb40f5bd294c1e9c4db9e180a68259",
+      "conceptId": "transactions.deadlocks"
+    },
+    {
+      "id": 86,
+      "category": "Transactions والتزامن",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "81d7273b45fb51838b24fef4b4653f7a687a5047fc5a020fb94624990d8fe28a",
+      "conceptId": "transactions.deadlocks"
+    },
+    {
+      "id": 87,
+      "category": "Transactions والتزامن",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "f566f33e742edddb06ca2dc29701f850eb111b8021b84b47db43c9b2284c1aef",
+      "conceptId": "transactions.isolation"
+    },
+    {
+      "id": 88,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "78da05d2e0b39cf2848156dde353ed046f84d28522ee1928892e7e8a47d6708a",
+      "conceptId": "transactions.lost-updates"
+    },
+    {
+      "id": 89,
+      "category": "Transactions والتزامن",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "9d45740b05134e3c8ed3c67254c68e824d129a9b482f4f105828228a4f5e18d2",
+      "conceptId": "transactions.isolation"
+    },
+    {
+      "id": 90,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "bf9ea30650cd8169a5fc9bd74aa5cb688781d126b8b14f55da130f02361db67c",
+      "conceptId": "transactions.isolation"
+    },
+    {
+      "id": 91,
+      "category": "Transactions والتزامن",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "582c57785aa2f360069ffce720f3c8c4659e8b493445713572d3335efd8cbdc7",
+      "conceptId": "transactions.lock-duration"
+    },
+    {
+      "id": 92,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "a7437cc58f290fe997a3afe07e8cc41a96e1585bead7faa5475fde5c8d53f423",
+      "conceptId": "transactions.optimistic-concurrency"
+    },
+    {
+      "id": 93,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "1e37ce116209276846a5530ee67961eb6ffea2eab4d5776fdac330210deb6a81",
+      "conceptId": "transactions.deadlocks"
+    },
+    {
+      "id": 94,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "20c664b34e885b991f84a38c87948c25c0d1d620e0fd5b77e89743e0587d91d1",
+      "conceptId": "transactions.atomicity"
+    },
+    {
+      "id": 95,
+      "category": "Transactions والتزامن",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "8528016dbbfa91b2abfdba5fa49dc9c1b37203c58b949122eb7b5385f2bbb692",
+      "conceptId": "transactions.atomicity"
+    },
+    {
+      "id": 96,
+      "category": "Transactions والتزامن",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/sql-scenarios.json",
+      "fingerprint": "f2ae469d3c00dee253989d37e6ab71a528996850db2147305f807d46811ea63c",
+      "conceptId": "transactions.isolation"
+    },
+    {
+      "id": 97,
+      "category": "React والواجهات",
+      "difficulty": "متوسط",
+      "skill": "فهم الكود",
+      "source": "questions/react-ui.json",
+      "fingerprint": "6ca80a103a971d3fb08385667d8af403fb38b1b2e5de36ef2be2cafce0f0556c",
+      "conceptId": "react.list-identity"
+    },
+    {
+      "id": 98,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/react-ui.json",
+      "fingerprint": "2bb139098702161ecdefc5eb4d74910faa7c325131016f2c24ac5f0e6e6b5d5a",
+      "conceptId": "react.state-updates"
+    },
+    {
+      "id": 99,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/react-ui.json",
+      "fingerprint": "b4d01df6acb34f8cf1ea34072fa46e79fc6f85a2bd51902c7ed82017019849c9",
+      "conceptId": "react.state-updates"
+    },
+    {
+      "id": 100,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/react-ui.json",
+      "fingerprint": "b0020a10d0521125c75cac733bd856f0d8b1bedb46c67f7ab7eda1bba32af221",
+      "conceptId": "react.effects"
+    },
+    {
+      "id": 101,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "فهم الكود",
+      "source": "questions/react-ui.json",
+      "fingerprint": "7717a1ec25d33ec06e7cc7b0013c752b7491664d1745e3224764a7d585429e06",
+      "conceptId": "react.effects"
+    },
+    {
+      "id": 102,
+      "category": "React والواجهات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/react-ui.json",
+      "fingerprint": "baca2b6b9f18dbcc31e3e76ad9c31099a3a66a352fee477d1824ccaf6b1f0e85",
+      "conceptId": "react.controlled-inputs"
+    },
+    {
+      "id": 103,
+      "category": "React والواجهات",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/react-ui.json",
+      "fingerprint": "03cf4465ecc9d150f6796ee413b0cfce7aeda1a2f6aeea7ceb9541f2dfb7f4a8",
+      "conceptId": "react.state-updates"
+    },
+    {
+      "id": 104,
+      "category": "React والواجهات",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/react-ui.json",
+      "fingerprint": "ec5ff7e865bb7c38c35813dbe4e9c2150eb79c3f962da61b41a7e0f5c3046e6f",
+      "conceptId": "react.memoization"
+    },
+    {
+      "id": 105,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/react-ui.json",
+      "fingerprint": "18cf6b65afcad807b66dbd01ee701245b86cd16d3b1171a5e80247e2f9ee91ef",
+      "conceptId": "react.stale-closures"
+    },
+    {
+      "id": 106,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "source": "questions/react-ui.json",
+      "fingerprint": "36bdce926eef95731cd715ec104675054f04485affe971c67ca095c42c21962c",
+      "conceptId": "react.error-boundaries"
+    },
+    {
+      "id": 107,
+      "category": "React والواجهات",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/react-ui.json",
+      "fingerprint": "41e757ab0dabfdc76a7bf75afc667d22383c8fb1cb0477b9f35b1914be42b66b",
+      "conceptId": "react.debouncing"
+    },
+    {
+      "id": 108,
+      "category": "React والواجهات",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/react-ui.json",
+      "fingerprint": "e6fae891b0b12c1d0b6ec897f48b7e1fceb0ee2fd60a8532487bd02f8c2b1dcc",
+      "conceptId": "react.safe-rendering"
+    },
+    {
+      "id": 109,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "حل مشكلة",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "ecae7e556e8f973eb3bf9e66e6dadbf9ce8703c7f91304288c43c82f125e0f73",
+      "conceptId": "delivery.sql-injection-prevention"
+    },
+    {
+      "id": 110,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "abfa98d9ec75505f71eaa231755ba24260e12008f02d87249a0d9ced1a841909",
+      "conceptId": "delivery.tls"
+    },
+    {
+      "id": 111,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "d60ce5eae3dd9afbb71fa4b311d83e15b0f66eb0ab195e6707fb6679b5a22128",
+      "conceptId": "delivery.identity"
+    },
+    {
+      "id": 112,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "متوسط",
+      "skill": "حل مشكلة",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "c53b6761fb8bdfee7bbbab68ba37bae2ebedff90ce55289800bc1444729fe196",
+      "conceptId": "delivery.undo"
+    },
+    {
+      "id": 113,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "متقدم",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "50926ddc3cd5f0c48cc3a86029159baeec503706f4b291c66d5b9929dc6a2690",
+      "conceptId": "delivery.history"
+    },
+    {
+      "id": 114,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "bd4fbd19dca984827c8a1fb549a564f62c9e360cefe3f89e03b4dc2e6162735c",
+      "conceptId": "delivery.merge-conflicts"
+    },
+    {
+      "id": 115,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "638cc82d1db722abe6f7f064910babbb24a3400239b95b019b0bc28ba2b8adcd",
+      "conceptId": "delivery.review"
+    },
+    {
+      "id": 116,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "6ceb5e9097302e23b2267c4546672625b739370de470fcd29660c0719416bd0e",
+      "conceptId": "delivery.scrum"
+    },
+    {
+      "id": 117,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "d65f7f747fb15273138b941ddecaaddfab1f70e8136162bb755764a663b0b588",
+      "conceptId": "delivery.scrum"
+    },
+    {
+      "id": 118,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "متوسط",
+      "skill": "مفهوم",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "9f71d80cdbe0c0c870b38896a66ac45c4c6b00bff179fb4e5799b9babaad8cba",
+      "conceptId": "delivery.continuous-integration"
+    },
+    {
+      "id": 119,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "متقدم",
+      "skill": "حل مشكلة",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "cb901ac2f3d9fe5a1c1bd1442f1a5930ceae4312cb02815a0ab3dcafe04b2ca1",
+      "conceptId": "delivery.deployment"
+    },
+    {
+      "id": 120,
+      "category": "الأمان وGit والتسليم",
+      "difficulty": "أساسي",
+      "skill": "حل مشكلة",
+      "source": "questions/security-git-delivery.json",
+      "fingerprint": "a0f06cc17439c296b6c15e6d2b55ea69b66ef374628abcc28f0661efe1888bdc"
+    }
+  ]
+}

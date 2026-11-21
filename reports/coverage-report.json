@@ -1,0 +1,1258 @@
+{
+  "schemaVersion": 1,
+  "totalQuestions": 120,
+  "byCategory": {
+    "ASP.NET Core وAPIs": 12,
+    "C# المتقدم وLINQ": 12,
+    "React والواجهات": 12,
+    "Transactions والتزامن": 12,
+    "أساسيات C#": 12,
+    "استعلامات SQL Server": 12,
+    "الأمان وGit والتسليم": 12,
+    "التزامن والأداء": 12,
+    "الفهارس وخطط التنفيذ": 12,
+    "الوصول للبيانات": 12
+  },
+  "byDifficulty": {
+    "أساسي": 33,
+    "متقدم": 43,
+    "متوسط": 44
+  },
+  "bySkill": {
+    "حل مشكلة": 42,
+    "فهم الكود": 22,
+    "مفهوم": 56
+  },
+  "categoryByDifficulty": {
+    "ASP.NET Core وAPIs": {
+      "أساسي": 4,
+      "متقدم": 3,
+      "متوسط": 5
+    },
+    "C# المتقدم وLINQ": {
+      "أساسي": 0,
+      "متقدم": 4,
+      "متوسط": 8
+    },
+    "React والواجهات": {
+      "أساسي": 0,
+      "متقدم": 7,
+      "متوسط": 5
+    },
+    "Transactions والتزامن": {
+      "أساسي": 2,
+      "متقدم": 7,
+      "متوسط": 3
+    },
+    "أساسيات C#": {
+      "أساسي": 12,
+      "متقدم": 0,
+      "متوسط": 0
+    },
+    "استعلامات SQL Server": {
+      "أساسي": 7,
+      "متقدم": 5,
+      "متوسط": 0
+    },
+    "الأمان وGit والتسليم": {
+      "أساسي": 8,
+      "متقدم": 2,
+      "متوسط": 2
+    },
+    "التزامن والأداء": {
+      "أساسي": 0,
+      "متقدم": 4,
+      "متوسط": 8
+    },
+    "الفهارس وخطط التنفيذ": {
+      "أساسي": 0,
+      "متقدم": 7,
+      "متوسط": 5
+    },
+    "الوصول للبيانات": {
+      "أساسي": 0,
+      "متقدم": 4,
+      "متوسط": 8
+    }
+  },
+  "categoryBySkill": {
+    "ASP.NET Core وAPIs": {
+      "حل مشكلة": 4,
+      "فهم الكود": 0,
+      "مفهوم": 8
+    },
+    "C# المتقدم وLINQ": {
+      "حل مشكلة": 1,
+      "فهم الكود": 6,
+      "مفهوم": 5
+    },
+    "React والواجهات": {
+      "حل مشكلة": 5,
+      "فهم الكود": 4,
+      "مفهوم": 3
+    },
+    "Transactions والتزامن": {
+      "حل مشكلة": 8,
+      "فهم الكود": 0,
+      "مفهوم": 4
+    },
+    "أساسيات C#": {
+      "حل مشكلة": 0,
+      "فهم الكود": 7,
+      "مفهوم": 5
+    },
+    "استعلامات SQL Server": {
+      "حل مشكلة": 1,
+      "فهم الكود": 4,
+      "مفهوم": 7
+    },
+    "الأمان وGit والتسليم": {
+      "حل مشكلة": 4,
+      "فهم الكود": 0,
+      "مفهوم": 8
+    },
+    "التزامن والأداء": {
+      "حل مشكلة": 6,
+      "فهم الكود": 0,
+      "مفهوم": 6
+    },
+    "الفهارس وخطط التنفيذ": {
+      "حل مشكلة": 7,
+      "فهم الكود": 1,
+      "مفهوم": 4
+    },
+    "الوصول للبيانات": {
+      "حل مشكلة": 6,
+      "فهم الكود": 0,
+      "مفهوم": 6
+    }
+  },
+  "gaps": [
+    {
+      "category": "استعلامات SQL Server",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 0,
+      "target": 4,
+      "deficit": 4
+    },
+    {
+      "category": "React والواجهات",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "skill",
+      "label": "حل مشكلة",
+      "observed": 0,
+      "target": 3,
+      "deficit": 3
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 2,
+      "deficit": 2
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "dimension": "skill",
+      "label": "حل مشكلة",
+      "observed": 1,
+      "target": 3,
+      "deficit": 2
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 2,
+      "deficit": 2
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "dimension": "skill",
+      "label": "حل مشكلة",
+      "observed": 1,
+      "target": 3,
+      "deficit": 2
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 2,
+      "deficit": 2
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 2,
+      "deficit": 2
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 0,
+      "target": 2,
+      "deficit": 2
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "dimension": "concept",
+      "label": "aspnet.integration-testing",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "dimension": "concept",
+      "label": "aspnet.model-binding",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 3,
+      "target": 4,
+      "deficit": 1
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "dimension": "concept",
+      "label": "linq.grouping",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "dimension": "concept",
+      "label": "linq.query-composition",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "React والواجهات",
+      "dimension": "concept",
+      "label": "react.accessible-forms",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "React والواجهات",
+      "dimension": "concept",
+      "label": "react.component-composition",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "concept",
+      "label": "transactions.lock-escalation",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "concept",
+      "label": "transactions.savepoints",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "Transactions والتزامن",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 3,
+      "target": 4,
+      "deficit": 1
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "concept",
+      "label": "csharp.generics",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "concept",
+      "label": "csharp.pattern-matching",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "dimension": "concept",
+      "label": "sql.common-table-expressions",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "dimension": "concept",
+      "label": "sql.conditional-aggregation",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "dimension": "difficulty",
+      "label": "متوسط",
+      "observed": 2,
+      "target": 3,
+      "deficit": 1
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "concept",
+      "label": "runtime.garbage-collection",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "concept",
+      "label": "runtime.thread-pool",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 4,
+      "target": 5,
+      "deficit": 1
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "dimension": "concept",
+      "label": "indexes.paging-indexes",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "dimension": "skill",
+      "label": "فهم الكود",
+      "observed": 1,
+      "target": 2,
+      "deficit": 1
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "concept",
+      "label": "data.migrations",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "concept",
+      "label": "data.query-splitting",
+      "observed": 0,
+      "target": 1,
+      "deficit": 1
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 4,
+      "target": 5,
+      "deficit": 1
+    }
+  ],
+  "excluded": [
+    {
+      "category": "C# المتقدم وLINQ",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0
+    },
+    {
+      "category": "أساسيات C#",
+      "dimension": "difficulty",
+      "label": "متقدم",
+      "observed": 0
+    },
+    {
+      "category": "التزامن والأداء",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0
+    },
+    {
+      "category": "الوصول للبيانات",
+      "dimension": "difficulty",
+      "label": "أساسي",
+      "observed": 0
+    }
+  ],
+  "conceptCoverage": [
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.dependency-injection",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.dto-contracts",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.http-status-codes",
+      "observed": 4,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.idempotency",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.integration-testing",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.middleware",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.model-binding",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.pagination",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.problem-details",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "ASP.NET Core وAPIs",
+      "conceptId": "aspnet.rate-limiting",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.closures",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.deferred-execution",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.disposal",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.element-operators",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.enumeration",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.equality",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.grouping",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.materialization",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "C# المتقدم وLINQ",
+      "conceptId": "linq.query-composition",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.accessible-forms",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.component-composition",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.controlled-inputs",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.debouncing",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.effects",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.error-boundaries",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.list-identity",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.memoization",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.safe-rendering",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.stale-closures",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "React والواجهات",
+      "conceptId": "react.state-updates",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.atomicity",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.deadlocks",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.isolation",
+      "observed": 4,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.lock-duration",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.lock-escalation",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.lost-updates",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.optimistic-concurrency",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "Transactions والتزامن",
+      "conceptId": "transactions.savepoints",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.accessibility",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.checked-arithmetic",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.generics",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.nullable-values",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.pattern-matching",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.readonly-fields",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.reference-semantics",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.strings",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.type-inference",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "أساسيات C#",
+      "conceptId": "csharp.value-types",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.aggregation",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.common-table-expressions",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.conditional-aggregation",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.existence",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.joins",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.null-semantics",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.ordering",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.sargability",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.set-operators",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "استعلامات SQL Server",
+      "conceptId": "sql.window-functions",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.continuous-integration",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.deployment",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.history",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.identity",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.log-redaction",
+      "observed": 0,
+      "unknown": 1,
+      "target": 1,
+      "status": "unknown"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.merge-conflicts",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.review",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.scrum",
+      "observed": 2,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.secret-management",
+      "observed": 0,
+      "unknown": 1,
+      "target": 1,
+      "status": "unknown"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.sql-injection-prevention",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.tls",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الأمان وGit والتسليم",
+      "conceptId": "delivery.undo",
+      "observed": 1,
+      "unknown": 1,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.async-await",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.cancellation",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.deadlocks",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.garbage-collection",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.measurement",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.pooling",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.race-conditions",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.task-composition",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.thread-pool",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "التزامن والأداء",
+      "conceptId": "runtime.throttling",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.clustered-indexes",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.composite-indexes",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.covering-indexes",
+      "observed": 3,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.execution-plans",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.filtered-indexes",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.maintenance-tradeoffs",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.paging-indexes",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.parameter-sensitivity",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.sargability",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الفهارس وخطط التنفيذ",
+      "conceptId": "indexes.statistics",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.bulk-updates",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.context-lifetime",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.dapper",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.migrations",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.optimistic-concurrency",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.parameterization",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.projection",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.query-diagnostics",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.query-splitting",
+      "observed": 0,
+      "unknown": 0,
+      "target": 1,
+      "status": "gap"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.related-data",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.tracking",
+      "observed": 2,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    },
+    {
+      "category": "الوصول للبيانات",
+      "conceptId": "data.transactions",
+      "observed": 1,
+      "unknown": 0,
+      "target": 1,
+      "status": "met"
+    }
+  ],
+  "potentialDuplicates": [],
+  "missingConceptClassification": [
+    120
+  ]
+}

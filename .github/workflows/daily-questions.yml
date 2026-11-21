@@ -1,0 +1,144 @@
+name: Daily questions and Pages
+on:
+  schedule:
+    - cron: '0 0 * * *'
+      timezone: Africa/Cairo
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview, publish today's questions, or deploy the current main
+        type: choice
+        options: [preview, publish, deploy]
+        default: preview
+        required: true
+
+permissions: {}
+concurrency:
+  group: main-question-bank-and-pages
+  queue: max
+
+jobs:
+  prepare:
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      ((github.event_name == 'workflow_dispatch' && inputs.mode == 'preview') ||
+      (vars.PAGES_ACTIONS_ENABLED == 'true' &&
+      (github.event_name != 'schedule' || vars.DAILY_QUESTIONS_ENABLED == 'true')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      actions: read
+      contents: write
+    outputs:
+      deploy: ${{ steps.confirm.outputs.ready }}
+      site_sha: ${{ steps.confirm.outputs.site_sha }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Read the run's creation time
+        if: github.event_name == 'schedule' || inputs.mode == 'preview' || inputs.mode == 'publish'
+        id: run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          created_at=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --jq .created_at)
+          printf 'created_at=%s\n' "$created_at" >> "$GITHUB_OUTPUT"
+      - name: Generate, independently review and stage
+        if: steps.run.outcome == 'success'
+        id: daily
+        env:
+          CREATED_AT: ${{ steps.run.outputs.created_at }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_REVIEW_FREE_PLAN: '1'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          node scripts/daily-question-engine.mjs "$CREATED_AT"
+      - name: Validate the proposed site
+        if: >-
+          github.event_name == 'push' || inputs.mode == 'deploy' ||
+          steps.daily.outputs.status == 'staged' || steps.daily.outputs.status == 'already_published'
+        env:
+          PROPOSAL: ${{ steps.daily.outputs.commit }}
+          BASE: ${{ steps.daily.outputs.base }}
+        run: |
+          if [ -n "$PROPOSAL" ]; then
+            test "$(git rev-parse HEAD)" = "$BASE"
+            test "$(git rev-parse "$PROPOSAL^@")" = "$BASE"
+            git switch --detach "$PROPOSAL"
+          fi
+          node scripts/validate-questions.mjs
+          node scripts/build-question-index.mjs --check
+          node scripts/analyze-coverage.mjs --check
+          node --check assets/assessment.js
+          node --check assets/app.js
+          node --check assets/dialogs.js
+          node --test scripts/*-test.mjs
+      - name: Package the validated site
+        id: site
+        if: >-
+          inputs.mode != 'preview' && (github.event_name == 'push' || inputs.mode == 'deploy' ||
+          steps.daily.outputs.status == 'staged' || steps.daily.outputs.status == 'already_published')
+        run: |
+          site="$RUNNER_TEMP/gym-pages"
+          mkdir "$site"
+          cp -R index.html .nojekyll assets questions reports "$site/"
+          printf 'path=%s\n' "$site" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-pages-artifact@v4
+        if: steps.site.outcome == 'success'
+        with:
+          path: ${{ steps.site.outputs.path }}
+      - name: Publish the validated commit and authorize this Pages artifact
+        if: steps.site.outcome == 'success'
+        id: confirm
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROPOSAL: ${{ steps.daily.outputs.commit }}
+          BASE: ${{ steps.daily.outputs.base }}
+          CAIRO_DATE: ${{ steps.daily.outputs.date }}
+        run: |
+          head=$(git rev-parse HEAD)
+          if [ -n "$PROPOSAL" ]; then
+            today=$(node --input-type=module -e "import { cairoDate } from './scripts/daily-question-engine.mjs'; console.log(cairoDate())")
+            test "$CAIRO_DATE" = "$today"
+            test "$head" = "$PROPOSAL"
+            test "$(git rev-parse "$PROPOSAL^@")" = "$BASE"
+            gh auth setup-git --hostname github.com
+            git push --force-with-lease="refs/heads/main:$BASE" origin "$PROPOSAL:refs/heads/main"
+          fi
+          current=$(git ls-remote --exit-code origin refs/heads/main | cut -f1)
+          test "$head" = "$current"
+          printf 'ready=true\nsite_sha=%s\n' "$head" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: prepare
+    if: needs.prepare.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Verify main still matches the approved artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SITE_SHA: ${{ needs.prepare.outputs.site_sha }}
+        run: |
+          current=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')
+          test "$current" = "$SITE_SHA"
+          printf 'Pages artifact commit: `%s`\n' "$SITE_SHA" >> "$GITHUB_STEP_SUMMARY"
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4
+        id: deployment

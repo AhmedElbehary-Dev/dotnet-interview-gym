@@ -1,9 +1,11 @@
 name: Validate question bank
 on:
   push:
-    branches: [main]
+    branches: [main, feature/daily-question-engine]
   pull_request:
     branches: [main]
+permissions:
+  contents: read
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -13,6 +15,9 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/validate-questions.mjs
+      - run: node scripts/build-question-index.mjs --check
+      - run: node scripts/analyze-coverage.mjs --check
+      - run: node --test scripts/question-coverage-test.mjs scripts/question-generation-test.mjs scripts/question-review-test.mjs scripts/daily-question-test.mjs
       - run: node --check assets/assessment.js
       - run: node --check assets/app.js
       - run: node --check assets/dialogs.js

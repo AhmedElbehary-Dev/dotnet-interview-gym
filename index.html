@@ -36,9 +36,9 @@ html[data-theme="dark"] .btn.primary:hover:not(:disabled){background:#D1C5FF;col
 .setup-hero,#setup>.hero{background:#4322A8;color:#fff;border:0;border-radius:0;min-height:430px;padding:50px clamp(28px,4vw,58px);position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
 .setup-hero::before,#setup>.hero::before{content:'.NET';color:#C2B6FF;opacity:.11;font:900 clamp(9rem,15vw,15rem)/1 var(--font);letter-spacing:-.11em;bottom:-44px;right:-5px;position:absolute;z-index:-1;pointer-events:none}
 .setup-hero::after,#setup>.hero::after{background:#DDD4FF;height:5px;width:63px;content:'';position:absolute;top:36px;right:clamp(28px,4vw,58px)}
-.setup-hero h1,#setup>.hero h1{color:#fff;font-size:clamp(2.2rem,3.55vw,3.8rem);font-weight:790;line-height:1.36;max-width:13ch;letter-spacing:0;margin:0 0 12px}
+.setup-hero h1,#setup>.hero h1{color:#fff;font-size:clamp(2.2rem,3.55vw,3.8rem);font-weight:790;line-height:1.36;max-width:24ch;letter-spacing:0;margin:0 0 12px}
 .setup-hero .eyebrow,#setup>.hero .eyebrow{color:#DED6FF;letter-spacing:0;text-transform:none;font-size:.94rem;margin-bottom:20px}
-.setup-hero .lede,#setup>.hero .lede{color:#EFEAFF;font-size:1.02rem;line-height:2;max-width:52ch;margin:8px 0 12px}
+.setup-hero .lede,#setup>.hero .lede{color:#EFEAFF;font-size:1.02rem;line-height:2;max-width:68ch;margin:8px 0 12px}
 html[data-theme="dark"] .setup-hero,html[data-theme="dark"] #setup>.hero{background:#40279B;color:#fff;border-color:#4C3B79}
 html[data-theme="dark"] .setup-hero h1,html[data-theme="dark"] #setup>.hero h1{color:#fff}
 .setup-card,#setup>.card{background:var(--studio-paper);border:1px solid var(--border);border-radius:0;box-shadow:none}
@@ -47,11 +47,30 @@ html[data-theme="dark"] .setup-grid h2::after,html[data-theme="dark"] #setup h2:
 .mode-option{background:var(--card);border:1px solid var(--border)}
 .mode-option:has(input:checked),html[data-theme="dark"] .mode-option:has(input:checked){border-color:var(--clay);background:var(--studio-cream);box-shadow:inset 0 0 0 1px var(--clay)}
 .mode-option input{accent-color:#512BD4}
-select,html[data-theme="dark"] select{background:var(--card);border-color:var(--border);color:var(--ink)}
+select,.custom-select-trigger,html[data-theme="dark"] select,html[data-theme="dark"] .custom-select-trigger{background:var(--card);border-color:var(--border);color:var(--ink)}
 .notice,html[data-theme="dark"] .notice{background:var(--studio-cream);border-color:var(--clay);color:var(--ink)}
 .stats .stat,#setup .stat{background:var(--surface);border:1px solid var(--border)}
 #quiz .assessment-top{border-color:var(--studio-edge)}
-.run-index{direction:rtl;letter-spacing:0;background:var(--studio-paper);font-size:.76rem}
+.assessment-shell{display:flex;flex-direction:row;align-items:stretch;gap:16px;width:100%}
+.assessment-sidebar,.assessment-top{flex:0 0 160px;width:160px;min-width:155px;position:sticky;top:16px;align-self:flex-start;z-index:25;display:flex;flex-direction:column;align-items:center;background:var(--studio-paper);border:1px solid var(--studio-edge);border-radius:6px;padding:20px 12px;gap:14px;box-sizing:border-box;text-align:center}
+.top-row-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+.run-identity{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;text-align:center}
+.run-index{direction:rtl;letter-spacing:0;background:var(--studio-cream);color:var(--clay-ink);border:1px solid var(--border);border-radius:99px;padding:3px 10px;font-size:.72rem;font-weight:750;white-space:nowrap}
+.run-meta{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%}
+.run-meta .eyebrow{font-size:.92rem;font-weight:800;color:var(--ink);display:block;line-height:1.35;text-align:center}
+.run-meta .small{font-size:.72rem;line-height:1.35;color:var(--muted);text-align:center;word-break:break-word}
+.side-divider{width:100%;height:1px;background:var(--studio-edge)}
+.time-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.time-label{display:flex;align-items:center;justify-content:center;gap:6px;font-size:.74rem;font-weight:750;color:var(--muted);letter-spacing:0}
+.time-led{width:7px;height:7px;border-radius:50%;background:var(--clay);box-shadow:0 0 0 4px #512bd420;flex-shrink:0}
+.timer,html[data-theme="dark"] .timer{display:flex;justify-content:center;align-items:center;width:100%;min-width:0;min-height:48px;padding:7px 4px;border:1px solid var(--border);background:var(--studio-paper);color:var(--ink);font-family:'Cascadia Code','Consolas',monospace;font-size:1.45rem;font-weight:800;font-variant-numeric:tabular-nums;border-radius:4px;letter-spacing:-.02em;text-align:center;box-sizing:border-box}
+.timer.warning,html[data-theme="dark"] .timer.warning{border-color:var(--danger);color:var(--danger)}
+.progress-wrap{display:flex;flex-direction:column;align-items:center;gap:7px;width:100%}
+.progress-header{display:flex;flex-direction:column;align-items:center;gap:2px;width:100%}
+.progress-label{font-size:.72rem;letter-spacing:0;font-weight:750;color:var(--muted);text-align:center}
+.progress-pct{font-size:.78rem;font-weight:800;font-family:'Cascadia Code','Consolas',monospace;color:var(--clay-ink)}
+.assessment-sidebar .progress,.assessment-top .progress{margin:3px auto;width:8px!important;height:110px!important;border-radius:99px;background:var(--border);overflow:hidden;position:relative;display:flex;flex-direction:column;justify-content:flex-end}
+.assessment-sidebar .progress>div,.assessment-top .progress>div{background:var(--clay);border-radius:99px;width:100%!important;transition:height .25s ease}
 .assessment-body{direction:rtl;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;min-height:555px}
 .question-pane{background:var(--studio-cream);border-color:var(--studio-edge);padding:36px clamp(24px,3.3vw,48px) 28px;direction:rtl}
 .question-pane::before{display:none}
@@ -78,7 +97,6 @@ html[data-theme="dark"] .choice.selected .letter{background:var(--clay);color:#1
 .time-led{background:var(--clay);box-shadow:0 0 0 4px #512bd420}
 .timer,html[data-theme="dark"] .timer{background:var(--studio-paper);color:var(--ink);border:1px solid var(--border);border-radius:4px}
 .timer.warning,html[data-theme="dark"] .timer.warning{border-color:var(--danger);color:var(--danger)}
-.progress,.progress>div{border-radius:1px}.progress{background:var(--border)}.progress>div{background:var(--clay)}
 .progress-label{letter-spacing:0}
 .answer-pane .q-actions .btn.primary{min-height:49px}
 .answer-pane .q-actions .left-actions{gap:8px}
@@ -103,10 +121,68 @@ html[data-theme="dark"] .choice.selected .letter{background:var(--clay);color:#1
 html[data-theme="dark"] .report-tabs .tab[aria-pressed="true"]{background:#B49FFF;color:#171528;border-color:#B49FFF}
 .explain-label,.explain-reason{direction:rtl;text-align:right}
 html[data-theme="dark"] .q-category{color:var(--clay-ink)}
-html[data-theme="dark"] .progress{background:var(--border)}
-html[data-theme="dark"] .progress>div{background:var(--clay)}
-@media(max-width:1080px){.app{width:min(100% - 40px,1020px)}.question-pane .q-text{font-size:1.32rem}.assessment-body{gap:12px}.question-pane,.answer-pane{padding:28px 23px}}
-@media(max-width:768px){.app{width:calc(100% - 22px);padding:12px 0 30px}.brand{margin-bottom:20px}.assessment-body{grid-template-columns:1fr;gap:10px}.question-pane,.answer-pane{padding:25px 21px;min-height:0}.question-pane .q-category{margin-top:20px}.question-pane .q-text{font-size:1.35rem;line-height:1.75;max-width:none}.question-footer{display:none}.question-pane .code-block pre{font-size:.88rem}.answer-pane .q-actions{margin-top:24px}.mode-wrap,.form-row{grid-template-columns:1fr}.answer-pane .choice{min-height:58px}.setup-hero,#setup>.hero{min-height:auto;padding:38px 24px}.setup-hero h1,#setup>.hero h1{max-width:none}}
+@media(max-width:1080px){.app{width:min(100% - 40px,1020px)}.assessment-sidebar,.assessment-top{flex:0 0 145px;width:145px}.question-pane .q-text{font-size:1.32rem}.assessment-body{gap:12px}.question-pane,.answer-pane{padding:28px 23px}}
+@media(max-width:768px){
+  .app{width:calc(100% - 20px);padding:10px 0 32px}
+  .brand{margin-bottom:14px;min-height:52px}
+  .brand-logo{width:38px;height:38px}
+  .brand-name{font-size:.9rem}
+  .meta-chip{display:none}
+  .assessment-shell{flex-direction:column;gap:12px}
+  .assessment-sidebar,.assessment-top{position:sticky;top:0;z-index:100;width:100%;flex:none;align-self:stretch;flex-direction:column;background:var(--studio-paper);border:1px solid var(--border);border-radius:6px;padding:9px 12px;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .side-divider{display:none}
+  .top-row-wrap{display:flex;flex-direction:row;justify-content:space-between;align-items:center;width:100%;gap:8px}
+  .run-identity{flex-direction:row;align-items:center;gap:6px;width:auto;text-align:right}
+  .run-index{font-size:.65rem;padding:2px 7px;border-radius:3px}
+  .run-meta{align-items:flex-start;text-align:right;gap:1px}
+  .run-meta .eyebrow{font-size:.88rem;font-weight:800;line-height:1.25}
+  .run-meta .small{display:none}
+  .time-wrap{flex-direction:row;align-items:center;gap:6px;width:auto}
+  .time-label{display:none}
+  .time-led{width:6px;height:6px}
+  .timer{min-width:68px;min-height:34px;font-size:1.15rem;padding:3px 6px;border-radius:4px}
+  .progress-wrap{flex-direction:row;align-items:center;gap:8px;width:100%;margin-top:2px}
+  .progress-header{flex-direction:row;align-items:center;gap:6px;width:auto;flex-shrink:0}
+  .progress-label{display:none}
+  .progress-pct{font-size:.72rem;min-width:28px;text-align:left}
+  .assessment-sidebar .progress,.assessment-top .progress{width:100%!important;height:6px!important;margin:0;border-radius:99px;background:var(--border);flex-direction:row;justify-content:flex-start}
+  .assessment-sidebar .progress>div,.assessment-top .progress>div{height:100%!important;border-radius:99px;transition:width .25s ease}
+  .assessment-body{grid-template-columns:1fr;gap:10px;min-height:0}
+  .question-pane,.answer-pane{padding:20px 16px;border-radius:6px;min-height:0}
+  .question-pane .q-category{margin-top:8px}
+  .question-pane .q-text{font-size:1.18rem;line-height:1.55;max-width:none;margin-bottom:14px}
+  .question-footer{display:none}
+  .question-pane .code-block{margin:8px 0 16px;border-radius:6px}
+  .question-pane .code-block pre{font-size:.86rem;padding:12px 14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .answer-instructions{margin:12px 0 14px;font-size:.85rem}
+  .answer-pane .choices{gap:9px}
+  .answer-pane .choice{min-height:52px;padding:11px 13px;gap:11px;border-radius:5px;touch-action:manipulation}
+  .answer-pane .choice:active{transform:scale(.99)}
+  .choice .letter{width:32px;height:32px;font-size:.88rem;border-radius:4px}
+  .choice .answer-text{font-size:.95rem;line-height:1.48}
+  .answer-pane .q-actions{margin-top:18px;padding-top:14px;display:flex;flex-direction:column;gap:9px}
+  .answer-pane .q-actions .right-actions{display:flex;flex-direction:column;width:100%;gap:8px}
+  .answer-pane .q-actions .right-actions .btn.primary{width:100%;min-height:48px;font-size:.98rem;font-weight:750}
+  .answer-pane .q-actions .right-actions #skip{width:100%;min-height:42px}
+  .answer-pane .q-actions .left-actions{display:flex;flex-direction:row;width:100%;justify-content:space-between;gap:8px}
+  .answer-pane .q-actions .left-actions .btn{flex:1;min-height:40px;font-size:.82rem}
+  .answer-pane .keyboard-help{display:none}
+  .mode-wrap,.form-row,.extra-filters{grid-template-columns:1fr;gap:10px}
+  select,.custom-select-trigger{font-size:16px;height:48px}
+  .stats,#setup .stats,#results .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+  .topics{grid-template-columns:1fr}
+  .setup-hero,#setup>.hero{min-height:auto;padding:28px 18px 24px}
+  .setup-hero h1,#setup>.hero h1{font-size:1.85rem;max-width:none}
+  .action-row .btn{width:100%;min-height:46px}
+}
+@media(max-width:480px){
+  .app{padding:8px 0 28px}
+  .brand-name span{max-width:160px;font-size:.82rem}
+  .theme-toggle{font-size:.72rem;padding:5px 8px}
+  .choice{padding:10px 12px}
+  .choice .letter{width:30px;height:30px;font-size:.84rem}
+  .timer{font-size:1.05rem;min-width:62px}
+}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 </style>
 
@@ -132,35 +208,73 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 </head>
 <body>
 <main class="app">
-<header class="brand"><div class="brand-name"><img class="brand-logo" src="assets/logo.png?v=7" alt="" width="44" height="44"><span>.NET Interview GYM</span></div><div class="brand-actions"><span class="meta-chip" id="bankBadge">بنك أسئلة • أوفلاين</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل مظهر التطبيق" aria-pressed="false">☾ الوضع الداكن</button></div></header>
+<header class="brand"><div class="brand-name"><img class="brand-logo" src="assets/logo.png?v=7" alt="" width="44" height="44"><span>.NET Interview GYM</span></div><div class="brand-actions"><span class="meta-chip" id="bankBadge">بنك الأسئلة</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="تبديل مظهر التطبيق" aria-pressed="false">☾ الوضع الداكن</button></div></header>
 <section id="setup" class="setup-grid" aria-labelledby="setup-title">
-  <div class="hero setup-hero"><div class="eyebrow">تدريب يومي لمهندس .NET</div><h1 id="setup-title">استرجع معلوماتك. سؤال ورا سؤال.</h1><p class="lede">بنك أسئلة متجدد بالإنجليزي مع لمحات عربية قصيرة. جاوب بالمؤقت، وبعد الجولة راجع الشرح الكامل بالعربي، وركّز على نقاط ضعفك.</p></div>
+  <div class="hero setup-hero"><div class="eyebrow">منصة الإعداد والمراجعة المتقدمة لمهندسي .NET</div><h1 id="setup-title">رسّخ حصيلتك التقنية، واستعد للمقابلات البرمجية بثقة واحترافية.</h1><p class="lede">بيئة تدريبية تفاعلية متخصصة في منظومة .NET الحديثة، لغة C#، وإدارة قواعد البيانات SQL Server. تُطرح الأسئلة والشيفرات البرمجية باللغة الإنجليزية لمحاكاة معايير التقييم المعتمدة في المقابلات التقنية، مصحوبةً بإضاءات تحليلية باللغة العربية لشحذ التفكير المنطقي واستحضار الحلول. تدرّب تحت ضغط المؤقت الزمني، ثم تعمّق عقب كل جولة في شروح وتفنيدات برمجية وافية تُعالج جوانب القصور وتُثبّت دقائق المعرفة التقنية.</p></div>
   <div class="card setup-card setup-quiz-card"><h2>إعداد الجولة</h2>
     <div class="mode-wrap" role="group" aria-label="وضع المراجعة">
-      <label class="mode-option"><input type="radio" name="mode" value="exam" checked><span><strong>وضع الاختبار</strong><span class="muted">بدون إجابات أثناء الجولة. انتقال فوري بعد التأكيد أو انتهاء الوقت.</span></span></label>
-      <label class="mode-option"><input type="radio" name="mode" value="learn"><span><strong>وضع المذاكرة</strong><span class="muted">اعرض التفسير بعد كل إجابة، وافهم السبب قبل الانتقال.</span></span></label>
+      <label class="mode-option"><input type="radio" name="mode" value="exam" checked><span><strong>وضع الاختبار التقييمي</strong><span class="muted">محاكاة حقيقية لأجواء الاختبار دون كشف الإجابات، مع انتقال فوري عند التأكيد أو نفاد الوقت.</span></span></label>
+      <label class="mode-option"><input type="radio" name="mode" value="learn"><span><strong>وضع المذاكرة والتعلم</strong><span class="muted">استعراض التعليل والشرح العلمي عقب كل إجابة مباشرة لترسيخ المفاهيم قبل الانتقال.</span></span></label>
     </div>
     <div class="form-row">
       <label class="field">وقت السؤال<select id="seconds"><option value="45">45 ثانية</option><option value="60">60 ثانية</option><option value="75" selected>75 ثانية</option><option value="90">90 ثانية</option><option value="120">120 ثانية</option><option value="0">بدون مؤقت</option></select></label>
-      <label class="field">الموضوع<select id="category"><option value="all">كل المجالات</option></select></label>
+      <label class="field">الموضوع<select id="category"><option value="all">كافة التخصصات</option></select></label>
       <label class="field">عدد الأسئلة<select id="size"><option value="10">10 أسئلة</option><option value="20">20 سؤال</option><option value="30" selected>30 سؤالًا</option><option value="40">40 سؤالًا</option><option value="120">120 سؤالًا</option></select></label>
     </div>
-    <div class="form-row extra-filters"><label class="field">الصعوبة<select id="difficulty"><option value="all">كل المستويات</option><option value="أساسي">أساسي</option><option value="متوسط">متوسط</option><option value="متقدم">متقدم</option></select></label><label class="field">نوع المهارة<select id="skill"><option value="all">كل الأنواع</option><option value="مفهوم">فهم المفاهيم</option><option value="فهم الكود">قراءة الكود</option><option value="حل مشكلة">حل مشكلات</option></select></label></div><div class="assessment-intro" aria-label="التقييم التكيفي"><div><strong>ابدأ بتحديد مستواك أو راجع على مستواك</strong><p class="small muted">التقييم الأول 30 سؤال من كل المجالات. التدريب المتكيف يغيّر صعوبة السؤال التالي حسب أدائك، والنتيجة مبدئية وليست لقبًا وظيفيًا.</p></div><div class="action-row"><button class="btn primary" id="placement" disabled>اختبار تحديد المستوى — 30 سؤال</button><button class="btn secondary" id="adaptive" disabled>تدريب متكيف</button></div></div><div class="action-row"><button class="btn primary" id="start" disabled>ابدأ الجولة ←</button><button class="btn secondary" id="retry" disabled>راجع نقاط الضعف</button><button class="btn" id="resume" disabled>استكمال الجولة المحفوظة</button></div>
-    <div class="notice">الأسئلة والاختيارات بالإنجليزي، ومع كل سؤال لمحة عربية صغيرة من غير كشف الحل. في وضع الاختبار يظهر الشرح الكامل بعد الجولة. المؤقت والانتقال التلقائي وحفظ التقدم شغالين كالمعتاد.</div>
-    <div class="loading-notice muted" id="loadStatus" role="status">جاري تحميل بنك الأسئلة…</div>
+    <div class="form-row extra-filters"><label class="field">الصعوبة<select id="difficulty"><option value="all">كل المستويات</option><option value="أساسي">أساسي</option><option value="متوسط">متوسط</option><option value="متقدم">متقدم</option></select></label><label class="field">نوع المهارة<select id="skill"><option value="all">كل الأنواع</option><option value="مفهوم">فهم المفاهيم</option><option value="فهم الكود">قراءة الكود</option><option value="حل مشكلة">حل مشكلات</option></select></label></div><div class="assessment-intro" aria-label="التقييم التكيفي"><div><strong>تحديد المستوى والمسار التكيفي</strong><p class="small muted">يتألف اختبار تحديد المستوى من 30 سؤالاً شاملاً لكافة التخصصات البرمجية. يضبط المسار التكيفي صعوبة الأسئلة التالية تلقائياً وفق دقة أدائك، وتُعد النتيجة مؤشراً استرشادياً موجهاً لمسار تدريبك.</p></div><div class="action-row"><button class="btn primary" id="placement" disabled>اختبار تحديد المستوى — 30 سؤالاً</button><button class="btn secondary" id="adaptive" disabled>تدريب تكيفي ذكي</button></div></div><p class="small muted">يستبعد التدريب العادي الأسئلة المتقنة. يشمل اختبار تحديد المستوى جميع الأسئلة، بما فيها المتقنة.</p><div class="action-row"><button class="btn primary" id="start" disabled>بدء الجولة التدريبية ←</button><button class="btn" id="resume" disabled>استئناف الجولة السابقة</button></div>
+    <div class="action-row" role="group" aria-label="اختيار مجموعة المراجعة">
+      <button class="btn secondary" id="retry" disabled>مراجعة الخاطئة والمتخطاة والمنتهية بالوقت</button>
+      <button class="btn secondary" id="reinforce" disabled>تثبيت الإجابات الصحيحة غير المتقنة</button>
+      <button class="btn secondary" id="revisit" disabled>مذاكرة الأسئلة المتقنة مع الشرح</button>
+      <button class="btn secondary" id="reassess" disabled>إعادة اختبار الأسئلة المتقنة</button>
+    </div>
+    <div id="emptyRound" class="card hidden" role="status">
+      <strong>لا توجد أسئلة متاحة لهذه الجولة</strong>
+      <p class="small muted">جرّب تغيير عوامل التصفية أو اختيار مجموعة تدريب أخرى.</p>
+    </div>
+    <div class="notice">صيغت الأسئلة ونماذج الأكواد باللغة الإنجليزية لمحاكاة بيئات المقابلات التقنية المعتمدة، مع تزويد كل مسألة بإرشاد عربي مقتضب يُعين على التحليل دون كشف الحل. في وضع الاختبار يُعرض الشرح التفصيلي والتعليل البرمجي الكامل في تقرير نهاية الجولة. مؤقت الإجابة والانتقال التلقائي وحفظ التقدم تعمل بشكل مستمر.</div>
+    <div class="loading-notice muted" id="loadStatus" role="status">جارٍ تحميل بنك الأسئلة…</div>
   </div>
-  <div class="card setup-card setup-skills-card"><h2>ملف المهارات</h2><p class="small muted">مؤشر تدريبي مبني على آخر إجابة لكل سؤال مختلف، مع مراعاة الصعوبة والتلميحات. مش شهادة Senior/Junior، وبيكون غير دقيق لو الأسئلة قليلة.</p><div class="skill-profile" id="skillProfile"></div><p class="small muted" id="profileMessage"></p></div>
-  <div class="card setup-card setup-progress-card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة تمت تجربتها</span><strong id="triedCount">0</strong></div><div class="stat"><span>مفاهيم تحتاج مراجعة</span><strong id="needsCount">0</strong></div><div class="stat"><span>تم تثبيتها</span><strong id="masteredCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">مسح تقدم هذه النسخة</button><button class="btn ghost" id="exportProgress">تصدير التقدم</button><button class="btn ghost" id="importProgress">استيراد التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
+  <section class="card setup-card setup-arrivals-card" aria-labelledby="arrivals-title">
+    <h2 id="arrivals-title">الأسئلة الجديدة</h2>
+    <details open><summary>أسئلة اليوم</summary>
+      <ul id="arrivalsToday" class="arrival-list"></ul>
+      <button class="btn ghost" id="startArrivalsToday" disabled>تدرّب على أسئلة اليوم</button>
+    </details>
+    <details><summary>أسئلة الأيام الستة الماضية</summary>
+      <ul id="arrivalsRecent" class="arrival-list"></ul>
+      <button class="btn ghost" id="startArrivalsRecent" disabled>تدرّب على الأسئلة الأخيرة</button>
+    </details>
+  </section>
+  <div class="card setup-card setup-skills-card"><h2>مؤشر المهارات</h2><p class="small muted">مؤشر تحليلي يُقاس استناداً إلى نتائج إجاباتك ومستويات الصعوبة واستخدام الإرشادات؛ يُعد دليلاً استرشادياً موجهاً للتدريب وليس تقييماً وظيفياً نهائياً، وتتعزز دقته بازدياد عدد المسائل المنجزة.</p><div class="skill-profile" id="skillProfile"></div><p class="small muted" id="profileMessage"></p></div>
+  <div class="card setup-card setup-progress-card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة لم تُجرّب</span><strong id="unseenCount">0</strong></div><div class="stat"><span>أسئلة تحتاج إلى مراجعة</span><strong id="reviewCount">0</strong></div><div class="stat"><span>أسئلة مُتقنة</span><strong id="masteredCount">0</strong></div><div class="stat"><span>أسئلة تحتاج إلى تثبيت</span><strong id="reinforcementCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">إعادة ضبط التقدّم</button><button class="btn ghost" id="exportProgress">تصدير بيانات التقدم</button><button class="btn ghost" id="importProgress">استيراد بيانات التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
 </section>
 <section id="quiz" class="hidden" aria-label="سؤال الاختبار">
   <div class="assessment-shell">
-    <div class="assessment-top">
-      <div class="assessment-topline">
-        <div class="run-identity"><span class="run-index">جولة جارية</span><div class="run-meta"><span class="eyebrow" id="questionNo"></span><div class="small muted" id="runMode"></div></div></div>
-        <div class="time-wrap"><span class="time-label">الوقت المتبقي <span class="time-led" aria-hidden="true"></span></span><div class="timer" id="timer" dir="ltr" role="timer">01:15</div></div>
+    <aside class="assessment-sidebar assessment-top" aria-label="حالة الجولة والتقدم">
+      <div class="top-row-wrap">
+        <div class="run-identity">
+          <span class="run-index">جولة جارية</span>
+          <div class="run-meta">
+            <span class="eyebrow" id="questionNo"></span>
+            <div class="small muted" id="runMode"></div>
+          </div>
+        </div>
+        <div class="side-divider" aria-hidden="true"></div>
+        <div class="time-wrap">
+          <span class="time-label"><span class="time-led" aria-hidden="true"></span>الوقت المتبقي</span>
+          <div class="timer" id="timer" dir="ltr" role="timer">01:15</div>
+        </div>
       </div>
-      <div class="progress-row"><div class="progress" aria-hidden="true"><div id="progressBar"></div></div><span class="progress-label">نسبة التقدم</span></div>
-    </div>
+      <div class="side-divider" aria-hidden="true"></div>
+      <div class="progress-wrap">
+        <div class="progress-header">
+          <span class="progress-label">نسبة التقدم</span>
+          <span class="progress-pct" id="progressPct">0%</span>
+        </div>
+        <div class="progress" aria-hidden="true"><div id="progressBar"></div></div>
+      </div>
+    </aside>
     <div class="assessment-body">
       <div class="question-pane">
         <div class="pane-kicker"><span class="pane-dot"></span> QUESTION</div>
@@ -170,8 +284,8 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
           <div class="code-toolbar"><span class="editor-dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="code-lang" id="codeLang">C#</span><button class="copy-code" id="copyCode" aria-label="نسخ الكود" type="button">نسخ الكود</button></div>
           <pre><code dir="ltr" id="codeText"></code></pre>
         </div>
-        <button type="button" class="btn hint-toggle hidden" id="hintToggle" aria-expanded="false">عرض لمحة بالعربي (هتُسجّل كمساعدة)</button><p class="micro-hint" id="microHint" dir="rtl" aria-label="لمحة قصيرة بالعربي"><span class="micro-hint-label">لمحة بالعربي</span><span id="microHintText"></span></p>
-        <div class="question-footer"><span class="pane-foot-index">مراجعة .NET • ركّز وفكّر</span><span class="pane-foot-shape" aria-hidden="true">⌁</span></div>
+        <button type="button" class="btn hint-toggle hidden" id="hintToggle" aria-controls="microHint" aria-expanded="false">عرض إرشاد توجيهي (يُسجَّل كمساعدة)</button><p class="micro-hint hidden" id="microHint" dir="rtl" aria-label="إرشاد توجيهي باللغة العربية"><span class="micro-hint-label">إرشاد توجيهي</span><span id="microHintText"></span></p>
+        <div class="question-footer"><span class="pane-foot-index">مراجعة .NET • تفكير تحليلي متأنٍ</span><span class="pane-foot-shape" aria-hidden="true">⌁</span></div>
       </div>
       <div class="answer-pane">
         <div class="pane-kicker"><span class="pane-dot"></span> YOUR ANSWER</div>
@@ -179,20 +293,20 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
         <div id="choices" class="choices" role="group" aria-label="اختيارات السؤال"></div>
         <div id="feedback" class="feedback hidden" aria-live="polite"></div>
         <div class="q-actions">
-          <div class="right-actions"><button id="submit" class="btn primary" disabled>تأكيد والانتقال ←</button><button id="next" class="btn primary hidden">السؤال التالي ←</button><button id="skip" class="btn">مش عارف</button></div>
+          <div class="right-actions"><button id="submit" class="btn primary" disabled>تأكيد الإجابة ←</button><button id="next" class="btn primary hidden">السؤال التالي ←</button><button id="skip" class="btn">تخطي السؤال</button></div>
           <div class="left-actions"><button id="pause" class="btn ghost">إيقاف مؤقت</button><button id="exit" class="btn ghost">حفظ وخروج</button></div>
         </div>
-        <p class="keyboard-help" id="shortcuts">اختصارات: 1–4 للاختيار، Enter للتأكيد</p>
+        <p class="keyboard-help" id="shortcuts">اختصارات لوحة المفاتيح: 1–4 للاختيار، Enter للتأكيد</p>
       </div>
     </div>
   </div>
 </section>
 <section id="results" class="hidden" aria-label="تقرير الجولة">
-  <div class="hero"><div class="eyebrow">انتهت الجولة</div><h1>التقرير والمراجعة</h1><p class="lede">شوف نقاط القوة والضعف، واقرأ شرح الأسئلة براحتك من غير مؤقت.</p></div>
-  <div class="card"><div class="stats"><div class="stat"><span>النتيجة</span><strong id="score">—</strong></div><div class="stat"><span>صحيح</span><strong id="right">0</strong></div><div class="stat"><span>إجابة خاطئة</span><strong id="wrongCount">0</strong></div><div class="stat"><span>انتهى الوقت / تخطي</span><strong id="unanswered">0</strong></div></div><p class="small muted" id="runInfo"></p><h3>النتيجة حسب المجال</h3><div class="topics" id="breakdown"></div></div>
-  <div class="card" style="margin-top:16px"><h2>ملف مهاراتك بعد الجولة</h2><div class="skill-profile" id="resultSkills"></div><p class="small muted" id="resultProfileMessage"></p></div><div class="card" style="margin-top:16px"><h2>راجع الإجابات</h2><div class="report-tabs" role="group" aria-label="تصفية النتائج"><button class="btn tab" data-filter="weak" aria-pressed="true">الأسئلة اللي وقعت فيها</button><button class="btn tab" data-filter="timeout" aria-pressed="false">انتهى الوقت</button><button class="btn tab" data-filter="all" aria-pressed="false">كل الأسئلة</button></div><div id="reviewList"></div><div class="action-row"><button class="btn secondary" id="again">راجع نقاط الضعف</button><button class="btn primary" id="newRound">جولة جديدة</button><button class="btn" id="copy">نسخ التقرير</button></div></div>
+  <div class="hero"><div class="eyebrow">اكتملت الجولة التقييمية</div><h1>تقرير الأداء والمراجعة التفصيلية</h1><p class="lede">استعرض تحليلاً دقيقاً لمستوى الإجابات ومواطن القوة والقصور، واطّلع على الشرح العلمي المفصل لكل سؤال دون التقيد بالمؤقت الزمني.</p></div>
+  <div class="card"><div class="stats"><div class="stat"><span>النتيجة الكلية</span><strong id="score">—</strong></div><div class="stat"><span>إجابات صحيحة</span><strong id="right">0</strong></div><div class="stat"><span>إجابات خاطئة</span><strong id="wrongCount">0</strong></div><div class="stat"><span>نفاد الوقت / تخطي</span><strong id="unanswered">0</strong></div></div><p class="small muted" id="runInfo"></p><h3>النتيجة حسب المجال</h3><div class="topics" id="breakdown"></div></div>
+  <div class="card" style="margin-top:16px"><h2>ملف مهاراتك بعد الجولة</h2><div class="skill-profile" id="resultSkills"></div><p class="small muted" id="resultProfileMessage"></p></div><div class="card" style="margin-top:16px"><h2>راجع الإجابات</h2><div class="report-tabs" role="group" aria-label="تصفية النتائج"><button class="btn tab" data-filter="weak" aria-pressed="true">الإجابات غير الموفقة</button><button class="btn tab" data-filter="timeout" aria-pressed="false">الأسئلة المنتهية بالوقت</button><button class="btn tab" data-filter="all" aria-pressed="false">كافة الأسئلة</button></div><div id="reviewList"></div><div class="action-row"><button class="btn secondary" id="again">إعادة تدريب نقاط الضعف</button><button class="btn primary" id="newRound">بدء جولة جديدة</button><button class="btn" id="copy">نسخ نص التقرير</button></div></div>
 </section>
-<p class="footer">Interview Gym • تدريب عملي ومراجعة مفاهيم .NET وSQL Server</p>
+<p class="footer">Interview Gym • منصة احترافية للتدريب والمراجعة الشاملة لمفاهيم .NET وSQL Server • © <a href="https://github.com/AhmedElbehary-Dev" target="_blank" rel="noopener noreferrer">Ahmed Elbehary</a></p>
 </main>
 
 
@@ -211,6 +325,7 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
 <div class="gym-toast-wrap" id="gym-toast-wrap" role="status" aria-live="polite"></div>
 <script defer src="https://cdn.jsdelivr.net/npm/micromodal@0.4.10/dist/micromodal.min.js"></script>
 <script defer src="assets/dialogs.js"></script>
+<script defer src="assets/dropdown.js"></script>
 <script defer src="assets/assessment.js"></script>
 <script defer src="assets/app.js"></script>
 </body></html>
