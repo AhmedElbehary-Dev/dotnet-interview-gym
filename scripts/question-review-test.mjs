@@ -83,6 +83,9 @@ test('approves a documented candidate and atomically stages provenance without c
   const { path, report } = await run({ fetchImpl: async (_url, { body }) => {
     const payload = JSON.parse(body);
     assert.equal(payload.model, model);
+    assert.equal(payload.reasoning_effort, 'low');
+    assert.equal(payload.max_completion_tokens, 2800);
+    assert.equal(payload.temperature, 0.2);
     assert.equal(payload.response_format.type, 'json_schema');
     const { strict, schema } = payload.response_format.json_schema;
     assert.equal(strict, true);
@@ -184,6 +187,75 @@ for (const [label, response, reason, field, rule, finish] of [
     assert(!readFileSync(path, 'utf8').includes(extraField));
     for (const privateValue of [extraField, key, batch.candidates[0].q]) {
       assert(!JSON.stringify(logs).includes(privateValue));
+    }
+  });
+}
+
+const badRequest = error => Response.json({ error }, { status: 400 });
+const invalidRequestType = 'invalid_request_error';
+const privateResponse = `reflected-prompt generated-content Authorization: Bearer ${key}`;
+for (const [label, response, category, providerError] of [
+  ['invalid request schema',
+    () => badRequest({ code: 'invalid_json_schema', type: invalidRequestType, param: 'response_format.json_schema.schema' }),
+    'invalid_request_schema', { code: 'invalid_json_schema', type: invalidRequestType, param: 'response_format.json_schema.schema' }],
+  ['schema validation message',
+    () => badRequest({ type: invalidRequestType, message: `Invalid schema for response_format 'question_review': ${privateResponse}` }),
+    'invalid_request_schema', { type: invalidRequestType }],
+  ['unsupported request parameter',
+    () => badRequest({ code: 'unsupported_parameter', type: invalidRequestType, param: 'reasoning_effort' }),
+    'unsupported_model_parameters', { code: 'unsupported_parameter', type: invalidRequestType, param: 'reasoning_effort' }],
+  ['unsupported parameter message',
+    () => badRequest({ type: invalidRequestType, message: `'reasoning_effort' is not supported with this model. ${privateResponse}` }),
+    'unsupported_model_parameters', { type: invalidRequestType }],
+  ['structured-output generation failure',
+    () => badRequest({ code: 'json_validate_failed', type: invalidRequestType, param: 'response_format',
+      message: privateResponse, failed_generation: privateResponse, prompt: privateResponse }),
+    'structured_output_generation_failed', { code: 'json_validate_failed', type: invalidRequestType, param: 'response_format' }],
+  ['structured-output generation message',
+    () => badRequest({ type: invalidRequestType, message: 'Generated JSON does not match the expected schema. Please adjust your prompt.' }),
+    'structured_output_generation_failed', { type: invalidRequestType }],
+  ['invalid model configuration',
+    () => badRequest({ code: 'model_decommissioned', type: invalidRequestType, param: 'model' }),
+    'invalid_model_configuration', { code: 'model_decommissioned', type: invalidRequestType, param: 'model' }],
+  ['ambiguous bad request',
+    () => badRequest({ type: invalidRequestType, param: 'response_format', message: `Rejected request: ${key} mentions an unsupported model` }),
+    'http_error', { type: invalidRequestType, param: 'response_format' }],
+  ['unrecognized provider metadata',
+    () => badRequest({ code: 'unknown_looks_like_a_code', type: privateResponse, param: [privateResponse],
+      message: privateResponse, failed_generation: privateResponse }),
+    'http_error', undefined],
+  ['malformed error body',
+    () => new Response(`{"error":${privateResponse}`, { status: 400 }),
+    'http_error', undefined],
+  ['oversized error body',
+    () => badRequest({ code: 'invalid_json_schema', message: privateResponse.repeat(4096) }),
+    'http_error', undefined]
+]) {
+  test(`Groq HTTP 400 safely classifies ${label}`, async t => {
+    const { run } = fixture(t, 1, addSources(otherSource));
+    const logs = [];
+    let requests = 0;
+    const { report, path } = await run({
+      fetchImpl: async () => { requests++; return response(); },
+      log: event => logs.push(event)
+    });
+    const [entry] = report.entries;
+    assert.equal(requests, 1);
+    assert.equal(entry.reason, category);
+    assert.equal(entry.decision, 'needs_review');
+    assert.equal(entry.findings, null);
+    assert.equal(entry.gates.deterministic, 'passed');
+    assert.equal(entry.gates.documentation, 'evidence_retrieved');
+    assert.equal(logs.length, 1);
+    assert.equal(logs[0].httpStatus, 400);
+    assert.equal(logs[0].failureCategory, category);
+    assert.deepEqual(logs[0].providerError, providerError);
+    assert.deepEqual(entry.diagnostics, logs);
+    const saved = readFileSync(path, 'utf8');
+    assert.deepEqual(JSON.parse(saved).entries[0].diagnostics, logs);
+    for (const value of [key, 'reflected-prompt', 'generated-content', 'Authorization', 'unknown_looks_like_a_code']) {
+      assert.equal(JSON.stringify(logs).includes(value), false);
+      assert.equal(saved.includes(value), false);
     }
   });
 }

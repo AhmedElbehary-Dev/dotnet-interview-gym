@@ -45,6 +45,10 @@ try {
   while `invalid_review` identifies a bad shape or value. `invalid_json` includes
   a rule identifying the response envelope or completion content. Diagnostics
   omit raw responses, candidate text, and credentials.
+- For HTTP 400, `providerError` contains any recognized Groq code, type, and
+  request parameter. The failure category can identify an invalid request
+  schema, unsupported model parameters, structured-output generation failure,
+  or invalid model configuration. Ambiguous rejections remain `http_error`.
 - Approval requires a distinct, confirmed review model, an independently
   selected matching answer, all positive findings and sufficient documentation.
   One authoritative source can suffice. Each retained URL needs an exact quote

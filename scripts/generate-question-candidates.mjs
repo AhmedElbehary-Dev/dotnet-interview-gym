@@ -152,23 +152,72 @@ function parseCompletion(content, { key, name, modelPattern }, diagnostics, sele
 }
 
 const reviewParameters = ['response_format', 'json_schema', 'strict', 'reasoning_effort', 'max_completion_tokens', 'temperature', 'model'];
+const providerParameters = [
+  'response_format.json_schema.schema', 'response_format.json_schema.strict', 'response_format.json_schema',
+  ...reviewParameters, 'messages'
+];
+const requestParameter = providerParameters.map(param => param.replaceAll('.', '\\.')).join('|');
+const unsupportedParameterMessage = new RegExp(
+  `^['"\x60]?(?<param>${requestParameter})['"\x60]? (?:is (?:unsupported|not (?:currently )?supported|not allowed)|does not support)\\b`, 'i'
+);
+const providerErrorCategories = new Map([
+  ['invalid_json_schema', 'invalid_request_schema'],
+  ['invalid_request_schema', 'invalid_request_schema'],
+  ['unsupported_parameter', 'unsupported_model_parameters'],
+  ['unsupported_value', 'unsupported_model_parameters'],
+  ['json_validate_failed', 'structured_output_generation_failed'],
+  ['invalid_model', 'invalid_model_configuration'],
+  ['model_not_found', 'invalid_model_configuration'],
+  ['model_decommissioned', 'invalid_model_configuration'],
+  ['unsupported_model', 'invalid_model_configuration']
+]);
 
-async function unsupportedReviewParameter(response) {
-  // Inspect only bounded provider error data and emit a field from the fixed request vocabulary.
+async function diagnoseReviewRejection(response) {
+  let error;
   try {
-    const { error } = JSON.parse(await readCompletion(response));
-    const { code, param, message } = error ?? {};
-    if (['unsupported_parameter', 'unsupported_value', 'unsupported_model'].includes(code)) {
-      return reviewParameters.includes(param) ? `request.${param}` : 'request';
-    }
-    if (typeof message === 'string' && /\b(?:unsupported|not (?:currently )?supported|does not support|is not allowed|does not allow)\b/i.test(message)) {
-      const field = reviewParameters.find(parameter => new RegExp(`\\b${parameter}\\b`, 'i').test(message));
-      return field ? `request.${field}` : null;
-    }
+    error = JSON.parse(await readCompletion(response))?.error;
   } catch {
-    // Unrecognized error bodies remain generic HTTP failures.
+    return {};
   }
-  return null;
+  if (!isRecord(error)) return {};
+
+  const message = typeof error.message === 'string' ? error.message : '';
+  if (response.status === 422) {
+    // Keep the existing 422 handling for unsupported parameters.
+    let field;
+    if (['unsupported_parameter', 'unsupported_value', 'unsupported_model'].includes(error.code)) {
+      field = reviewParameters.includes(error.param) ? `request.${error.param}` : 'request';
+    } else if (/\b(?:unsupported|not (?:currently )?supported|does not support|is not allowed|does not allow)\b/i.test(message)) {
+      const param = reviewParameters.find(candidate => new RegExp(`\\b${candidate}\\b`, 'i').test(message));
+      if (param) field = `request.${param}`;
+    }
+    return field ? { category: 'unsupported_model_parameters', validation: { field, rule: 'unsupported_parameter' } } : {};
+  }
+
+  const code = providerErrorCategories.has(error.code) ? error.code : undefined;
+  const type = error.type === 'invalid_request_error' ? error.type : undefined;
+  const param = providerParameters.includes(error.param) ? error.param : undefined;
+  const providerError = { ...(code && { code }), ...(type && { type }), ...(param && { param }) };
+
+  // Some Groq errors omit a structured code. Match only specific leading phrases.
+  const unsupportedParam = unsupportedParameterMessage.exec(message)?.groups.param.toLowerCase();
+  let category = providerErrorCategories.get(code);
+  if (!category) {
+    if (unsupportedParam) {
+      category = 'unsupported_model_parameters';
+    } else if (/^(?:Invalid (?:JSON )?schema for response_format\b|Invalid JSON schema:)/i.test(message)) {
+      category = 'invalid_request_schema';
+    } else if (/^(?:Generated JSON does not match the expected schema\.|Failed to generate JSON\.)/i.test(message)) {
+      category = 'structured_output_generation_failed';
+    }
+  }
+  const parameter = param ?? unsupportedParam;
+  return {
+    category,
+    providerError: Object.keys(providerError).length ? providerError : undefined,
+    validation: category === 'unsupported_model_parameters' ?
+      { field: parameter ? `request.${parameter}` : 'request', rule: 'unsupported_parameter' } : undefined
+  };
 }
 
 export async function requestCompletion(payload, env, {
@@ -213,12 +262,13 @@ export async function requestCompletion(payload, env, {
       }
 
       const status = response.status;
-      const unsupported = strict && [400, 422].includes(status) ? await unsupportedReviewParameter(response) : null;
+      const rejection = strict && [400, 422].includes(status) ? await diagnoseReviewRejection(response) : {};
       void response.body?.cancel().catch(() => {});
+      cancellation?.throwIfAborted();
+      if (rejection.providerError) diagnostics.providerError = rejection.providerError;
       retry = transient.has(status);
-      if (unsupported) {
-        error = new GenerationError('unsupported_model_parameters', `${name} rejected a model parameter.`,
-          { field: unsupported, rule: 'unsupported_parameter' });
+      if (rejection.category) {
+        error = new GenerationError(rejection.category, `${name} returned HTTP ${status}.`, rejection.validation);
       } else if (status === 401 || status === 403) {
         error = new GenerationError('authentication', `${name} authentication failed (HTTP ${status}).`);
       } else if (status === 429) {
