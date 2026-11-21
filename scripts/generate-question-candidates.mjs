@@ -80,9 +80,10 @@ function retryDelay(header, attempt) {
 }
 
 export class GenerationError extends Error {
-  constructor(category, message) {
+  constructor(category, message, validation) {
     super(message);
     this.category = category;
+    if (validation) this.validation = validation;
   }
 }
 
@@ -94,13 +95,16 @@ class CandidateValidationError extends GenerationError {
 }
 
 const finishReasons = new Set(['stop', 'length', 'content_filter', 'tool_calls', 'error']);
-function parseCompletion(content, { key, name, modelPattern }, diagnostics, selectOutput) {
+function parseCompletion(content, { key, name, modelPattern }, diagnostics, selectOutput, strict) {
   let decoded;
-  if (!content.trim()) throw new GenerationError('empty_response', `${name} returned an empty response.`);
+  const validation = (field, rule) => strict ? { field, rule } : undefined;
+  if (!content.trim()) throw new GenerationError('empty_response', `${name} returned an empty response.`,
+    validation('$', 'nonempty'));
   try {
     decoded = JSON.parse(content);
   } catch {
-    throw new GenerationError('invalid_json', `${name} returned an invalid JSON response envelope.`);
+    throw new GenerationError('invalid_json', `${name} returned an invalid JSON response envelope.`,
+      validation('$', 'json_envelope'));
   }
   const choice = decoded?.choices?.[0];
   const output = choice?.message?.content;
@@ -122,7 +126,8 @@ function parseCompletion(content, { key, name, modelPattern }, diagnostics, sele
     throw new GenerationError('provider_error', `${name} reported a completion error.`);
   }
   if (output == null || typeof output === 'string' && !output.trim()) {
-    throw new GenerationError('empty_response', `${name} returned empty output.`);
+    throw new GenerationError(strict ? 'empty_output' : 'empty_response', `${name} returned empty output.`,
+      validation('$.choices[0].message.content', 'nonempty'));
   }
   if (choice.finish_reason !== 'stop') {
     throw new GenerationError('unexpected_finish', `${name} completion did not finish with stop.`);
@@ -132,9 +137,10 @@ function parseCompletion(content, { key, name, modelPattern }, diagnostics, sele
   try {
     if (typeof output !== 'string') throw new Error();
     const fenced = /^\s*```(?:json)?[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```\s*$/i.exec(output);
-    parsed = JSON.parse(fenced ? fenced[1] : output);
+    parsed = JSON.parse(!strict && fenced ? fenced[1] : output);
   } catch {
-    throw new GenerationError('invalid_json', `${name} returned invalid JSON output.`);
+    throw new GenerationError('invalid_json', `${name} returned invalid JSON output.`,
+      validation('$.choices[0].message.content', 'json_output'));
   }
   if (!selectOutput && (!isRecord(parsed) || !Array.isArray(parsed.candidates))) {
     throw new CandidateValidationError(null, 'candidates', 'array', 'invalid_schema',
@@ -145,18 +151,40 @@ function parseCompletion(content, { key, name, modelPattern }, diagnostics, sele
   return selectOutput ? selectOutput(parsed, diagnostics.reportedModel) : parsed.candidates;
 }
 
+const reviewParameters = ['response_format', 'json_schema', 'strict', 'reasoning_effort', 'max_completion_tokens', 'temperature', 'model'];
+
+async function unsupportedReviewParameter(response) {
+  // Inspect only bounded provider error data and emit a field from the fixed request vocabulary.
+  try {
+    const { error } = JSON.parse(await readCompletion(response));
+    const { code, param, message } = error ?? {};
+    if (['unsupported_parameter', 'unsupported_value', 'unsupported_model'].includes(code)) {
+      return reviewParameters.includes(param) ? `request.${param}` : 'request';
+    }
+    if (typeof message === 'string' && /\b(?:unsupported|not (?:currently )?supported|does not support|is not allowed|does not allow)\b/i.test(message)) {
+      const field = reviewParameters.find(parameter => new RegExp(`\\b${parameter}\\b`, 'i').test(message));
+      return field ? `request.${field}` : null;
+    }
+  } catch {
+    // Unrecognized error bodies remain generic HTTP failures.
+  }
+  return null;
+}
+
 export async function requestCompletion(payload, env, {
   fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }, signal: cancellation
 } = {}) {
   const config = settings(env);
   const { groq, name, endpoint, key, model, timeout, reasoningEffort } = config;
   const maxTokens = payload.maxTokens ?? 3200;
+  const strict = groq && payload.responseFormat?.type === 'json_schema';
   const body = JSON.stringify({
-    messages: payload.messages, model, temperature: 0.2, response_format: { type: 'json_object' },
+    messages: payload.messages, model, temperature: 0.2,
+    response_format: strict ? payload.responseFormat : { type: 'json_object' },
     ...(groq ? { max_completion_tokens: maxTokens, reasoning_effort: reasoningEffort } :
       { max_tokens: maxTokens, provider: { require_parameters: true } })
   });
-  if (Buffer.byteLength(body) > 16 * 1024) throw new Error(`${name} request exceeds the size limit.`);
+  if (Buffer.byteLength(body) > (strict ? 24 : 16) * 1024) throw new Error(`${name} request exceeds the size limit.`);
   if (body.includes(key)) throw new Error('Rejected request containing credentials.');
   for (let attempt = 0; attempt < 3; attempt++) {
     cancellation?.throwIfAborted();
@@ -176,17 +204,22 @@ export async function requestCompletion(payload, env, {
         method: 'POST', redirect: 'error', signal, body,
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
       });
+      if (strict) diagnostics.httpStatus = response.status;
       if (response.ok) {
-        const output = parseCompletion(await readCompletion(response), config, diagnostics, payload.selectOutput);
+        const output = parseCompletion(await readCompletion(response), config, diagnostics, payload.selectOutput, strict);
         const result = payload.selectOutput ? { output } : { candidates: payload.validate ? payload.validate(output) : output };
         log({ ...diagnostics, failureCategory: null });
         return { ...result, reportedModel: diagnostics.reportedModel };
       }
 
-      void response.body?.cancel().catch(() => {});
       const status = response.status;
+      const unsupported = strict && [400, 422].includes(status) ? await unsupportedReviewParameter(response) : null;
+      void response.body?.cancel().catch(() => {});
       retry = transient.has(status);
-      if (status === 401 || status === 403) {
+      if (unsupported) {
+        error = new GenerationError('unsupported_model_parameters', `${name} rejected a model parameter.`,
+          { field: unsupported, rule: 'unsupported_parameter' });
+      } else if (status === 401 || status === 403) {
         error = new GenerationError('authentication', `${name} authentication failed (HTTP ${status}).`);
       } else if (status === 429) {
         error = new GenerationError('rate_limit', `${name} rate limit reached (HTTP 429).`);
@@ -211,7 +244,7 @@ export async function requestCompletion(payload, env, {
     }
     log({
       ...diagnostics, failureCategory: error.category,
-      ...(error instanceof CandidateValidationError && { validation: error.validation })
+      ...(error.validation && { validation: error.validation })
     });
     if (!retry || attempt === 2 || budget.remaining === 0) throw error;
     const wait = retryDelay(response?.headers.get('retry-after'), attempt);

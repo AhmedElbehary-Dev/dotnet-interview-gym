@@ -37,6 +37,14 @@ try {
   generation metadata, the review model, gate results, findings and decision.
   The command exits with status 1 if any candidate is held or rejected. Keep
   approved reports for later review and reuse.
+- Groq uses strict Structured Outputs for both review models. The CLI prints
+  per-attempt diagnostics to stderr and saves them in each report entry. These
+  include requested and recognized reported models, HTTP status, finish reason,
+  token usage when supplied, failure category, and validation field and rule
+  when available. `missing_review_field` identifies an omitted required field,
+  while `invalid_review` identifies a bad shape or value. `invalid_json` includes
+  a rule identifying the response envelope or completion content. Diagnostics
+  omit raw responses, candidate text, and credentials.
 - Approval requires a distinct, confirmed review model, an independently
   selected matching answer, all positive findings and a supported quote for each
   source. Documentation checks use bounded HTTPS reads from allowlisted

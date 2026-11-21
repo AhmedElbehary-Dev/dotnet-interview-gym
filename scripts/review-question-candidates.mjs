@@ -15,6 +15,19 @@ export const reviewDimensions = [
   'technical', 'answer', 'explanation', 'ambiguity', 'distractors', 'difficulty',
   'alignment', 'code', 'documentation', 'duplication'
 ];
+const verdicts = ['approve', 'reject', 'uncertain'];
+const statuses = ['pass', 'fail', 'uncertain'];
+const strictObject = properties => ({
+  type: 'object', properties, required: Object.keys(properties), additionalProperties: false
+});
+const findingSchema = strictObject({ status: { type: 'string', enum: statuses }, reason: { type: 'string' } });
+const citationSchema = strictObject({ source: { type: 'integer' }, quote: { type: 'string' } });
+const reviewSchema = strictObject({
+  verdict: { type: 'string', enum: verdicts },
+  actualAnswer: { anyOf: [{ type: 'integer', enum: [0, 1, 2, 3] }, { type: 'null' }] },
+  findings: strictObject(Object.fromEntries(reviewDimensions.map(name => [name, findingSchema]))),
+  citations: { type: 'array', items: citationSchema }
+});
 
 const exactKeys = (value, keys) => isRecord(value) &&
   Object.keys(value).length === keys.length && keys.every(key => Object.hasOwn(value, key));
@@ -28,8 +41,18 @@ function containsSecret(value, keys) {
 }
 
 class ReviewError extends GenerationError {
-  constructor(category) {
+  constructor(category, field, rule) {
     super(category, category);
+    if (field) this.validation = { field, rule };
+  }
+}
+
+function requireReviewObject(value, schema, path) {
+  if (!isRecord(value)) throw new ReviewError('invalid_review', path, 'object');
+  const missing = schema.required.find(field => !Object.hasOwn(value, field));
+  if (missing) throw new ReviewError('missing_review_field', `${path}.${missing}`, 'required');
+  if (Object.keys(value).length !== schema.required.length) {
+    throw new ReviewError('invalid_review', path, 'unexpected_field');
   }
 }
 
@@ -137,22 +160,33 @@ function localGates(candidate, context, index) {
 function parseReview(value, reportedModel, model, evidence, keys) {
   if (reportedModel !== model) throw new ReviewError('model_mismatch');
   if (containsSecret(value, keys)) throw new ReviewError('credentials_in_payload');
-  if (!exactKeys(value, ['verdict', 'actualAnswer', 'findings', 'citations']) ||
-      !['approve', 'reject', 'uncertain'].includes(value.verdict) ||
-      !(value.actualAnswer === null || Number.isInteger(value.actualAnswer) && value.actualAnswer >= 0 && value.actualAnswer <= 3) ||
-      !exactKeys(value.findings, reviewDimensions) || !Array.isArray(value.citations) || value.citations.length > evidence.length) {
-    throw new ReviewError('invalid_review');
+  requireReviewObject(value, reviewSchema, '$');
+  if (!verdicts.includes(value.verdict)) throw new ReviewError('invalid_review', '$.verdict', 'enum');
+  if (![null, 0, 1, 2, 3].includes(value.actualAnswer)) {
+    throw new ReviewError('invalid_review', '$.actualAnswer', 'answer_index_or_null');
   }
-  for (const finding of Object.values(value.findings)) {
-    if (!exactKeys(finding, ['status', 'reason']) || !['pass', 'fail', 'uncertain'].includes(finding.status) ||
-        !boundedText(finding.reason, 8, 300)) throw new ReviewError('invalid_review');
+  requireReviewObject(value.findings, reviewSchema.properties.findings, '$.findings');
+  for (const name of reviewDimensions) {
+    const finding = value.findings[name];
+    const path = `$.findings.${name}`;
+    requireReviewObject(finding, findingSchema, path);
+    if (!statuses.includes(finding.status)) throw new ReviewError('invalid_review', `${path}.status`, 'enum');
+    if (!boundedText(finding.reason, 8, 300)) throw new ReviewError('invalid_review', `${path}.reason`, 'bounded_text');
+  }
+  if (!Array.isArray(value.citations) || value.citations.length > evidence.length) {
+    throw new ReviewError('invalid_review', '$.citations', 'bounded_array');
   }
   const cited = new Set();
-  for (const citation of value.citations) {
-    if (!exactKeys(citation, ['source', 'quote']) || !Number.isInteger(citation.source) || cited.has(citation.source) ||
-        !boundedText(citation.quote, 24, 450) ||
-        !evidence[citation.source]?.passages.some(text => text.includes(citation.quote))) {
-      throw new ReviewError('unsupported_citation');
+  for (const [index, citation] of value.citations.entries()) {
+    const path = `$.citations[${index}]`;
+    requireReviewObject(citation, citationSchema, path);
+    if (!Number.isInteger(citation.source)) throw new ReviewError('invalid_review', `${path}.source`, 'integer');
+    if (!boundedText(citation.quote, 24, 450)) throw new ReviewError('invalid_review', `${path}.quote`, 'bounded_text');
+    if (cited.has(citation.source) || !evidence[citation.source]) {
+      throw new ReviewError('unsupported_citation', `${path}.source`, 'unique_source_index');
+    }
+    if (!evidence[citation.source].passages.some(text => text.includes(citation.quote))) {
+      throw new ReviewError('unsupported_citation', `${path}.quote`, 'retrieved_passage');
     }
     cited.add(citation.source);
   }
@@ -252,7 +286,7 @@ export async function reviewBatch(root, input, {
     const gates = { deterministic: local.raw ? 'passed' : 'failed', documentation: 'not_checked', execution: 'not_checked' };
     if (local.validation) gates.validation = local.validation;
     const entry = { candidate, reviewedAt: new Date().toISOString(), reviewModel: dryRun ? null : model, gates,
-      findings: null, decision: 'needs_review', reason: 'dry_run' };
+      findings: null, diagnostics: [], decision: 'needs_review', reason: 'dry_run' };
     entries.push(entry);
     if (!local.raw) {
       entry.decision = 'rejected';
@@ -284,10 +318,19 @@ export async function reviewBatch(root, input, {
     try {
       const { output: review } = await requestCompletion({
         messages: reviewMessages(raw, context, index, evidence), maxTokens: 2800,
+        responseFormat: { type: 'json_schema', json_schema: { name: 'question_review', strict: true, schema: reviewSchema } },
         selectOutput: (value, reportedModel) => parseReview(value, reportedModel, model, evidence, keys)
       }, {
         QUESTION_AI_PROVIDER: 'groq', GROQ_MODEL: model, GROQ_API_KEY: env.GROQ_API_KEY, GROQ_REASONING_EFFORT: 'low'
-      }, { fetchImpl: transport.fetchImpl, delay: transport.delay, budget, signal });
+      }, {
+        fetchImpl: transport.fetchImpl, delay: transport.delay, budget, signal,
+        log: metadata => {
+          const diagnostic = { ...metadata, requestedModel: model,
+            reportedModel: freeModels.has(metadata.reportedModel) ? metadata.reportedModel : null };
+          entry.diagnostics.push(diagnostic);
+          transport.log?.(diagnostic);
+        }
+      });
       signal?.throwIfAborted();
       entry.findings = review;
       if (review.findings.documentation.status === 'pass' && review.citations.length === evidence.length) {
@@ -326,7 +369,9 @@ if (isMain(import.meta.url)) {
     if (!input || extra.length || (flag !== undefined && flag !== '--dry-run')) {
       throw new Error('Usage: node scripts/review-question-candidates.mjs PATH_TO_CANDIDATES_JSON [--dry-run]');
     }
-    const { path, report } = await reviewBatch(resolve('.'), input, { dryRun: flag === '--dry-run' });
+    const { path, report } = await reviewBatch(resolve('.'), input, {
+      dryRun: flag === '--dry-run', log: diagnostic => console.error(redact(JSON.stringify(diagnostic)))
+    });
     for (const [i, { decision, reason }] of report.entries.entries()) console.log(redact(`Candidate ${i + 1}: ${decision} (${reason})`));
     if (path) console.log(redact(`Staged review in ${path}`));
     if (report.entries.some(e => e.decision !== 'approved')) process.exitCode = 1;

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { questionFingerprint, readJson } from './build-question-index.mjs';
 import { planGeneration } from './plan-question-generation.mjs';
@@ -58,15 +58,32 @@ test('approves a documented candidate and atomically stages provenance without c
   const { path, report } = await run({ fetchImpl: async (_url, { body }) => {
     const payload = JSON.parse(body);
     assert.equal(payload.model, model);
+    assert.equal(payload.response_format.type, 'json_schema');
+    const { strict, schema } = payload.response_format.json_schema;
+    assert.equal(strict, true);
+    function checkClosedObjects(node) {
+      if (node.type === 'object') {
+        assert.equal(node.additionalProperties, false);
+        assert.deepEqual(node.required, Object.keys(node.properties));
+        Object.values(node.properties).forEach(checkClosedObjects);
+      }
+      if (node.items) checkClosedObjects(node.items);
+      node.anyOf?.forEach(checkClosedObjects);
+    }
+    checkClosedObjects(schema);
     assert.equal(Object.hasOwn(JSON.parse(payload.messages[1].content).question, 'answer'), false);
     return completion();
   } });
   assert(path.startsWith(directory));
+  assert.equal(basename(path), 'review.json');
+  assert.deepEqual(readdirSync(dirname(path)), ['review.json']);
   assert.deepEqual(JSON.parse(readFileSync(path)), report);
   const [entry] = report.entries;
   assert.equal(entry.decision, 'approved');
   assert.deepEqual(entry.candidate, batch.candidates[0]);
   assert.equal(entry.reviewModel, model);
+  assert.equal(entry.diagnostics[0].finishReason, 'stop');
+  assert.equal(entry.diagnostics[0].failureCategory, null);
   assert.ok(entry.reviewedAt);
   assert.deepEqual(entry.gates.documentation, 'passed');
   assert.deepEqual(readFileSync(input), original);
@@ -91,6 +108,69 @@ for (const [name, mutate, decision, reason] of [
     assert.equal(report.entries[0].reason, reason);
   });
 }
+
+const reviewEnvelope = content => ({
+  model, choices: [{ finish_reason: 'stop', message: { content } }],
+  usage: { prompt_tokens: 321, completion_tokens: 123, total_tokens: 444 }
+});
+const extraField = 'question_or_provider_text_must_not_appear';
+const invalidShape = { ...positive(), [extraField]: key.slice(4) };
+const missingField = positive();
+delete missingField.findings.code.reason;
+const invalidReason = positive();
+invalidReason.findings.code.reason = 'short';
+
+for (const [label, response, reason, field, rule, finish] of [
+  ['malformed response envelope', () => new Response('{'), 'invalid_json', '$', 'json_envelope', null],
+  ['invalid completion JSON', () => Response.json(reviewEnvelope('{')), 'invalid_json', '$.choices[0].message.content', 'json_output', 'stop'],
+  ['empty completion', () => Response.json(reviewEnvelope(' ')), 'empty_output', '$.choices[0].message.content', 'nonempty', 'stop'],
+  ['empty response envelope', () => new Response(null), 'empty_response', '$', 'nonempty', null],
+  ['missing nested finding property', () => completion(missingField), 'missing_review_field', '$.findings.code.reason', 'required', 'stop'],
+  ['invalid nested finding value', () => completion(invalidReason), 'invalid_review', '$.findings.code.reason', 'bounded_text', 'stop'],
+  ['unexpected reviewer property', () => completion(invalidShape), 'invalid_review', '$', 'unexpected_field', 'stop'],
+  ['truncated completion', () => Response.json({ ...reviewEnvelope('{'), choices: [{ finish_reason: 'length' }] }), 'truncated', undefined, undefined, 'length'],
+  ['API error envelope', () => Response.json({ error: { message: extraField } }), 'provider_error', undefined, undefined, null],
+  ['ordinary HTTP API error', () => Response.json({ error: { message: extraField } }, { status: 400 }), 'http_error', undefined, undefined, null],
+  ['unsupported model parameter', () => Response.json({ error: {
+    code: 'unsupported_parameter', param: 'response_format', message: extraField + key
+  } }, { status: 400 }), 'unsupported_model_parameters', 'request.response_format', 'unsupported_parameter', null],
+  ['unsupported Groq parameter in message', () => Response.json({ error: {
+    message: 'reasoning_effort is not supported with this model. ' + extraField
+  } }, { status: 422 }), 'unsupported_model_parameters', 'request.reasoning_effort', 'unsupported_parameter', null]
+]) {
+  test(`strict review diagnoses ${label} without exposing response data`, async t => {
+    const { run, batch } = fixture(t);
+    const logs = [];
+    const { report, path } = await run({ fetchImpl: async () => response(), log: event => logs.push(event) });
+    const [entry] = report.entries;
+    assert.equal(entry.reason, reason);
+    assert.equal(entry.decision, 'needs_review');
+    assert.equal(entry.findings, null);
+    assert.equal(logs.length, 1);
+    assert.deepEqual(entry.diagnostics, logs);
+    assert.equal(logs[0].failureCategory, reason);
+    assert.equal(logs[0].requestedModel, model);
+    assert.equal(logs[0].finishReason, finish);
+    assert.deepEqual(logs[0].validation, field ? { field, rule } : undefined);
+    if (reason === 'invalid_json' && finish === 'stop') {
+      assert.equal(logs[0].reportedModel, model);
+      assert.deepEqual(logs[0].usage, { prompt_tokens: 321, completion_tokens: 123, total_tokens: 444 });
+    }
+    assert(!readFileSync(path, 'utf8').includes(extraField));
+    for (const privateValue of [extraField, key, batch.candidates[0].q]) {
+      assert(!JSON.stringify(logs).includes(privateValue));
+    }
+  });
+}
+
+test('strict Groq review holds a positive response without supporting documentation', async t => {
+  const { run } = fixture(t);
+  const review = { ...positive(), citations: [] };
+  const { report } = await run({ fetchImpl: async () => completion(review) });
+  assert.equal(report.entries[0].reason, 'unsupported_citation');
+  assert.equal(report.entries[0].decision, 'needs_review');
+  assert.equal(report.entries[0].gates.documentation, 'evidence_retrieved');
+});
 
 test('model disagreement and matching generation model cannot approve', async t => {
   const { run } = fixture(t);
