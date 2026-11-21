@@ -11,7 +11,9 @@ import { planGeneration } from './plan-question-generation.mjs';
 const root = process.cwd();
 
 test('coverage distinguishes exclusions and counts curated concepts', () => {
-  const report = analyzeCoverage(buildQuestionIndex(), readJson(root, 'scripts/coverage-targets.json'));
+  const index = buildQuestionIndex();
+  const original = { ...index, questions: index.questions.filter(q => q.publishedOn === undefined) };
+  const report = analyzeCoverage(original, readJson(root, 'scripts/coverage-targets.json'));
   assert(report.excluded.some(g => g.category === 'أساسيات C#' && g.label === 'متقدم'));
   assert(!report.gaps.some(g => g.category === 'أساسيات C#' && g.label === 'متقدم'));
   assert(report.conceptCoverage.some(c => c.observed > 0));

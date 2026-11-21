@@ -14,6 +14,8 @@ const validId = id => (count(id) && id > 0) || (typeof id === 'string' && /^[a-z
 
 export const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 export const compareText = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+export const isCalendarDate = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+  Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
 
 export function readJson(root, path) {
   try {
@@ -99,6 +101,10 @@ export function buildQuestionIndex(root = process.cwd()) {
           throw new Error(`${where}: unregistered conceptId ${JSON.stringify(conceptId)}`);
         }
         indexed.conceptId = conceptId;
+      }
+      if (q.publishedOn !== undefined) {
+        if (!isCalendarDate(q.publishedOn)) throw new Error(`${where}: invalid publication date`);
+        indexed.publishedOn = q.publishedOn;
       }
       questions.push(indexed);
     }

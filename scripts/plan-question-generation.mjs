@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { analyzeCoverage } from './analyze-coverage.mjs';
-import { buildQuestionIndex, readJson } from './build-question-index.mjs';
+import { buildQuestionIndex, isCalendarDate, readJson } from './build-question-index.mjs';
 
 export function isMain(url) {
   return process.argv[1] && fileURLToPath(url) === resolve(process.argv[1]);
@@ -14,8 +14,7 @@ export function readPlanArgs([date, seed, ...extra]) {
 }
 
 export function planGeneration(root, { date, seed }) {
-  if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-      !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date) {
+  if (!isCalendarDate(date)) {
     throw new Error('Batch date must be a valid YYYY-MM-DD date');
   }
   if (typeof seed !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(seed)) {

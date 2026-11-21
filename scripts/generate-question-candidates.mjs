@@ -221,7 +221,8 @@ async function diagnoseReviewRejection(response) {
 }
 
 export async function requestCompletion(payload, env, {
-  fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }, signal: cancellation
+  fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }, signal: cancellation,
+  beforeRequest, retryWaitMs = 5000
 } = {}) {
   const config = settings(env);
   const { groq, name, endpoint, key, model, timeout, reasoningEffort } = config;
@@ -241,6 +242,8 @@ export async function requestCompletion(payload, env, {
       log({ failureCategory: 'request_budget' });
       throw new GenerationError('request_budget', `${name} request budget exhausted.`);
     }
+    await beforeRequest?.(model);
+    cancellation?.throwIfAborted();
     budget.remaining--;
     const deadline = AbortSignal.timeout(timeout);
     const signal = cancellation ? AbortSignal.any([deadline, cancellation]) : deadline;
@@ -298,7 +301,7 @@ export async function requestCompletion(payload, env, {
     });
     if (!retry || attempt === 2 || budget.remaining === 0) throw error;
     const wait = retryDelay(response?.headers.get('retry-after'), attempt);
-    if (wait > 5000) throw error;
+    if (wait > retryWaitMs) throw error;
     await delay(wait, undefined, { signal: cancellation });
   }
 }
@@ -387,7 +390,7 @@ export function validateCandidates(candidates, plan, bankFingerprints, offset = 
   });
 }
 
-function buildMessages(root, index, plan) {
+function buildMessages(root, index, plan, proseOnly) {
   const taxonomy = readJson(root, 'questions/topic-taxonomy.json');
   const shards = new Map();
   const briefs = plan.targets.map(target => {
@@ -411,7 +414,9 @@ function buildMessages(root, index, plan) {
       'Use q for the English question, options for four distinct English choices, answer for the zero-based proposed answer index,',
       'hint for a short Arabic hint, why for a detailed Egyptian-Arabic explanation, and sourceUrls for 1–3 authoritative documentation links.',
       'Use one directly relevant official documentation URL by default. Add another only if it supplies distinct evidence for a material claim. Use known URLs and do not invent references.',
-      'Use a code object with lang, prompt and code when a snippet is helpful. Keep each explanation to about 2–4 sentences.',
+      proseOnly ? 'Write conceptual questions in prose only. Do not include code snippets or a code field.' :
+        'Use a code object with lang, prompt and code when a snippet is helpful.',
+      'Keep each explanation to about 2–4 sentences.',
       'Keep all questions educational and defensive. Do not provide exploit instructions.'
     ].join(' ') },
     { role: 'user', content: JSON.stringify(briefs) }
@@ -440,7 +445,7 @@ export async function generateBatch(root, options, { env = process.env, ...trans
     const targets = plan.targets.slice(candidates.length, candidates.length + (singlesRemaining ? 1 : 2));
     try {
       const output = await requestCompletion({
-        messages: buildMessages(root, index, { targets }),
+        messages: buildMessages(root, index, { targets }, options.proseOnly),
         maxTokens: 1600 * targets.length,
         validate: raw => validateCandidates(raw, { targets }, fingerprints, candidates.length)
       }, env, { ...transport, budget });

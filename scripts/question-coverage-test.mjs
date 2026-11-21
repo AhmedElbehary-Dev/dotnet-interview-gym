@@ -40,7 +40,8 @@ test('indexes the original 120 IDs and maps each entry to its source question', 
     });
     assert.match(fingerprint, /^[a-f0-9]{64}$/);
     const conceptId = original.conceptId ?? mapping[id];
-    assert.deepEqual(extra, conceptId === undefined ? {} : { conceptId });
+    assert.deepEqual(extra, { ...(conceptId !== undefined && { conceptId }),
+      ...(original.publishedOn !== undefined && { publishedOn: original.publishedOn }) });
   }
 });
 
