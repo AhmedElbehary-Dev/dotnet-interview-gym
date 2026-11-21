@@ -16,10 +16,13 @@ const manifestPath = 'questions/manifest.json';
 const indexPath = 'questions/index.json';
 const coveragePath = 'reports/coverage-report.json';
 const json = value => `${JSON.stringify(value, null, 2)}\n`;
-const cairoFormat = new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo',
-  year: 'numeric', month: '2-digit', day: '2-digit' });
+const cairoFormat = new Intl.DateTimeFormat('en', { timeZone: 'Africa/Cairo', calendar: 'gregory',
+  numberingSystem: 'latn', year: 'numeric', month: '2-digit', day: '2-digit' });
 
-export const cairoDate = (instant = new Date()) => cairoFormat.format(instant);
+export function cairoDate(instant = new Date()) {
+  const { year, month, day } = Object.fromEntries(cairoFormat.formatToParts(instant).map(({ type, value }) => [type, value]));
+  return `${year}-${month}-${day}`;
+}
 
 function git(root, args, { input, index } = {}) {
   try {

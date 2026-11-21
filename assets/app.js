@@ -47,9 +47,11 @@ function filteredBank({category='all', difficulty='all', skill='all', published}
     (difficulty==='all'||q.difficulty===difficulty)&&(skill==='all'||q.skill===skill)&&
     (!published||(q.publishedOn>=published[0]&&q.publishedOn<=published[1])));
 }
-const cairoCalendar=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'});
+const cairoCalendar=new Intl.DateTimeFormat('en',{timeZone:'Africa/Cairo',calendar:'gregory',numberingSystem:'latn',
+  year:'numeric',month:'2-digit',day:'2-digit'});
 function arrivalFilters(period){
-  const today=cairoCalendar.format(new Date());
+  const {year,month,day}=Object.fromEntries(cairoCalendar.formatToParts(new Date()).map(({type,value})=>[type,value]));
+  const today=`${year}-${month}-${day}`;
   if(period==='Today')return {published:[today,today]};
   // Shift local calendar dates at UTC midnight so a DST change cannot shorten the window.
   const midnight=Date.parse(today);

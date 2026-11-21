@@ -34,7 +34,7 @@ function fixture(t) {
   return { root, git, base: git('rev-parse', 'HEAD') };
 }
 
-function mocks({ repair = false, reject = false, uncertain = false, mixed = false, failReview = false, duplicate,
+function mocks({ repair = false, reject = false, uncertain = false, mixed = false, failReview = false, failGeneration = false, duplicate,
   withCode = false, partial = false, signal, log } = {}) {
   const requests = [];
   const options = {
@@ -48,6 +48,7 @@ function mocks({ repair = false, reject = false, uncertain = false, mixed = fals
       requests.push({ model: payload.model, data });
       let content;
       if (payload.model === generator) {
+        if (failGeneration) return new Response('untrusted response body', { status: 400 });
         if (partial && requests.length > 1) return new Response(null, { status: 503 });
         content = { candidates: data.map(({ category, conceptId, difficulty, skill }, i) => ({
           category, conceptId, difficulty, skill,
@@ -207,6 +208,7 @@ test('review receipts reject copied, altered and stale approvals, including modi
 for (const [name, setup, status] of [
   ['rejected', { reject: true }, 'zero_approved'], ['uncertain', { uncertain: true }, 'zero_approved'],
   ['executable', { withCode: true }, 'zero_approved'], ['strict HTTP 400 after an approval', { failReview: true }, 'provider_rejected'],
+  ['generation HTTP 400', { failGeneration: true }, 'generation_failed'],
   ['partial generation', { partial: true }, 'generation_incomplete']
 ]) {
   test(`${name} leaves the current bank and branch untouched`, async t => {
@@ -219,6 +221,10 @@ for (const [name, setup, status] of [
     assert.equal(git('status', '--porcelain'), '');
     if (setup.failReview) {
       assert(logs.some(event => event.httpStatus === 400 && event.failureCategory === 'invalid_request_schema'));
+      assert(!JSON.stringify(logs).includes('untrusted response body'));
+    }
+    if (setup.failGeneration) {
+      assert(logs.some(event => event.phase === 'generation' && event.httpStatus === 400 && event.failureCategory === 'http_error'));
       assert(!JSON.stringify(logs).includes('untrusted response body'));
     }
   });

@@ -171,6 +171,7 @@ assert.deepEqual(JSON.parse(store.get(sessionKey)),backup.session);
 assert.deepEqual(JSON.parse(store.get(historyKey)),backup.history);
 
 now=Date.parse('2099-07-02T21:01:00Z');
+assert.notEqual(run('cairoCalendar.format(new Date())'),'2099-07-03','locale output need not be ISO');
 const saved=store.get(historyKey);
 const savedSession=store.get(sessionKey);
 assert.equal(el('startArrivalsToday').disabled,true);

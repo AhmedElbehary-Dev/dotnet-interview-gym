@@ -256,7 +256,7 @@ export async function requestCompletion(payload, env, {
         method: 'POST', redirect: 'error', signal, body,
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
       });
-      if (strict) diagnostics.httpStatus = response.status;
+      if (strict || (groq && !response.ok)) diagnostics.httpStatus = response.status;
       if (response.ok) {
         const output = parseCompletion(await readCompletion(response), config, diagnostics, payload.selectOutput, strict);
         const result = payload.selectOutput ? { output } : { candidates: payload.validate ? payload.validate(output) : output };
