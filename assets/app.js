@@ -53,16 +53,21 @@ function arrivalFilters(period){
   const {year,month,day}=Object.fromEntries(cairoCalendar.formatToParts(new Date()).map(({type,value})=>[type,value]));
   const today=`${year}-${month}-${day}`;
   if(period==='Today')return {published:[today,today]};
-  // Shift local calendar dates at UTC midnight so a DST change cannot shorten the window.
-  const midnight=Date.parse(today);
-  const daysAgo=days=>new Date(midnight-days*86400000).toISOString().slice(0,10);
-  return {published:[daysAgo(6),daysAgo(1)]};
+  let latest='';
+  for(const {publishedOn} of BANK){
+    if(publishedOn<today&&publishedOn>latest)latest=publishedOn;
+  }
+  return {published:[latest,latest]};
 }
 function paintArrivals(){
+  const previewLimit=5;
   for(const period of ['Today','Recent']){
-    const questions=filteredBank(arrivalFilters(period)).sort((a,b)=>b.publishedOn.localeCompare(a.publishedOn));
-    $('arrivals'+period).innerHTML=questions.length?questions.map(q=>`<li>${renderQuestion(q)}</li>`).join(''):
-      '<li class="muted">لا توجد أسئلة جديدة في هذه الفترة.</li>';
+    const filters=arrivalFilters(period);
+    const questions=filteredBank(filters);
+    if(period==='Recent')$('arrivalsRecentDate').textContent=questions.length?` (${filters.published[0]})`:'';
+    const previews=questions.slice(0,previewLimit).map(q=>`<li>${renderQuestion(q)}</li>`).join('');
+    const total=questions.length>previewLimit?`<li class="small muted">معاينة ${previewLimit} من ${questions.length} سؤالًا. يمكن أن تختار الجولة من جميع أسئلة المجموعة.</li>`:'';
+    $('arrivals'+period).innerHTML=questions.length?previews+total:'<li class="muted">لا توجد أسئلة جديدة في هذه الفترة.</li>';
     $('startArrivals'+period).disabled=!questions.length;
   }
 }

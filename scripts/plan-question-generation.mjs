@@ -1,12 +1,9 @@
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { analyzeCoverage } from './analyze-coverage.mjs';
-import { buildQuestionIndex, isCalendarDate, readJson } from './build-question-index.mjs';
+import { buildQuestionIndex, isCalendarDate, isMain, readJson } from './build-question-index.mjs';
 
-export function isMain(url) {
-  return process.argv[1] && fileURLToPath(url) === resolve(process.argv[1]);
-}
+export { isMain };
 
 export function readPlanArgs([date, seed, ...extra]) {
   if (extra.length || !date || !seed) throw new Error('Usage: node <script> YYYY-MM-DD SEED');
