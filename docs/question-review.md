@@ -52,6 +52,18 @@ try {
   within the original allowlisted origin and documentation paths. Groq
   judges the relevance of the retrieved passages. The semantic duplicate check
   covers the batch, related bank prompts and bounded cross-category context.
+- Each source's `documentationDiagnostics` records its HTTP status (when
+  available), retrieval outcome, passage count, supplied passage count and
+  failure category. A DNS or network error, deadline, HTTP error, blocked
+  redirect, unsupported content type or encoding, or response over 512 KiB can
+  make documentation unavailable. A page that loads but yields no usable
+  passages produces `insufficient_evidence`. Extraction includes lists,
+  tables and other article text, and skips navigation and hidden content.
+- The reviewer distinguishes insufficient evidence from passages unrelated to
+  the question (`documentation_irrelevant`). An `unsupported_citation`
+  identifies a quote or source that failed validation. A quote must match a
+  contiguous span of one supplied passage exactly. If citation validation
+  fails, the report retains validated findings with an empty citations array.
 - The CLI treats every snippet as potentially executable and holds it when
   execution is unverified. The JavaScript API accepts an `isolatedVerifier`
   adapter for C#; the caller must supply a trusted, resource-limited sandbox.
@@ -60,3 +72,13 @@ try {
 - Each candidate uses at most three Groq attempts, with at most two extra
   attempts across the batch. Authentication failure or an exhausted rate-limit
   retry stops further Groq calls. CI supplies mocked responses and documents.
+
+## Offline documentation diagnostics
+
+Run the extractor against a saved HTML page or a local fixture. The command
+prints only diagnostic metadata, uses the same 512 KiB limit, and exits with
+status 1 when it extracts no passages. HTTP status is null for a local file.
+
+```powershell
+node scripts/review-documentation.mjs --offline 'C:\path\to\saved-learn-page.html'
+```

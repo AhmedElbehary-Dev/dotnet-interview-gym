@@ -7,18 +7,39 @@ import { test } from 'node:test';
 import { questionFingerprint, readJson } from './build-question-index.mjs';
 import { planGeneration } from './plan-question-generation.mjs';
 import { reviewBatch, reviewDimensions } from './review-question-candidates.mjs';
-import { allowedDocumentationUrl, publicAddress, readDocumentation, verifyDocumentation } from './review-documentation.mjs';
+import { allowedDocumentationUrl, inspectDocumentation, publicAddress, readDocumentation, verifyDocumentation } from './review-documentation.mjs';
 
 const root = process.cwd();
 const model = 'openai/gpt-oss-20b';
 const key = 'gsk_mock_key_never_write_this';
 const source = 'https://learn.microsoft.com/dotnet/csharp/language-reference/operators/type-testing-and-cast';
 const quote = 'The is operator checks if the runtime type of an expression result is compatible with a given type.';
+const learnHtml = `<main id="main">
+  <nav><p>A navigation passage about runtime type compatibility.</p></nav>
+  <ul><li>The <code>is</code> operator checks if the runtime type of an expression result is compatible with a given type.</li></ul>
+  <table><tr><td>Use <code>&#x69;s</code> to test type compatibility.</td></tr></table>
+</main>`;
+const resolver = { resolve4: async () => ['93.184.216.34'] };
+const documentationResponse = (statusCode, html = '', headers = {}) => (_url, _options, callback) => {
+  const req = new EventEmitter();
+  req.end = () => {
+    const res = Object.assign(new EventEmitter(), {
+      statusCode, headers: { 'content-type': 'text/html', ...headers }, destroy() {}
+    });
+    callback(res);
+    res.emit('data', Buffer.from(html));
+    res.emit('end');
+  };
+  return req;
+};
 const env = { GROQ_API_KEY: key, GROQ_REVIEW_FREE_PLAN: '1', QUESTION_REVIEW_CODE_POLICY: 'hold-unverified' };
 const fullPlan = planGeneration(root, { date: '2026-11-21', seed: 'review' });
 const positive = () => ({
   verdict: 'approve', actualAnswer: 0,
-  findings: Object.fromEntries(reviewDimensions.map(name => [name, { status: 'pass', reason: 'The evidence supports this finding.' }])),
+  findings: {
+    ...Object.fromEntries(reviewDimensions.map(name => [name, { status: 'pass', reason: 'The evidence supports this finding.' }])),
+    documentation: { status: 'pass', reason: 'The passage supports the answer.', evidence: 'sufficient' }
+  },
   citations: [{ source: 0, quote }]
 });
 const completion = (review = positive(), reportedModel = model) => Response.json({
@@ -172,6 +193,107 @@ test('strict Groq review holds a positive response without supporting documentat
   assert.equal(report.entries[0].gates.documentation, 'evidence_retrieved');
 });
 
+test('Microsoft Learn list and table text supports an exact quotation through review', async t => {
+  const { run } = fixture(t);
+  const documentReader = url => readDocumentation(url, { resolver, requestImpl: documentationResponse(200, learnHtml) });
+  const passages = await documentReader(source);
+  assert.deepEqual(passages, [quote, 'Use is to test type compatibility.']);
+  const events = [];
+  const { report } = await run({
+    documentReader: url => inspectDocumentation(url, { resolver, requestImpl: documentationResponse(200, learnHtml) }),
+    logDocumentation: event => events.push(event)
+  });
+  const [entry] = report.entries;
+  assert.equal(entry.decision, 'approved');
+  assert.deepEqual(events, [{
+    candidate: 1, source: 0, httpStatus: 200, outcome: 'evidence_retrieved',
+    passageCount: 2, suppliedPassageCount: 2, failureCategory: null
+  }]);
+  assert.deepEqual(entry.documentationDiagnostics, events);
+});
+
+test('a changed quotation retains validated findings and the citation diagnostic', async t => {
+  const { run } = fixture(t);
+  const review = positive();
+  review.citations[0].quote = quote.replace('checks', 'verifies');
+  const { report, path } = await run({ fetchImpl: async () => completion(review) });
+  const [entry] = report.entries;
+  assert.equal(entry.reason, 'unsupported_citation');
+  assert.equal(entry.decision, 'needs_review');
+  assert.deepEqual(entry.findings.findings, review.findings);
+  assert.deepEqual(entry.findings.citations, []);
+  assert.equal(entry.diagnostics[0].httpStatus, 200);
+  assert.equal(entry.diagnostics[0].finishReason, 'stop');
+  assert.equal(entry.diagnostics[0].failureCategory, 'unsupported_citation');
+  assert.deepEqual(entry.diagnostics[0].validation, { field: '$.citations[0].quote', rule: 'retrieved_passage' });
+  assert(!readFileSync(path, 'utf8').includes(review.citations[0].quote));
+});
+
+for (const [label, documentReader, classification, reason] of [
+  ['unavailable', url => inspectDocumentation(url, { resolver, requestImpl: documentationResponse(503, key) }),
+    'insufficient', 'documentation_unavailable'],
+  ['insufficient', async () => [], 'insufficient', 'insufficient_evidence'],
+  ['irrelevant', async () => ['Plant seedlings after the final frost has passed.'], 'irrelevant', 'documentation_irrelevant']
+]) {
+  test(`review distinguishes ${label} documentation and keeps findings`, async t => {
+    const { run } = fixture(t);
+    const review = positive();
+    review.verdict = 'uncertain';
+    review.findings.documentation.status = 'uncertain';
+    review.findings.documentation.evidence = classification;
+    review.citations = [];
+    const { report } = await run({ documentReader, fetchImpl: async () => completion(review) });
+    const [entry] = report.entries;
+    assert.equal(entry.reason, reason);
+    assert.equal(entry.decision, 'needs_review');
+    assert.deepEqual(entry.findings.findings, review.findings);
+    assert(!JSON.stringify(entry.documentationDiagnostics).includes(key));
+  });
+}
+
+test('documentation diagnostics distinguish HTTP, size, redirects, and empty HTML', async () => {
+  for (const [requestImpl, httpStatus, outcome, failureCategory] of [
+    [documentationResponse(503, key), 503, 'documentation_unavailable', 'http_error'],
+    [documentationResponse(200, '', { 'content-length': 524289 }), 200, 'documentation_unavailable', 'response_too_large'],
+    [documentationResponse(200, 'x'.repeat(524289)), 200, 'documentation_unavailable', 'response_too_large'],
+    [documentationResponse(302, '', { location: 'https://react.dev/learn/start' }), 302, 'documentation_unavailable', 'redirect_blocked'],
+    [documentationResponse(302, '', { location: source }), 302, 'documentation_unavailable', 'redirect_limit'],
+    [documentationResponse(200, '<main><nav><p>Navigation without any documentation content.</p></nav></main>'),
+      200, 'insufficient_evidence', 'no_passages']
+  ]) {
+    assert.deepEqual(await inspectDocumentation(source, { resolver, requestImpl }), {
+      passages: [], diagnostic: { httpStatus, outcome, passageCount: 0, failureCategory }
+    });
+  }
+});
+
+test('documentation diagnostics preserve status on an interrupted body and omit error text', async () => {
+  const result = await inspectDocumentation(source, {
+    resolver, requestImpl: (_url, _options, callback) => {
+      const req = new EventEmitter();
+      req.end = () => {
+        const res = Object.assign(new EventEmitter(), { statusCode: 200, headers: { 'content-type': 'text/html' } });
+        callback(res);
+        res.emit('error', new Error(key));
+      };
+      return req;
+    }
+  });
+  assert.deepEqual(result, { passages: [], diagnostic: {
+    httpStatus: 200, outcome: 'documentation_unavailable', passageCount: 0, failureCategory: 'network_error'
+  } });
+});
+
+test('documentation diagnostics identify a DNS timeout before HTTPS', async () => {
+  const result = await inspectDocumentation(source, {
+    resolver: { resolve4: async () => { throw Object.assign(new Error(key), { code: 'ETIMEOUT' }); } },
+    requestImpl: () => assert.fail('Unexpected HTTPS request')
+  });
+  assert.deepEqual(result.diagnostic, {
+    httpStatus: null, outcome: 'documentation_unavailable', passageCount: 0, failureCategory: 'timeout'
+  });
+});
+
 test('model disagreement and matching generation model cannot approve', async t => {
   const { run } = fixture(t);
   const { report } = await run({ fetchImpl: async () => completion(positive(), 'openai/gpt-oss-120b') });
@@ -284,9 +406,10 @@ test('unavailable execution and HTTP evidence never approve', async t => {
   const review = positive();
   review.verdict = 'uncertain';
   review.findings.documentation.status = 'uncertain';
+  review.findings.documentation.evidence = 'insufficient';
   review.citations = [];
   const missing = await run({ documentReader: async () => [], fetchImpl: async () => completion(review) });
-  assert.equal(missing.report.entries[0].reason, 'documentation_unverified');
+  assert.equal(missing.report.entries[0].reason, 'insufficient_evidence');
   assert.equal(missing.report.entries[0].findings.verdict, 'uncertain');
 });
 
@@ -300,7 +423,11 @@ test('documentation restricts hosts and rejects nonpublic addresses', async () =
     assert.equal(publicAddress(address), false);
   }
   const q = { q: quote, options: [], sourceUrls: [source] };
-  assert.deepEqual(await verifyDocumentation(q, async () => []), [{ source: 0, passages: [] }]);
+  assert.deepEqual(await verifyDocumentation(q, async () => []), [{
+    source: 0, passages: [], diagnostic: {
+      httpStatus: null, outcome: 'insufficient_evidence', passageCount: 0, failureCategory: 'no_passages'
+    }
+  }]);
 });
 
 test('documentation pins the checked address, bounds same-origin redirects and extracts evidence', async () => {

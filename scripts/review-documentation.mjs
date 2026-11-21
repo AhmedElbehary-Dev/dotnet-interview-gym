@@ -1,6 +1,20 @@
 import { BlockList, isIPv4 } from 'node:net';
 import { Resolver } from 'node:dns/promises';
 import { request } from 'node:https';
+import { createReadStream } from 'node:fs';
+import { isMain } from './plan-question-generation.mjs';
+
+const responseLimit = 512 * 1024;
+const passageLimit = 450;
+const unavailable = (failureCategory, httpStatus = null) => ({
+  passages: [], diagnostic: { httpStatus, outcome: 'documentation_unavailable', passageCount: 0, failureCategory }
+});
+const extracted = (passages, httpStatus = null) => ({
+  passages, diagnostic: {
+    httpStatus, outcome: passages.length ? 'evidence_retrieved' : 'insufficient_evidence',
+    passageCount: passages.length, failureCategory: passages.length ? null : 'no_passages'
+  }
+});
 
 const hosts = new Map([
   ['learn.microsoft.com', /^\/(?:[a-z]{2}-[a-z]{2}\/)?(?:dotnet|aspnet|ef|sql|azure|windows|visualstudio)(?:\/|$)/i],
@@ -29,95 +43,191 @@ export function allowedDocumentationUrl(value) {
 }
 
 function readHtml(url, address, signal, requestImpl) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
+    let httpStatus = null;
+    const fail = category => resolve({ httpStatus, failureCategory: category });
+    const transportFailure = () => fail(signal.aborted ? 'timeout' : 'network_error');
     const req = requestImpl(url, {
       agent: false, family: 4, signal, autoSelectFamily: false, rejectUnauthorized: true,
       lookup: (_hostname, _options, callback) => callback(null, address, 4),
       headers: { Accept: 'text/html', 'Accept-Encoding': 'identity' }
     }, res => {
-      const limit = 512 * 1024;
+      httpStatus = res.statusCode;
       const type = res.headers['content-type'] ?? '';
-      if ([301, 302, 303, 307, 308].includes(res.statusCode)) {
+      res.on('error', transportFailure);
+      res.on('aborted', transportFailure);
+      if ([301, 302, 303, 307, 308].includes(httpStatus)) {
+        resolve({ httpStatus, location: res.headers.location });
         res.destroy();
-        resolve({ location: res.headers.location });
         return;
       }
-      if (res.statusCode !== 200 || !/^text\/html(?:;|$)/i.test(type) ||
-          Number(res.headers['content-length']) > limit ||
-          ![undefined, 'identity'].includes(res.headers['content-encoding'])) {
+      const failureCategory = httpStatus !== 200 ? 'http_error' :
+        Number(res.headers['content-length']) > responseLimit ? 'response_too_large' :
+        !/^text\/html(?:;|$)/i.test(type) || ![undefined, 'identity'].includes(res.headers['content-encoding'])
+          ? 'unsupported_response' : null;
+      if (failureCategory) {
+        fail(failureCategory);
         res.destroy();
-        resolve({ html: '' });
         return;
       }
       const chunks = [];
       let size = 0;
-      res.on('error', reject);
       res.on('data', chunk => {
         size += chunk.length;
-        if (size > limit) {
+        if (size > responseLimit) {
+          fail('response_too_large');
           res.destroy();
-          resolve({ html: '' });
           return;
         }
         chunks.push(chunk);
       });
-      res.on('end', () => resolve({ html: Buffer.concat(chunks).toString('utf8') }));
+      res.on('end', () => resolve({ httpStatus, html: Buffer.concat(chunks).toString('utf8') }));
     });
-    req.on('error', reject);
+    req.on('error', transportFailure);
     req.end();
   });
 }
 
-export async function readDocumentation(url, {
+export async function inspectDocumentation(url, {
   resolver = new Resolver({ timeout: 1000, tries: 1 }), requestImpl = request
 } = {}) {
   url = allowedDocumentationUrl(String(url));
-  if (!url) return [];
+  if (!url) return unavailable('unsafe_url');
   const signal = AbortSignal.timeout(3500);
-  const cancel = () => resolver.cancel();
+  const cancel = () => resolver.cancel?.();
   signal.addEventListener('abort', cancel, { once: true });
+  let failureCategory = 'dns_error';
+  let httpStatus = null;
   try {
     const addresses = await resolver.resolve4(url.hostname);
     signal.throwIfAborted();
-    if (!addresses.length || !addresses.every(publicAddress)) return [];
+    if (!addresses.length) return unavailable('dns_error');
+    if (!addresses.every(publicAddress)) return unavailable('unsafe_address');
     const origin = url.origin;
-    let html = '';
+    failureCategory = 'network_error';
     for (let redirects = 0; redirects <= 2; redirects++) {
       const response = await readHtml(url, addresses[0], signal, requestImpl);
-      if (response.html !== undefined) {
-        html = response.html;
-        break;
-      }
+      httpStatus = response.httpStatus;
+      if (response.failureCategory) return unavailable(response.failureCategory, httpStatus);
+      if (response.html !== undefined) return extracted(extractPassages(response.html), httpStatus);
       const next = typeof response.location === 'string' && URL.parse(response.location, url);
-      if (!next || next.origin !== origin || !allowedDocumentationUrl(next.href)) return [];
+      if (!next || next.origin !== origin || !allowedDocumentationUrl(next.href)) {
+        return unavailable('redirect_blocked', httpStatus);
+      }
       url = next;
     }
-    const main = /<main\b[^>]*>([\s\S]*?)<\/main\s*>/i.exec(html)?.[1] ?? html;
-    const content = main.replace(/<!--[\s\S]*?-->|<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, ' ');
-    const fragments = [];
-    for (const [, fragment] of content.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p\s*>/gi)) {
-      const text = fragment.replace(/<[^>]*>/g, '').replace(/&(lt|gt|amp|quot|apos|nbsp|#39);/g, (_, entity) =>
-        ({ lt: '<', gt: '>', amp: '&', quot: '"', apos: "'", nbsp: ' ', '#39': "'" })[entity])
-        .replace(/\s+/g, ' ').trim();
-      if (text.length >= 30) fragments.push(text.slice(0, 450));
-    }
-    return fragments;
-  } catch {
-    return [];
+    return unavailable('redirect_limit', httpStatus);
+  } catch (error) {
+    return unavailable(signal.aborted || error?.code === 'ETIMEOUT' ? 'timeout' : failureCategory, httpStatus);
   } finally {
     signal.removeEventListener('abort', cancel);
   }
 }
 
+export async function readDocumentation(url, options) {
+  return (await inspectDocumentation(url, options)).passages;
+}
+
+const entities = new Map(Object.entries({
+  lt: '<', gt: '>', amp: '&', quot: '"', apos: "'", nbsp: ' ',
+  ndash: '–', mdash: '—', lsquo: '‘', rsquo: '’', ldquo: '“', rdquo: '”', hellip: '…'
+}));
+const blocks = new Set('address article blockquote caption dd details div dl dt figcaption figure h1 h2 h3 h4 h5 h6 hr li main ol p pre section summary table tbody td th thead tr ul'.split(' '));
+const ignored = new Set('aside button footer form header nav svg'.split(' '));
+const voidTags = new Set('area base br col embed hr img input link meta param source track wbr'.split(' '));
+
+function extractPassages(html) {
+  const visible = html.replace(/<!doctype\b[^>]*>|<!--[\s\S]*?(?:-->|$)|<(head|script|style|template|noscript)\b[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, '');
+  const main = /<main\b(?:"[^"]*"|'[^']*'|[^'"<>])*>([\s\S]*?)(?:<\/main\s*>|$)/i.exec(visible)?.[1];
+  const article = /<article\b(?:"[^"]*"|'[^']*'|[^'"<>])*>([\s\S]*?)(?:<\/article\s*>|$)/i.exec(visible)?.[1];
+  const passages = new Set();
+  let hiddenTag;
+  let hiddenDepth = 0;
+  let fragment = '';
+  const flush = () => {
+    let remaining = fragment.replace(/&(#(?:x[0-9a-f]{1,6}|[0-9]{1,7})|[a-z]+);/gi, (original, entity) => {
+      if (entity[0] !== '#') return entities.get(entity) ?? original;
+      const hex = entity[1].toLowerCase() === 'x';
+      const point = Number.parseInt(entity.slice(hex ? 2 : 1), hex ? 16 : 10);
+      return point > 0 && point <= 0x10ffff && (point < 0xd800 || point > 0xdfff)
+        ? String.fromCodePoint(point) : original;
+    }).replace(/\s+/gu, ' ').trim();
+    fragment = '';
+    // Keep later claims in long blocks and retain context across a split.
+    while (remaining.length >= 24) {
+      const boundary = remaining.lastIndexOf(' ', passageLimit);
+      const end = remaining.length <= passageLimit ? remaining.length : boundary >= 350 ? boundary : passageLimit;
+      passages.add(remaining.slice(0, end));
+      if (end === remaining.length) break;
+      const overlap = remaining.indexOf(' ', end - 80);
+      remaining = remaining.slice(overlap >= 0 && overlap < end ? overlap + 1 : end).trimStart();
+    }
+  };
+  for (const [token, closing, name, attributes] of (main ?? article ?? visible)
+    .matchAll(/<(\/)?([a-z][\w:-]*)((?:"[^"]*"|'[^']*'|[^'"<>])*)>|[^<]+|</gi)) {
+    const tag = name?.toLowerCase();
+    const opens = tag && !closing && !voidTags.has(tag) && !attributes.endsWith('/');
+    if (hiddenDepth) {
+      if (tag === hiddenTag && closing) hiddenDepth--;
+      if (tag === hiddenTag && opens) hiddenDepth++;
+    } else if (opens &&
+               (ignored.has(tag) || /\s(?:hidden(?=\s|=|$)|aria-hidden\s*=\s*(?:"true"|'true'|true(?=\s|$)))/i.test(attributes))) {
+      flush();
+      hiddenTag = tag;
+      hiddenDepth = 1;
+    } else if (blocks.has(tag)) {
+      flush();
+    } else if (tag === 'br') {
+      fragment += ' ';
+    } else if (!tag) {
+      fragment += token;
+    }
+  }
+  flush();
+  return [...passages];
+}
+
 const words = value => value.toLowerCase().match(/[a-z][a-z0-9-]{2,}/g) ?? [];
 
-export async function verifyDocumentation(candidate, reader = readDocumentation) {
+export async function verifyDocumentation(candidate, reader = inspectDocumentation) {
   const terms = new Set(words([candidate.q, ...candidate.options].join(' ')));
   return Promise.all(candidate.sourceUrls.map(async (sourceUrl, source) => {
     const url = allowedDocumentationUrl(sourceUrl);
-    const passages = url ? await reader(url).catch(() => []) : [];
+    let result;
+    try {
+      result = url ? await reader(url) : unavailable('unsafe_url');
+      if (Array.isArray(result)) result = extracted(result);
+    } catch {
+      result = unavailable('network_error');
+    }
+    const { passages, diagnostic } = result;
     const ranked = passages.map(text => ({ text, score: new Set(words(text).filter(word => terms.has(word))).size }));
     ranked.sort((a, b) => b.score - a.score);
-    return { source, passages: ranked.slice(0, 3).map(({ text }) => text.slice(0, 450)) };
+    return { source, passages: ranked.slice(0, 3).map(({ text }) => text.slice(0, passageLimit)), diagnostic };
   }));
+}
+
+if (isMain(import.meta.url)) {
+  const [flag, path, ...extra] = process.argv.slice(2);
+  if (flag !== '--offline' || !path || extra.length) {
+    console.error('Usage: node scripts/review-documentation.mjs --offline PATH_TO_HTML');
+    process.exitCode = 1;
+  } else {
+    let result;
+    try {
+      const chunks = [];
+      let size = 0;
+      for await (const chunk of createReadStream(path)) {
+        size += chunk.length;
+        if (size > responseLimit) break;
+        chunks.push(chunk);
+      }
+      result = size > responseLimit ? unavailable('response_too_large') :
+        extracted(extractPassages(Buffer.concat(chunks).toString('utf8')));
+    } catch {
+      result = unavailable('file_read_error');
+    }
+    console.log(JSON.stringify(result.diagnostic));
+    if (!result.passages.length) process.exitCode = 1;
+  }
 }

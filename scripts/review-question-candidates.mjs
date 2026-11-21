@@ -21,11 +21,16 @@ const strictObject = properties => ({
   type: 'object', properties, required: Object.keys(properties), additionalProperties: false
 });
 const findingSchema = strictObject({ status: { type: 'string', enum: statuses }, reason: { type: 'string' } });
+const evidenceRatings = ['sufficient', 'insufficient', 'irrelevant'];
+const documentationFindingSchema = strictObject({
+  ...findingSchema.properties, evidence: { type: 'string', enum: evidenceRatings }
+});
 const citationSchema = strictObject({ source: { type: 'integer' }, quote: { type: 'string' } });
 const reviewSchema = strictObject({
   verdict: { type: 'string', enum: verdicts },
   actualAnswer: { anyOf: [{ type: 'integer', enum: [0, 1, 2, 3] }, { type: 'null' }] },
-  findings: strictObject(Object.fromEntries(reviewDimensions.map(name => [name, findingSchema]))),
+  findings: strictObject(Object.fromEntries(reviewDimensions.map(name =>
+    [name, name === 'documentation' ? documentationFindingSchema : findingSchema]))),
   citations: { type: 'array', items: citationSchema }
 });
 
@@ -157,7 +162,7 @@ function localGates(candidate, context, index) {
   return { raw };
 }
 
-function parseReview(value, reportedModel, model, evidence, keys) {
+function parseReview(value, reportedModel, model, evidence, keys, saveFindings) {
   if (reportedModel !== model) throw new ReviewError('model_mismatch');
   if (containsSecret(value, keys)) throw new ReviewError('credentials_in_payload');
   requireReviewObject(value, reviewSchema, '$');
@@ -169,10 +174,15 @@ function parseReview(value, reportedModel, model, evidence, keys) {
   for (const name of reviewDimensions) {
     const finding = value.findings[name];
     const path = `$.findings.${name}`;
-    requireReviewObject(finding, findingSchema, path);
+    requireReviewObject(finding, reviewSchema.properties.findings.properties[name], path);
     if (!statuses.includes(finding.status)) throw new ReviewError('invalid_review', `${path}.status`, 'enum');
     if (!boundedText(finding.reason, 8, 300)) throw new ReviewError('invalid_review', `${path}.reason`, 'bounded_text');
   }
+  if (!evidenceRatings.includes(value.findings.documentation.evidence)) {
+    throw new ReviewError('invalid_review', '$.findings.documentation.evidence', 'enum');
+  }
+  const { verdict, actualAnswer, findings } = value;
+  saveFindings({ verdict, actualAnswer, findings, citations: [] });
   if (!Array.isArray(value.citations) || value.citations.length > evidence.length) {
     throw new ReviewError('invalid_review', '$.citations', 'bounded_array');
   }
@@ -214,8 +224,9 @@ function reviewMessages(raw, context, index, evidence) {
       `Findings must have exactly these keys: ${reviewDimensions.join(', ')}. Each value has status (pass, fail, or uncertain) and a reason (8–300 characters).`,
       'Check technical correctness, answer uniqueness, explanation and hint, ambiguity, distractor plausibility, difficulty, concept and skill alignment, snippet correctness, documentation support, and semantic duplication against supplied comparisons.',
       'A repeated concept alone is not duplication. An equivalent learning objective tested in essentially the same way is duplication.',
-      'For approval all findings must pass and the documentation passages must substantiate the answer and its material claims.',
-      'Citations must be an array of {source, quote}, exactly one per source for approval. Use the supplied zero-based source number and an exact contiguous quote of at least 24 characters from its passages.',
+      'The documentation finding also requires evidence (sufficient, insufficient, or irrelevant). Use sufficient if the passages substantiate the answer and its material claims, irrelevant if the passages are unrelated to the question, and insufficient otherwise.',
+      'For approval all findings must pass, the documentation evidence must be sufficient, and citations must have exactly one entry per source.',
+      'Each citation is {source, quote}. Copy 24–450 contiguous characters verbatim from one supplied passage for that zero-based source. Preserve case, punctuation, and spacing. Omit any citation for which there is no supporting passage.',
       'If documentation is insufficient or unrelated report uncertainty or reject. Never invent or browse sources. Never claim the snippet was compiled or run.',
       'If a finding is uncertain, the verdict must be uncertain unless a different finding independently warrants rejection.'
     ].join(' ') },
@@ -225,15 +236,17 @@ function reviewMessages(raw, context, index, evidence) {
   ];
 }
 
-function decide(review, answer, gates, sourceCount) {
+const documentationHolds = new Set(['documentation_unavailable', 'insufficient_evidence', 'documentation_irrelevant']);
+
+function decide(review, answer, gates) {
   const statuses = Object.values(review.findings).map(finding => finding.status);
   if (review.verdict === 'reject' && statuses.includes('fail')) return ['rejected', 'reviewer_rejected'];
-  if (gates.documentation === 'unverified') return ['needs_review', 'documentation_unverified'];
+  if (documentationHolds.has(gates.documentation)) return ['needs_review', gates.documentation];
   if (review.verdict !== 'approve' || statuses.some(status => status !== 'pass') || review.actualAnswer === null) {
     return ['needs_review', 'reviewer_uncertain'];
   }
   if (review.actualAnswer !== answer) return ['needs_review', 'answer_disagreement'];
-  if (review.citations.length !== sourceCount) return ['needs_review', 'unsupported_citation'];
+  if (gates.documentation !== 'passed') return ['needs_review', 'unsupported_citation'];
   if (gates.execution !== 'not_applicable' && gates.execution !== 'verified') return ['needs_review', 'execution_unverified'];
   return ['approved', 'all_gates_passed'];
 }
@@ -286,7 +299,7 @@ export async function reviewBatch(root, input, {
     const gates = { deterministic: local.raw ? 'passed' : 'failed', documentation: 'not_checked', execution: 'not_checked' };
     if (local.validation) gates.validation = local.validation;
     const entry = { candidate, reviewedAt: new Date().toISOString(), reviewModel: dryRun ? null : model, gates,
-      findings: null, diagnostics: [], decision: 'needs_review', reason: 'dry_run' };
+      findings: null, diagnostics: [], documentationDiagnostics: [], decision: 'needs_review', reason: 'dry_run' };
     entries.push(entry);
     if (!local.raw) {
       entry.decision = 'rejected';
@@ -311,15 +324,31 @@ export async function reviewBatch(root, input, {
     }
     const retrieved = await verifyDocumentation(raw, documentReader);
     signal?.throwIfAborted();
-    const evidence = containsSecret(retrieved, keys)
-      ? retrieved.map(({ source }) => ({ source, passages: [] }))
-      : retrieved;
-    gates.documentation = evidence.every(source => source.passages.length) ? 'evidence_retrieved' : 'unverified';
+    const evidence = retrieved.map(({ source, passages, diagnostic }) => {
+      if (containsSecret(passages, keys)) {
+        passages = [];
+        diagnostic = { httpStatus: diagnostic.httpStatus, outcome: 'documentation_unavailable',
+          passageCount: 0, failureCategory: 'credentials_in_passages' };
+      }
+      const event = { candidate: index + 1, source, ...diagnostic, suppliedPassageCount: passages.length };
+      entry.documentationDiagnostics.push(event);
+      transport.logDocumentation?.(event);
+      return { source, passages };
+    });
+    gates.documentation = entry.documentationDiagnostics.some(event => event.outcome === 'documentation_unavailable')
+      ? 'documentation_unavailable'
+      : evidence.some(source => !source.passages.length) ? 'insufficient_evidence' : 'evidence_retrieved';
     try {
       const { output: review } = await requestCompletion({
         messages: reviewMessages(raw, context, index, evidence), maxTokens: 2800,
         responseFormat: { type: 'json_schema', json_schema: { name: 'question_review', strict: true, schema: reviewSchema } },
-        selectOutput: (value, reportedModel) => parseReview(value, reportedModel, model, evidence, keys)
+        selectOutput: (value, reportedModel) => parseReview(value, reportedModel, model, evidence, keys, partial => {
+          entry.findings = partial;
+          if (gates.documentation !== 'evidence_retrieved') return;
+          const rating = partial.findings.documentation.evidence;
+          if (rating === 'irrelevant') gates.documentation = 'documentation_irrelevant';
+          if (rating === 'insufficient') gates.documentation = 'insufficient_evidence';
+        })
       }, {
         QUESTION_AI_PROVIDER: 'groq', GROQ_MODEL: model, GROQ_API_KEY: env.GROQ_API_KEY, GROQ_REASONING_EFFORT: 'low'
       }, {
@@ -333,7 +362,8 @@ export async function reviewBatch(root, input, {
       });
       signal?.throwIfAborted();
       entry.findings = review;
-      if (review.findings.documentation.status === 'pass' && review.citations.length === evidence.length) {
+      if (gates.documentation === 'evidence_retrieved' && review.findings.documentation.status === 'pass' &&
+          review.citations.length === evidence.length) {
         gates.documentation = 'passed';
       }
       // The injected verifier must run compile and execution in a separately managed, resource-limited sandbox.
@@ -348,7 +378,7 @@ export async function reviewBatch(root, input, {
           // No verifier output or diagnostics are persisted.
         }
       }
-      [entry.decision, entry.reason] = decide(review, raw.answer, gates, evidence.length);
+      [entry.decision, entry.reason] = decide(review, raw.answer, gates);
     } catch (error) {
       signal?.throwIfAborted();
       entry.reason = error.category ?? 'review_request_failed';
@@ -370,7 +400,9 @@ if (isMain(import.meta.url)) {
       throw new Error('Usage: node scripts/review-question-candidates.mjs PATH_TO_CANDIDATES_JSON [--dry-run]');
     }
     const { path, report } = await reviewBatch(resolve('.'), input, {
-      dryRun: flag === '--dry-run', log: diagnostic => console.error(redact(JSON.stringify(diagnostic)))
+      dryRun: flag === '--dry-run',
+      log: diagnostic => console.error(redact(JSON.stringify(diagnostic))),
+      logDocumentation: diagnostic => console.error(redact(JSON.stringify(diagnostic)))
     });
     for (const [i, { decision, reason }] of report.entries.entries()) console.log(redact(`Candidate ${i + 1}: ${decision} (${reason})`));
     if (path) console.log(redact(`Staged review in ${path}`));
