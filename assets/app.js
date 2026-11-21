@@ -42,9 +42,27 @@ function history(){
 function save(){if(state)localStorage.setItem(KEY,JSON.stringify(state))}
 function saveHistory(h){localStorage.setItem(HKEY,JSON.stringify(h))}
 function view(section){['setup','quiz','results'].forEach(id=>$(id).classList.toggle('hidden',id!==section));window.scrollTo(0,0)}
-function filteredBank({category='all', difficulty='all', skill='all'}){
+function filteredBank({category='all', difficulty='all', skill='all', published}){
   return BANK.filter(q=>(category==='all'||q.category===category)&&
-    (difficulty==='all'||q.difficulty===difficulty)&&(skill==='all'||q.skill===skill));
+    (difficulty==='all'||q.difficulty===difficulty)&&(skill==='all'||q.skill===skill)&&
+    (!published||(q.publishedOn>=published[0]&&q.publishedOn<=published[1])));
+}
+const cairoCalendar=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Cairo',year:'numeric',month:'2-digit',day:'2-digit'});
+function arrivalFilters(period){
+  const today=cairoCalendar.format(new Date());
+  if(period==='Today')return {published:[today,today]};
+  // Shift local calendar dates at UTC midnight so a DST change cannot shorten the window.
+  const midnight=Date.parse(today);
+  const daysAgo=days=>new Date(midnight-days*86400000).toISOString().slice(0,10);
+  return {published:[daysAgo(6),daysAgo(1)]};
+}
+function paintArrivals(){
+  for(const period of ['Today','Recent']){
+    const questions=filteredBank(arrivalFilters(period)).sort((a,b)=>b.publishedOn.localeCompare(a.publishedOn));
+    $('arrivals'+period).innerHTML=questions.length?questions.map(q=>`<li>${renderQuestion(q)}</li>`).join(''):
+      '<li class="muted">لا توجد أسئلة جديدة في هذه الفترة.</li>';
+    $('startArrivals'+period).disabled=!questions.length;
+  }
 }
 function paintProfile(containerId, h=history()){
   const profile=A.buildProfile(BANK,h);
@@ -73,6 +91,7 @@ function setup(){
   $('topics').innerHTML=Object.entries(counts).map(([cat,count])=>`<div class="topic-row"><span dir="auto">${escapeHTML(cat)}</span><strong>${count}</strong></div>`).join('');
   $('resume').disabled=!resumableSession(loadJSON(KEY));
   for(const id of ['retry','reinforce','revisit','reassess'])$(id).disabled=false;
+  paintArrivals();
   paintProfile('skillProfile',h);
 }
 function resumableSession(session){
@@ -80,9 +99,9 @@ function resumableSession(session){
     session.ids.every(id=>BY_ID.has(id)) && Number.isInteger(session.index) &&
     session.index>=0 && session.index<=session.ids.length && session.answers && typeof session.answers==='object';
 }
-async function start(poolType='standard', plan='standard'){
+async function start(poolType='standard', plan='standard', arrivals){
   const h=history();
-  const filters=plan==='placement'?{}:{
+  const filters=arrivals?arrivalFilters(arrivals):plan==='placement'?{}:{
     category:$('category').value,
     difficulty:plan==='adaptive'?'all':$('difficulty').value,
     skill:$('skill').value
@@ -252,6 +271,9 @@ $('hintToggle').addEventListener('click',()=>{
   save();draw();
 });
 $('start').addEventListener('click',()=>start());
+for(const period of ['Today','Recent']){
+  $('startArrivals'+period).addEventListener('click',()=>start('arrivals','standard',period));
+}
 $('retry').addEventListener('click',()=>start('review'));
 $('reinforce').addEventListener('click',()=>start('reinforcement'));
 $('revisit').addEventListener('click',()=>start('mastered'));
@@ -283,7 +305,7 @@ async function loadQuestionBank(){
     const manifest=await response.json();
     if(manifest.schemaVersion!==1||!Array.isArray(manifest.files))throw new Error('Invalid manifest');
     const shards=await Promise.all(manifest.files.map(async entry=>{
-      const res=await fetch(entry.path);
+      const res=await fetch(entry.path,{cache:'no-cache'});
       if(!res.ok)throw new Error(`${entry.path}: HTTP ${res.status}`);
       return res.json();
     }));

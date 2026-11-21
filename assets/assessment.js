@@ -30,7 +30,8 @@
   }
 
   function selectRound(bank, history, pool, rng = Math.random) {
-    const groups = pool === 'standard' ? ['unseen', 'review', 'reinforcement'] : [pool];
+    const groups = pool === 'standard' || pool === 'arrivals' ? ['unseen', 'review', 'reinforcement'] : [pool];
+    if (pool === 'arrivals') groups.push('mastered');
     return groups.flatMap(status => randomSort(bank.filter(q => masteryStatus(history[q.id]) === status), rng));
   }
 

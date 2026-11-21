@@ -5,12 +5,13 @@ import assert from 'node:assert/strict';
 const root=process.cwd();
 const app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');
 const assessment=fs.readFileSync(path.join(root,'assets/assessment.js'),'utf8');
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'questions/manifest.json'),'utf8'));
 const store=new Map();
 const elements=new Map();
 const events=new Map();
 const historyKey='interview_gym_history_v2';
 const sessionKey='interview_gym_session_v2';
-let now=Date.now(), exported;
+let now=Date.parse('2099-07-02T21:01:00Z'), exported;
 class TestDate extends Date {
   constructor(...args){super(...(args.length?args:[now]))}
   static now(){return now}
@@ -54,8 +55,8 @@ const context=vm.createContext({document,window:{scrollTo(){},addEventListener()
 vm.runInContext(assessment,context,{filename:'assessment.js'});
 vm.runInContext(app,context,{filename:'app.js'});
 await new Promise(r=>setTimeout(r,50));
-assert.equal(vm.runInContext('BANK.length',context),120);
-assert.equal(elements.get('totalCount').textContent,120);
+assert.equal(vm.runInContext('BANK.length',context),manifest.total);
+assert.equal(elements.get('totalCount').textContent,manifest.total);
 assert.equal(elements.get('start').disabled,false);
 assert.equal(vm.runInContext('CATEGORIES.length',context),10);
 await vm.runInContext('start()',context);
@@ -116,7 +117,7 @@ assert.equal(record(hiddenId).lastStatus,'timeout','hidden elapsed time counts')
 run('leave()');
 assert.equal(el('masteredCount').textContent,1);
 assert.equal(el('reviewCount').textContent,2);
-assert.equal(el('unseenCount').textContent,117);
+assert.equal(el('unseenCount').textContent,manifest.total-3);
 
 await begin('mastered');
 assert.equal(run('current().id'),firstId);
@@ -168,4 +169,30 @@ await importBackup(backup);
 assert.equal(el('reviewCount').textContent,3);
 assert.deepEqual(JSON.parse(store.get(sessionKey)),backup.session);
 assert.deepEqual(JSON.parse(store.get(historyKey)),backup.history);
-console.log('Smoke test passed: standard, placement, adaptive, timing, review, filters, empty state, reload, and backup compatibility.');
+
+now=Date.parse('2099-07-02T21:01:00Z');
+const saved=store.get(historyKey);
+const savedSession=store.get(sessionKey);
+assert.equal(el('startArrivalsToday').disabled,true);
+run(`for(const [id,publishedOn] of [['arrival-today','2099-07-03'],['arrival-recent','2099-07-02'],
+  ['arrival-old','2099-06-26'],['arrival-future','2099-07-04']]){
+    const q={...BANK.find(q=>!q.code),id,publishedOn,q:'Question '+id+' <safe>'};
+    BANK.push(q);BY_ID.set(q.id,q);
+  }
+  setup()`);
+assert.match(el('arrivalsToday').innerHTML,/arrival-today &lt;safe&gt;/);
+assert.doesNotMatch(el('arrivalsToday').innerHTML,/arrival-recent|arrival-future/);
+assert.match(el('arrivalsRecent').innerHTML,/arrival-recent/);
+assert.doesNotMatch(el('arrivalsRecent').innerHTML,/arrival-old|arrival-today/);
+assert.equal(store.get(historyKey),saved);
+assert.equal(store.get(sessionKey),savedSession);
+assert(run("filteredBank({}).some(q=>q.id==='arrival-old')"), 'older arrivals stay in the main bank');
+await events.get('startArrivalsToday:click')();
+assert.equal(run('current().id'),'arrival-today');
+run('answer(current().answer); leave()');
+assert.equal(record('arrival-today').masteryStatus,'mastered');
+for(const [id, entry] of Object.entries(JSON.parse(saved))) assert.deepEqual(record(id),entry);
+await events.get('startArrivalsToday:click')();
+assert.equal(run('current().id'),'arrival-today','mastered arrivals can still be practiced');
+run('leave()');
+console.log('Smoke test passed: standard, placement, adaptive, timing, review, filters, empty state, reload, backup compatibility, New Arrivals, and mastery persistence.');

@@ -140,6 +140,7 @@ body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:n
   grid-template-columns: minmax(0, 1.02fr) minmax(0, 1.1fr);
   grid-template-areas:
     "hero quiz"
+    "arrivals arrivals"
     "skills skills"
     "progress progress";
   align-items: stretch;
@@ -218,6 +219,13 @@ body::before { content:""; position:fixed; inset:0; z-index:-1; pointer-events:n
   grid-area: skills;
   padding: 32px 38px;
 }
+.setup-arrivals-card {
+  grid-area: arrivals;
+  padding: 32px 38px;
+}
+.setup-arrivals-card details + details {margin-block-start:16px}
+.setup-arrivals-card summary {cursor:pointer;font-weight:750}
+.arrival-list .prompt {direction:ltr;text-align:left;unicode-bidi:isolate;overflow-wrap:anywhere}
 .setup-progress-card {
   grid-area: progress;
   padding: 32px 38px;
@@ -407,6 +415,7 @@ html[data-theme="dark"] .code-block{background:#171310;border-color:#655140;}
     grid-template-areas:
       "hero"
       "quiz"
+      "arrivals"
       "skills"
       "progress";
     gap: 16px;

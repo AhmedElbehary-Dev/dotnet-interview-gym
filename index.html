@@ -235,6 +235,17 @@ html[data-theme="dark"] .micro-hint-label{color:#B49FFF}
     <div class="notice">صيغت الأسئلة ونماذج الأكواد باللغة الإنجليزية لمحاكاة بيئات المقابلات التقنية المعتمدة، مع تزويد كل مسألة بإرشاد عربي مقتضب يُعين على التحليل دون كشف الحل. في وضع الاختبار يُعرض الشرح التفصيلي والتعليل البرمجي الكامل في تقرير نهاية الجولة. مؤقت الإجابة والانتقال التلقائي وحفظ التقدم تعمل بشكل مستمر.</div>
     <div class="loading-notice muted" id="loadStatus" role="status">جارٍ تحميل بنك الأسئلة…</div>
   </div>
+  <section class="card setup-card setup-arrivals-card" aria-labelledby="arrivals-title">
+    <h2 id="arrivals-title">الأسئلة الجديدة</h2>
+    <details open><summary>أسئلة اليوم</summary>
+      <ul id="arrivalsToday" class="arrival-list"></ul>
+      <button class="btn ghost" id="startArrivalsToday" disabled>تدرّب على أسئلة اليوم</button>
+    </details>
+    <details><summary>أسئلة الأيام الستة الماضية</summary>
+      <ul id="arrivalsRecent" class="arrival-list"></ul>
+      <button class="btn ghost" id="startArrivalsRecent" disabled>تدرّب على الأسئلة الأخيرة</button>
+    </details>
+  </section>
   <div class="card setup-card setup-skills-card"><h2>مؤشر المهارات</h2><p class="small muted">مؤشر تحليلي يُقاس استناداً إلى نتائج إجاباتك ومستويات الصعوبة واستخدام الإرشادات؛ يُعد دليلاً استرشادياً موجهاً للتدريب وليس تقييماً وظيفياً نهائياً، وتتعزز دقته بازدياد عدد المسائل المنجزة.</p><div class="skill-profile" id="skillProfile"></div><p class="small muted" id="profileMessage"></p></div>
   <div class="card setup-card setup-progress-card"><h2>تقدم المراجعة</h2><div class="stats"><div class="stat"><span>إجمالي الأسئلة</span><strong id="totalCount">…</strong></div><div class="stat"><span>أسئلة لم تُجرّب</span><strong id="unseenCount">0</strong></div><div class="stat"><span>أسئلة تحتاج إلى مراجعة</span><strong id="reviewCount">0</strong></div><div class="stat"><span>أسئلة مُتقنة</span><strong id="masteredCount">0</strong></div><div class="stat"><span>أسئلة تحتاج إلى تثبيت</span><strong id="reinforcementCount">0</strong></div></div><h3>توزيع بنك الأسئلة</h3><div class="topics" id="topics"></div><div class="action-row"><button class="btn ghost" id="reset">إعادة ضبط التقدّم</button><button class="btn ghost" id="exportProgress">تصدير بيانات التقدم</button><button class="btn ghost" id="importProgress">استيراد بيانات التقدم</button><input type="file" id="progressFile" accept="application/json,.json" class="sr-only" aria-label="اختر ملف التقدم"></div></div>
 </section>
