@@ -13,7 +13,11 @@ const root = process.cwd();
 const model = 'openai/gpt-oss-20b';
 const key = 'gsk_mock_key_never_write_this';
 const source = 'https://learn.microsoft.com/dotnet/csharp/language-reference/operators/type-testing-and-cast';
+const otherSource = 'https://learn.microsoft.com/dotnet/csharp/fundamentals/functional/pattern-matching';
+const thirdSource = 'https://learn.microsoft.com/dotnet/csharp/language-reference/operators/patterns';
 const quote = 'The is operator checks if the runtime type of an expression result is compatible with a given type.';
+const otherQuote = 'A declaration pattern tests the runtime type and assigns a matching value to a local variable.';
+const addSources = (...urls) => batch => batch.candidates[0].sourceUrls.push(...urls);
 const learnHtml = `<main id="main">
   <nav><p>A navigation passage about runtime type compatibility.</p></nav>
   <ul><li>The <code>is</code> operator checks if the runtime type of an expression result is compatible with a given type.</li></ul>
@@ -188,9 +192,128 @@ test('strict Groq review holds a positive response without supporting documentat
   const { run } = fixture(t);
   const review = { ...positive(), citations: [] };
   const { report } = await run({ fetchImpl: async () => completion(review) });
-  assert.equal(report.entries[0].reason, 'unsupported_citation');
+  assert.equal(report.entries[0].reason, 'unsupported_source');
   assert.equal(report.entries[0].decision, 'needs_review');
-  assert.equal(report.entries[0].gates.documentation, 'evidence_retrieved');
+  assert.equal(report.entries[0].gates.documentation, 'unsupported_source');
+});
+
+test('two independently supported sources pass without source repair', async t => {
+  const { run } = fixture(t, 1, addSources(otherSource));
+  const review = positive();
+  review.citations.push({ source: 1, quote: otherQuote });
+  const result = await run({ documentReader: async url => [url.href === source ? quote : otherQuote],
+    fetchImpl: async () => completion(review) });
+  const [entry] = result.report.entries;
+  assert.equal(entry.decision, 'approved');
+  assert.deepEqual(entry.sourceCoverage, [
+    { source: 0, outcome: 'verified_support' }, { source: 1, outcome: 'verified_support' }
+  ]);
+  assert.equal(result.revisedPath, null);
+});
+
+for (const [label, citation, reason] of [
+  ['unknown source index', { source: 5, quote }, 'unknown_citation_source'],
+  ['duplicate source citation', { source: 0, quote }, 'duplicate_source_citation']
+]) {
+  test(`${label} is diagnosed without proposing a repair`, async t => {
+    const { run } = fixture(t);
+    const review = positive();
+    review.citations.push(citation);
+    const { report, revisedPath } = await run({ fetchImpl: async () => completion(review) });
+    const [entry] = report.entries;
+    assert.equal(entry.reason, reason);
+    assert.equal(entry.decision, 'needs_review');
+    assert.equal(entry.diagnostics[0].failureCategory, reason);
+    assert.deepEqual(entry.findings.citations, []);
+    assert.equal(revisedPath, null);
+  });
+}
+
+test('an irrelevant extra source stages a source-only revision that requires fresh review', async t => {
+  const { run, batch, directory, input } = fixture(t, 1, addSources(otherSource));
+  const bank = readdirSync('questions').map(file => [file, readFileSync(join('questions', file))]);
+  const original = readFileSync(input);
+  let calls = 0;
+  const { path, report, revisedPath } = await run({
+    documentReader: async url => [url.href === source ? quote : 'The as operator returns null when a conversion fails.'],
+    fetchImpl: async () => { calls++; return completion(); }
+  });
+  assert.equal(calls, 1);
+  const [entry] = report.entries;
+  assert.equal(entry.reason, 'source_repair_staged');
+  assert.equal(entry.decision, 'needs_review');
+  assert.deepEqual(entry.candidate, batch.candidates[0]);
+  assert.deepEqual(entry.sourceCoverage, [
+    { source: 0, outcome: 'verified_support' }, { source: 1, outcome: 'unsupported_source' }
+  ]);
+  assert.equal(dirname(path), dirname(revisedPath));
+  const revised = JSON.parse(readFileSync(revisedPath));
+  assert.deepEqual(revised.candidates, [{ ...batch.candidates[0], sourceUrls: [source] }]);
+  assert.deepEqual(revised.sourceRepairs, [{
+    candidate: 0, originalSourceUrls: [source, otherSource], retainedSourceIndices: [0], reviewModel: model
+  }]);
+  assert.deepEqual(readFileSync(input), original);
+  const fresh = fetchImpl => reviewBatch(root, revisedPath, {
+    env, outputParent: directory, documentReader: async () => [quote], fetchImpl
+  });
+  const failed = positive();
+  failed.verdict = 'reject';
+  failed.findings.technical.status = 'fail';
+  assert.equal((await fresh(async () => completion(failed))).report.entries[0].decision, 'rejected');
+  const accepted = await fresh(async (_url, { body }) => {
+    const question = JSON.parse(JSON.parse(body).messages[1].content).question;
+    assert.deepEqual(question.sourceUrls, [source]);
+    return completion();
+  });
+  assert.equal(accepted.report.entries[0].decision, 'approved');
+  assert.deepEqual(accepted.report.sourceRepairs, revised.sourceRepairs);
+  for (const [file, content] of bank) assert.deepEqual(readFileSync(join('questions', file)), content);
+});
+
+test('a positive verdict with a conflicting answer cannot trigger source repair', async t => {
+  const { run } = fixture(t, 1, addSources(otherSource));
+  const review = positive();
+  review.actualAnswer = 1;
+  const { report, revisedPath } = await run({ fetchImpl: async () => completion(review) });
+  assert.equal(report.entries[0].decision, 'needs_review');
+  assert.equal(revisedPath, null);
+});
+
+test('fresh review rejects inconsistent source repair provenance before network access', async t => {
+  const { run } = fixture(t, 1, batch => {
+    batch.sourceRepairs = [{ candidate: 0, originalSourceUrls: [source, otherSource],
+      retainedSourceIndices: [1], reviewModel: model }];
+  });
+  await assert.rejects(run({ documentReader: () => assert.fail('Unexpected documentation retrieval'),
+    fetchImpl: () => assert.fail('Unexpected Groq request') }), /Invalid staged source repair provenance/);
+});
+
+test('a revised candidate cannot stage a second source repair', async t => {
+  const { run, directory } = fixture(t, 1, addSources(otherSource, thirdSource));
+  const review = positive();
+  review.citations.push({ source: 1, quote: otherQuote });
+  const first = await run({ documentReader: async url => [url.href === source ? quote : otherQuote],
+    fetchImpl: async () => completion(review) });
+  const second = await reviewBatch(root, first.revisedPath, {
+    env, outputParent: directory, documentReader: async url => [url.href === source ? quote : otherQuote],
+    fetchImpl: async () => completion()
+  });
+  assert.equal(second.report.entries[0].decision, 'needs_review');
+  assert.equal(second.report.entries[0].reason, 'source_repair_budget_exhausted');
+  assert.equal(second.revisedPath, null);
+});
+
+test('an unavailable extra source is held without inferring support or staging a repair', async t => {
+  const { run } = fixture(t, 1, addSources(otherSource));
+  const { report, revisedPath } = await run({
+    documentReader: async url => { if (url.href === source) return [quote]; throw new Error('offline'); }
+  });
+  const [entry] = report.entries;
+  assert.equal(entry.reason, 'documentation_unavailable');
+  assert.deepEqual(entry.sourceCoverage, [
+    { source: 0, outcome: 'verified_support' }, { source: 1, outcome: 'documentation_unavailable' }
+  ]);
+  assert.equal(revisedPath, null);
 });
 
 test('Microsoft Learn list and table text supports an exact quotation through review', async t => {

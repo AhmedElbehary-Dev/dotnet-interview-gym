@@ -359,7 +359,8 @@ function buildMessages(root, index, plan) {
       'Return only a JSON object with a candidates array, one item per brief in the same order.',
       'Copy each category, conceptId, difficulty and skill exactly. Do not include IDs or generation metadata.',
       'Use q for the English question, options for four distinct English choices, answer for the zero-based proposed answer index,',
-      'hint for a short Arabic hint, why for a detailed Egyptian-Arabic explanation, and sourceUrls for 1–3 supporting HTTP(S) documentation links.',
+      'hint for a short Arabic hint, why for a detailed Egyptian-Arabic explanation, and sourceUrls for 1–3 authoritative documentation links.',
+      'Use one directly relevant official documentation URL by default. Add another only if it supplies distinct evidence for a material claim. Use known URLs and do not invent references.',
       'Use a code object with lang, prompt and code when a snippet is helpful. Keep each explanation to about 2–4 sentences.',
       'Keep all questions educational and defensive. Do not provide exploit instructions.'
     ].join(' ') },

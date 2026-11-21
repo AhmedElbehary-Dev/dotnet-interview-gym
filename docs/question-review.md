@@ -46,8 +46,10 @@ try {
   a rule identifying the response envelope or completion content. Diagnostics
   omit raw responses, candidate text, and credentials.
 - Approval requires a distinct, confirmed review model, an independently
-  selected matching answer, all positive findings and a supported quote for each
-  source. Documentation checks use bounded HTTPS reads from allowlisted
+  selected matching answer, all positive findings and sufficient documentation.
+  One authoritative source can suffice. Each retained URL needs an exact quote
+  that the reviewer identifies as supporting a material aspect of the question,
+  answer or explanation. Documentation checks use bounded HTTPS reads from allowlisted
   documentation hosts, public IPv4 address pinning and at most two redirects
   within the original allowlisted origin and documentation paths. Groq
   judges the relevance of the retrieved passages. The semantic duplicate check
@@ -59,11 +61,15 @@ try {
   make documentation unavailable. A page that loads but yields no usable
   passages produces `insufficient_evidence`. Extraction includes lists,
   tables and other article text, and skips navigation and hidden content.
-- The reviewer distinguishes insufficient evidence from passages unrelated to
-  the question (`documentation_irrelevant`). An `unsupported_citation`
-  identifies a quote or source that failed validation. A quote must match a
-  contiguous span of one supplied passage exactly. If citation validation
-  fails, the report retains validated findings with an empty citations array.
+- `sourceCoverage` records `verified_support` for sources cited with verified
+  supporting quotations. An uncited source is `unsupported_source` unless
+  retrieval failed (`documentation_unavailable`) or the reviewer rated the
+  documentation irrelevant (`documentation_irrelevant`).
+- `unsupported_citation` identifies a quotation that does not match a
+  contiguous span of a supplied passage. An unknown index or repeated index
+  is reported as `unknown_citation_source` or `duplicate_source_citation`.
+  If citation validation fails, the report retains validated findings with
+  an empty citations array.
 - The CLI treats every snippet as potentially executable and holds it when
   execution is unverified. The JavaScript API accepts an `isolatedVerifier`
   adapter for C#; the caller must supply a trusted, resource-limited sandbox.
@@ -72,6 +78,29 @@ try {
 - Each candidate uses at most three Groq attempts, with at most two extra
   attempts across the batch. Authentication failure or an exhausted rate-limit
   retry stops further Groq calls. CI supplies mocked responses and documents.
+
+## Source-only repair and fresh review
+
+If the reviewer independently selects the correct answer and finds sufficient
+support in a subset of the retrieved sources, the original remains on hold.
+The CLI can stage a separate `revised-candidates.json` alongside `review.json`.
+It removes only uncited URLs and revalidates the revised candidate before
+staging. The original candidate file is preserved. The revised batch records
+each changed candidate's zero-based position, original URLs, retained source
+indices and review model.
+
+Use the path printed by the CLI for a fresh independent review. This run
+retrieves the documentation again and applies every approval gate. A candidate
+with source repair provenance has used its one repair cycle. A subsequent
+coverage failure stays on hold with `source_repair_budget_exhausted`.
+
+```powershell
+$revised = 'C:\path\to\interview-gym-review-staging-...-ready\revised-candidates.json'
+node scripts/review-question-candidates.mjs $revised --dry-run
+node scripts/review-question-candidates.mjs $revised
+```
+
+Use the same Groq Free Plan setup shown above for the live review.
 
 ## Offline documentation diagnostics
 

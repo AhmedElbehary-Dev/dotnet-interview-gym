@@ -100,12 +100,15 @@ function readBatch(path) {
 
 function readContext(root, batch) {
   const { plan, candidates } = batch ?? {};
-  if (!exactKeys(batch, ['schemaVersion', 'status', 'plan', 'candidates']) ||
+  const fields = ['schemaVersion', 'status', 'plan', 'candidates'];
+  if (Object.hasOwn(batch ?? {}, 'sourceRepairs')) fields.push('sourceRepairs');
+  if (!exactKeys(batch, fields) ||
       batch.schemaVersion !== 1 || batch.status !== 'complete' ||
       !Array.isArray(candidates) || candidates.length < 1 || candidates.length > 10 ||
       !Array.isArray(plan?.targets) || plan.targets.length !== candidates.length) {
     throw new Error('Expected a complete staged batch (schema version 1).');
   }
+  const sourceRepairs = readSourceRepairs(batch, candidates);
   const current = planGeneration(root, { date: plan.date, seed: plan.seed });
   const planMatches = isDeepStrictEqual(plan, { ...current, targets: current.targets.slice(0, candidates.length) });
   const index = readJson(root, 'questions/index.json');
@@ -127,9 +130,40 @@ function readContext(root, batch) {
     return result;
   };
   return {
-    plan, candidates, planMatches, bank, taxonomy, ids: counts('id'), fingerprints: counts('fingerprint'),
+    plan, candidates, sourceRepairs, planMatches, bank, taxonomy, ids: counts('id'), fingerprints: counts('fingerprint'),
     bankFingerprints: new Set(bank.map(q => q.fingerprint))
   };
+}
+
+function readSourceRepairs(batch, candidates) {
+  const repairs = new Map();
+  if (!Object.hasOwn(batch, 'sourceRepairs')) return repairs;
+  if (!Array.isArray(batch.sourceRepairs) || batch.sourceRepairs.length < 1 || batch.sourceRepairs.length > candidates.length) {
+    throw new Error('Invalid staged source repair provenance.');
+  }
+  for (const repair of batch.sourceRepairs) {
+    if (!exactKeys(repair, ['candidate', 'originalSourceUrls', 'retainedSourceIndices', 'reviewModel'])) {
+      throw new Error('Invalid staged source repair provenance.');
+    }
+    const { candidate, originalSourceUrls, retainedSourceIndices, reviewModel } = repair;
+    if (!Number.isInteger(candidate) || candidate < 0 || candidate >= candidates.length || repairs.has(candidate) ||
+        !Array.isArray(originalSourceUrls) || originalSourceUrls.length < 2 || originalSourceUrls.length > 3 ||
+        !validSourceUrls(originalSourceUrls) || !freeModels.has(reviewModel) ||
+        !Array.isArray(retainedSourceIndices) || !retainedSourceIndices.length ||
+        retainedSourceIndices.length >= originalSourceUrls.length ||
+        !retainedSourceIndices.every((index, i) => Number.isInteger(index) &&
+          index > (retainedSourceIndices[i - 1] ?? -1) && index < originalSourceUrls.length) ||
+        !isDeepStrictEqual(candidates[candidate]?.sourceUrls, retainedSourceIndices.map(index => originalSourceUrls[index]))) {
+      throw new Error('Invalid staged source repair provenance.');
+    }
+    repairs.set(candidate, repair);
+  }
+  return repairs;
+}
+
+function validSourceUrls(urls) {
+  const allowed = urls.map(allowedDocumentationUrl);
+  return allowed.every(Boolean) && new Set(allowed.map(url => url.origin + url.pathname)).size === urls.length;
 }
 
 function localGates(candidate, context, index) {
@@ -154,8 +188,7 @@ function localGates(candidate, context, index) {
   }
   if (validated.fingerprint !== fingerprint) return { reason: 'fingerprint_mismatch' };
   if (fingerprints.get(fingerprint) > 1) return { reason: 'duplicate_fingerprint' };
-  if (!raw.sourceUrls.every(allowedDocumentationUrl) ||
-      new Set(raw.sourceUrls.map(value => { const url = new URL(value); return url.origin + url.pathname; })).size !== raw.sourceUrls.length) {
+  if (!validSourceUrls(raw.sourceUrls)) {
     return { reason: 'unsafe_documentation_url' };
   }
   if (!context.bank.some(q => q.category === raw.category)) return { reason: 'incompatible_category' };
@@ -183,8 +216,8 @@ function parseReview(value, reportedModel, model, evidence, keys, saveFindings) 
   }
   const { verdict, actualAnswer, findings } = value;
   saveFindings({ verdict, actualAnswer, findings, citations: [] });
-  if (!Array.isArray(value.citations) || value.citations.length > evidence.length) {
-    throw new ReviewError('invalid_review', '$.citations', 'bounded_array');
+  if (!Array.isArray(value.citations)) {
+    throw new ReviewError('invalid_review', '$.citations', 'array');
   }
   const cited = new Set();
   for (const [index, citation] of value.citations.entries()) {
@@ -192,8 +225,11 @@ function parseReview(value, reportedModel, model, evidence, keys, saveFindings) 
     requireReviewObject(citation, citationSchema, path);
     if (!Number.isInteger(citation.source)) throw new ReviewError('invalid_review', `${path}.source`, 'integer');
     if (!boundedText(citation.quote, 24, 450)) throw new ReviewError('invalid_review', `${path}.quote`, 'bounded_text');
-    if (cited.has(citation.source) || !evidence[citation.source]) {
-      throw new ReviewError('unsupported_citation', `${path}.source`, 'unique_source_index');
+    if (citation.source < 0 || citation.source >= evidence.length) {
+      throw new ReviewError('unknown_citation_source', `${path}.source`, 'supplied_source_index');
+    }
+    if (cited.has(citation.source)) {
+      throw new ReviewError('duplicate_source_citation', `${path}.source`, 'unique_source_index');
     }
     if (!evidence[citation.source].passages.some(text => text.includes(citation.quote))) {
       throw new ReviewError('unsupported_citation', `${path}.quote`, 'retrieved_passage');
@@ -225,8 +261,9 @@ function reviewMessages(raw, context, index, evidence) {
       'Check technical correctness, answer uniqueness, explanation and hint, ambiguity, distractor plausibility, difficulty, concept and skill alignment, snippet correctness, documentation support, and semantic duplication against supplied comparisons.',
       'A repeated concept alone is not duplication. An equivalent learning objective tested in essentially the same way is duplication.',
       'The documentation finding also requires evidence (sufficient, insufficient, or irrelevant). Use sufficient if the passages substantiate the answer and its material claims, irrelevant if the passages are unrelated to the question, and insufficient otherwise.',
-      'For approval all findings must pass, the documentation evidence must be sufficient, and citations must have exactly one entry per source.',
-      'Each citation is {source, quote}. Copy 24–450 contiguous characters verbatim from one supplied passage for that zero-based source. Preserve case, punctuation, and spacing. Omit any citation for which there is no supporting passage.',
+      'For a positive verdict, all findings must pass and the cited evidence together must be sufficient for the answer and its material claims. One authoritative source can suffice.',
+      'Cite a source only if its quotation independently supports a material aspect of the question, answer, or explanation. Omit unsupported or irrelevant sources. Give at most one citation per source.',
+      'Each citation is {source, quote}. Copy 24–450 contiguous characters verbatim from one supplied passage for that zero-based source. Preserve case, punctuation, and spacing.',
       'If documentation is insufficient or unrelated report uncertainty or reject. Never invent or browse sources. Never claim the snippet was compiled or run.',
       'If a finding is uncertain, the verdict must be uncertain unless a different finding independently warrants rejection.'
     ].join(' ') },
@@ -236,33 +273,38 @@ function reviewMessages(raw, context, index, evidence) {
   ];
 }
 
-const documentationHolds = new Set(['documentation_unavailable', 'insufficient_evidence', 'documentation_irrelevant']);
+const documentationHolds = new Set(['documentation_unavailable', 'insufficient_evidence', 'documentation_irrelevant', 'unsupported_source']);
+
+function positiveReview(review) {
+  return review.verdict === 'approve' && review.actualAnswer !== null &&
+    Object.values(review.findings).every(finding => finding.status === 'pass');
+}
 
 function decide(review, answer, gates) {
-  const statuses = Object.values(review.findings).map(finding => finding.status);
-  if (review.verdict === 'reject' && statuses.includes('fail')) return ['rejected', 'reviewer_rejected'];
-  if (documentationHolds.has(gates.documentation)) return ['needs_review', gates.documentation];
-  if (review.verdict !== 'approve' || statuses.some(status => status !== 'pass') || review.actualAnswer === null) {
-    return ['needs_review', 'reviewer_uncertain'];
+  if (review.verdict === 'reject' && Object.values(review.findings).some(finding => finding.status === 'fail')) {
+    return ['rejected', 'reviewer_rejected'];
   }
+  if (documentationHolds.has(gates.documentation)) return ['needs_review', gates.documentation];
+  if (!positiveReview(review)) return ['needs_review', 'reviewer_uncertain'];
   if (review.actualAnswer !== answer) return ['needs_review', 'answer_disagreement'];
-  if (gates.documentation !== 'passed') return ['needs_review', 'unsupported_citation'];
+  if (gates.documentation !== 'passed') return ['needs_review', 'insufficient_evidence'];
   if (gates.execution !== 'not_applicable' && gates.execution !== 'verified') return ['needs_review', 'execution_unverified'];
   return ['approved', 'all_gates_passed'];
 }
 
-function writeReport(parent, report, signal) {
+function writeReport(parent, report, revised, signal) {
   signal?.throwIfAborted();
   const directory = mkdtempSync(join(parent, 'interview-gym-review-staging-'));
-  const final = join(directory, 'review.json');
-  const temporary = join(directory, 'review.tmp');
+  const final = `${directory}-ready`;
+  const files = [['review.json', `${JSON.stringify(report, null, 2)}\n`]];
+  if (revised) files.push(['revised-candidates.json', revised]);
   try {
-    writeFileSync(temporary, `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
+    for (const [name, content] of files) writeFileSync(join(directory, name), content, { flag: 'wx', mode: 0o600 });
     signal?.throwIfAborted();
-    renameSync(temporary, final);
-    return final;
+    renameSync(directory, final);
+    return { path: join(final, 'review.json'), revisedPath: revised ? join(final, 'revised-candidates.json') : null };
   } catch (error) {
-    if (existsSync(temporary)) unlinkSync(temporary);
+    for (const [name] of files) if (existsSync(join(directory, name))) unlinkSync(join(directory, name));
     rmdirSync(directory);
     throw error;
   }
@@ -291,6 +333,8 @@ export async function reviewBatch(root, input, {
     }
   }
   const entries = [];
+  const revisedCandidates = [...context.candidates];
+  const sourceRepairs = new Map(context.sourceRepairs);
   const budget = { remaining: context.candidates.length + 2 };
   let stopReason;
   for (const [index, candidate] of context.candidates.entries()) {
@@ -299,7 +343,8 @@ export async function reviewBatch(root, input, {
     const gates = { deterministic: local.raw ? 'passed' : 'failed', documentation: 'not_checked', execution: 'not_checked' };
     if (local.validation) gates.validation = local.validation;
     const entry = { candidate, reviewedAt: new Date().toISOString(), reviewModel: dryRun ? null : model, gates,
-      findings: null, diagnostics: [], documentationDiagnostics: [], decision: 'needs_review', reason: 'dry_run' };
+      findings: null, diagnostics: [], documentationDiagnostics: [], sourceCoverage: [],
+      decision: 'needs_review', reason: 'dry_run' };
     entries.push(entry);
     if (!local.raw) {
       entry.decision = 'rejected';
@@ -362,9 +407,18 @@ export async function reviewBatch(root, input, {
       });
       signal?.throwIfAborted();
       entry.findings = review;
-      if (gates.documentation === 'evidence_retrieved' && review.findings.documentation.status === 'pass' &&
-          review.citations.length === evidence.length) {
-        gates.documentation = 'passed';
+      const cited = new Set(review.citations.map(({ source }) => source));
+      entry.sourceCoverage = entry.documentationDiagnostics.map(({ source, outcome }) => ({
+        source,
+        outcome: outcome === 'documentation_unavailable' ? outcome :
+          review.findings.documentation.evidence === 'irrelevant' ? 'documentation_irrelevant' :
+          cited.has(source) ? 'verified_support' : 'unsupported_source'
+      }));
+      const retainedSourceIndices = entry.sourceCoverage
+        .filter(({ outcome }) => outcome === 'verified_support').map(({ source }) => source);
+      if (gates.documentation === 'evidence_retrieved' && review.findings.documentation.status === 'pass') {
+        gates.documentation = entry.sourceCoverage.every(({ outcome }) => outcome === 'verified_support')
+          ? 'passed' : 'unsupported_source';
       }
       // The injected verifier must run compile and execution in a separately managed, resource-limited sandbox.
       // The CLI ships without a verifier and never launches candidate code.
@@ -379,6 +433,20 @@ export async function reviewBatch(root, input, {
         }
       }
       [entry.decision, entry.reason] = decide(review, raw.answer, gates);
+      if (entry.reason === 'unsupported_source' && retainedSourceIndices.length &&
+          positiveReview(review) && review.actualAnswer === raw.answer) {
+        if (sourceRepairs.has(index)) {
+          entry.reason = 'source_repair_budget_exhausted';
+        } else {
+          const revised = { ...candidate, sourceUrls: retainedSourceIndices.map(source => raw.sourceUrls[source]) };
+          if (localGates(revised, context, index).raw) {
+            revisedCandidates[index] = revised;
+            sourceRepairs.set(index, { candidate: index, originalSourceUrls: raw.sourceUrls,
+              retainedSourceIndices, reviewModel: model });
+            entry.reason = 'source_repair_staged';
+          }
+        }
+      }
     } catch (error) {
       signal?.throwIfAborted();
       entry.reason = error.category ?? 'review_request_failed';
@@ -387,8 +455,20 @@ export async function reviewBatch(root, input, {
     }
   }
   const report = { schemaVersion: 1, status: dryRun ? 'dry_run' : 'complete', plan: context.plan, entries };
+  if (context.sourceRepairs.size) report.sourceRepairs = [...context.sourceRepairs.values()];
+  let revised = null;
+  if (sourceRepairs.size > context.sourceRepairs.size) {
+    revised = `${JSON.stringify({ ...batch, candidates: revisedCandidates, sourceRepairs: [...sourceRepairs.values()] })}\n`;
+    if (Buffer.byteLength(revised) > maxBatchBytes) {
+      revised = null;
+      for (const entry of entries) {
+        if (entry.reason === 'source_repair_staged') entry.reason = 'source_repair_staging_limit';
+      }
+    }
+  }
   if (containsSecret(report, keys)) throw new Error('Rejected review containing credentials.');
-  return { path: dryRun ? null : writeReport(parent, report, signal), report };
+  const staged = dryRun ? { path: null, revisedPath: null } : writeReport(parent, report, revised, signal);
+  return { ...staged, report };
 }
 
 if (isMain(import.meta.url)) {
@@ -399,13 +479,14 @@ if (isMain(import.meta.url)) {
     if (!input || extra.length || (flag !== undefined && flag !== '--dry-run')) {
       throw new Error('Usage: node scripts/review-question-candidates.mjs PATH_TO_CANDIDATES_JSON [--dry-run]');
     }
-    const { path, report } = await reviewBatch(resolve('.'), input, {
+    const { path, revisedPath, report } = await reviewBatch(resolve('.'), input, {
       dryRun: flag === '--dry-run',
       log: diagnostic => console.error(redact(JSON.stringify(diagnostic))),
       logDocumentation: diagnostic => console.error(redact(JSON.stringify(diagnostic)))
     });
     for (const [i, { decision, reason }] of report.entries.entries()) console.log(redact(`Candidate ${i + 1}: ${decision} (${reason})`));
     if (path) console.log(redact(`Staged review in ${path}`));
+    if (revisedPath) console.log(redact(`Staged revised candidates for fresh review in ${revisedPath}`));
     if (report.entries.some(e => e.decision !== 'approved')) process.exitCode = 1;
   } catch (error) {
     console.error(redact(error.message));
