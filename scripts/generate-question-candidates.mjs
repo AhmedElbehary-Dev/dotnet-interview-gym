@@ -79,7 +79,7 @@ function retryDelay(header, attempt) {
   return Number.isNaN(requested) ? backoff : Math.max(backoff, requested);
 }
 
-class GenerationError extends Error {
+export class GenerationError extends Error {
   constructor(category, message) {
     super(message);
     this.category = category;
@@ -94,7 +94,7 @@ class CandidateValidationError extends GenerationError {
 }
 
 const finishReasons = new Set(['stop', 'length', 'content_filter', 'tool_calls', 'error']);
-function parseCompletion(content, { key, name, modelPattern }, diagnostics) {
+function parseCompletion(content, { key, name, modelPattern }, diagnostics, selectOutput) {
   let decoded;
   if (!content.trim()) throw new GenerationError('empty_response', `${name} returned an empty response.`);
   try {
@@ -136,17 +136,17 @@ function parseCompletion(content, { key, name, modelPattern }, diagnostics) {
   } catch {
     throw new GenerationError('invalid_json', `${name} returned invalid JSON output.`);
   }
-  if (!isRecord(parsed) || !Array.isArray(parsed.candidates)) {
+  if (!selectOutput && (!isRecord(parsed) || !Array.isArray(parsed.candidates))) {
     throw new CandidateValidationError(null, 'candidates', 'array', 'invalid_schema',
       `${name} returned an invalid candidate schema at candidates (array).`);
   }
   rejectSecret(decoded, key);
   rejectSecret(parsed, key);
-  return parsed.candidates;
+  return selectOutput ? selectOutput(parsed, diagnostics.reportedModel) : parsed.candidates;
 }
 
 export async function requestCompletion(payload, env, {
-  fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }
+  fetchImpl = fetch, delay = sleep, log = () => {}, budget = { remaining: 3 }, signal: cancellation
 } = {}) {
   const config = settings(env);
   const { groq, name, endpoint, key, model, timeout, reasoningEffort } = config;
@@ -159,12 +159,14 @@ export async function requestCompletion(payload, env, {
   if (Buffer.byteLength(body) > 16 * 1024) throw new Error(`${name} request exceeds the size limit.`);
   if (body.includes(key)) throw new Error('Rejected request containing credentials.');
   for (let attempt = 0; attempt < 3; attempt++) {
+    cancellation?.throwIfAborted();
     if (budget.remaining === 0) {
       log({ failureCategory: 'request_budget' });
       throw new GenerationError('request_budget', `${name} request budget exhausted.`);
     }
     budget.remaining--;
-    const signal = AbortSignal.timeout(timeout);
+    const deadline = AbortSignal.timeout(timeout);
+    const signal = cancellation ? AbortSignal.any([deadline, cancellation]) : deadline;
     const diagnostics = { reportedModel: null, finishReason: null, usage: {}, outputLength: 0 };
     let response;
     let error;
@@ -175,10 +177,10 @@ export async function requestCompletion(payload, env, {
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }
       });
       if (response.ok) {
-        const candidates = parseCompletion(await readCompletion(response), config, diagnostics);
-        const validated = payload.validate ? payload.validate(candidates) : candidates;
+        const output = parseCompletion(await readCompletion(response), config, diagnostics, payload.selectOutput);
+        const result = payload.selectOutput ? { output } : { candidates: payload.validate ? payload.validate(output) : output };
         log({ ...diagnostics, failureCategory: null });
-        return { candidates: validated, reportedModel: diagnostics.reportedModel };
+        return { ...result, reportedModel: diagnostics.reportedModel };
       }
 
       void response.body?.cancel().catch(() => {});
@@ -194,6 +196,7 @@ export async function requestCompletion(payload, env, {
         error = new GenerationError('http_error', `${name} returned HTTP ${status}.`);
       }
     } catch (cause) {
+      cancellation?.throwIfAborted();
       if (cause instanceof GenerationError) {
         error = cause;
       } else if (signal.aborted) {
@@ -213,7 +216,7 @@ export async function requestCompletion(payload, env, {
     if (!retry || attempt === 2 || budget.remaining === 0) throw error;
     const wait = retryDelay(response?.headers.get('retry-after'), attempt);
     if (wait > 5000) throw error;
-    await delay(wait);
+    await delay(wait, undefined, { signal: cancellation });
   }
 }
 
