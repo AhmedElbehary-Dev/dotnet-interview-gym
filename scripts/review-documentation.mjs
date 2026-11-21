@@ -1,5 +1,5 @@
 import { BlockList, isIPv4 } from 'node:net';
-import { Resolver } from 'node:dns/promises';
+import { lookup } from 'node:dns/promises';
 import { request } from 'node:https';
 import { createReadStream } from 'node:fs';
 import { isMain } from './plan-question-generation.mjs';
@@ -88,25 +88,34 @@ function readHtml(url, address, signal, requestImpl) {
   });
 }
 
-export async function inspectDocumentation(url, {
-  resolver = new Resolver({ timeout: 1000, tries: 1 }), requestImpl = request
-} = {}) {
+async function lookupIPv4(hostname, lookupImpl) {
+  // OS lookup cannot be cancelled. Discard results that arrive after the DNS budget.
+  let timer;
+  const deadline = new Promise(resolve => { timer = setTimeout(resolve, 1000, null); });
+  try {
+    return await Promise.race([lookupImpl(hostname, { all: true, family: 4 }), deadline]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export async function inspectDocumentation(url, { lookupImpl = lookup, requestImpl = request } = {}) {
   url = allowedDocumentationUrl(String(url));
   if (!url) return unavailable('unsafe_url');
   const signal = AbortSignal.timeout(3500);
-  const cancel = () => resolver.cancel?.();
-  signal.addEventListener('abort', cancel, { once: true });
   let failureCategory = 'dns_error';
   let httpStatus = null;
   try {
-    const addresses = await resolver.resolve4(url.hostname);
+    const addresses = await lookupIPv4(url.hostname, lookupImpl);
     signal.throwIfAborted();
+    if (addresses === null) return unavailable('timeout');
     if (!addresses.length) return unavailable('dns_error');
-    if (!addresses.every(publicAddress)) return unavailable('unsafe_address');
+    if (!addresses.every(({ address, family }) => family === 4 && publicAddress(address))) return unavailable('unsafe_address');
+    const [{ address }] = addresses;
     const origin = url.origin;
     failureCategory = 'network_error';
     for (let redirects = 0; redirects <= 2; redirects++) {
-      const response = await readHtml(url, addresses[0], signal, requestImpl);
+      const response = await readHtml(url, address, signal, requestImpl);
       httpStatus = response.httpStatus;
       if (response.failureCategory) return unavailable(response.failureCategory, httpStatus);
       if (response.html !== undefined) return extracted(extractPassages(response.html), httpStatus);
@@ -119,8 +128,6 @@ export async function inspectDocumentation(url, {
     return unavailable('redirect_limit', httpStatus);
   } catch (error) {
     return unavailable(signal.aborted || error?.code === 'ETIMEOUT' ? 'timeout' : failureCategory, httpStatus);
-  } finally {
-    signal.removeEventListener('abort', cancel);
   }
 }
 

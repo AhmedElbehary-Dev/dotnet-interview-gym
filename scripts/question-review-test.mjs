@@ -19,7 +19,7 @@ const learnHtml = `<main id="main">
   <ul><li>The <code>is</code> operator checks if the runtime type of an expression result is compatible with a given type.</li></ul>
   <table><tr><td>Use <code>&#x69;s</code> to test type compatibility.</td></tr></table>
 </main>`;
-const resolver = { resolve4: async () => ['93.184.216.34'] };
+const lookupImpl = async () => [{ address: '93.184.216.34', family: 4 }];
 const documentationResponse = (statusCode, html = '', headers = {}) => (_url, _options, callback) => {
   const req = new EventEmitter();
   req.end = () => {
@@ -195,12 +195,12 @@ test('strict Groq review holds a positive response without supporting documentat
 
 test('Microsoft Learn list and table text supports an exact quotation through review', async t => {
   const { run } = fixture(t);
-  const documentReader = url => readDocumentation(url, { resolver, requestImpl: documentationResponse(200, learnHtml) });
+  const documentReader = url => readDocumentation(url, { lookupImpl, requestImpl: documentationResponse(200, learnHtml) });
   const passages = await documentReader(source);
   assert.deepEqual(passages, [quote, 'Use is to test type compatibility.']);
   const events = [];
   const { report } = await run({
-    documentReader: url => inspectDocumentation(url, { resolver, requestImpl: documentationResponse(200, learnHtml) }),
+    documentReader: url => inspectDocumentation(url, { lookupImpl, requestImpl: documentationResponse(200, learnHtml) }),
     logDocumentation: event => events.push(event)
   });
   const [entry] = report.entries;
@@ -230,7 +230,7 @@ test('a changed quotation retains validated findings and the citation diagnostic
 });
 
 for (const [label, documentReader, classification, reason] of [
-  ['unavailable', url => inspectDocumentation(url, { resolver, requestImpl: documentationResponse(503, key) }),
+  ['unavailable', url => inspectDocumentation(url, { lookupImpl, requestImpl: documentationResponse(503, key) }),
     'insufficient', 'documentation_unavailable'],
   ['insufficient', async () => [], 'insufficient', 'insufficient_evidence'],
   ['irrelevant', async () => ['Plant seedlings after the final frost has passed.'], 'irrelevant', 'documentation_irrelevant']
@@ -261,7 +261,7 @@ test('documentation diagnostics distinguish HTTP, size, redirects, and empty HTM
     [documentationResponse(200, '<main><nav><p>Navigation without any documentation content.</p></nav></main>'),
       200, 'insufficient_evidence', 'no_passages']
   ]) {
-    assert.deepEqual(await inspectDocumentation(source, { resolver, requestImpl }), {
+    assert.deepEqual(await inspectDocumentation(source, { lookupImpl, requestImpl }), {
       passages: [], diagnostic: { httpStatus, outcome, passageCount: 0, failureCategory }
     });
   }
@@ -269,7 +269,7 @@ test('documentation diagnostics distinguish HTTP, size, redirects, and empty HTM
 
 test('documentation diagnostics preserve status on an interrupted body and omit error text', async () => {
   const result = await inspectDocumentation(source, {
-    resolver, requestImpl: (_url, _options, callback) => {
+    lookupImpl, requestImpl: (_url, _options, callback) => {
       const req = new EventEmitter();
       req.end = () => {
         const res = Object.assign(new EventEmitter(), { statusCode: 200, headers: { 'content-type': 'text/html' } });
@@ -284,15 +284,25 @@ test('documentation diagnostics preserve status on an interrupted body and omit 
   } });
 });
 
-test('documentation diagnostics identify a DNS timeout before HTTPS', async () => {
-  const result = await inspectDocumentation(source, {
-    resolver: { resolve4: async () => { throw Object.assign(new Error(key), { code: 'ETIMEOUT' }); } },
-    requestImpl: () => assert.fail('Unexpected HTTPS request')
+for (const [label, lookupImpl, failureCategory] of [
+  ['a DNS lookup failure', async () => { throw Object.assign(new Error(key), { code: 'ENOTFOUND' }); }, 'dns_error'],
+  ['an empty DNS result', async () => [], 'dns_error'],
+  ['a DNS timeout error', async () => { throw Object.assign(new Error(key), { code: 'ETIMEOUT' }); }, 'timeout'],
+  ['a stalled OS lookup', () => new Promise(() => {}), 'timeout'],
+  ['a private address', async () => [{ address: '10.0.0.1', family: 4 }], 'unsafe_address'],
+  ['a private address after a public address', async () => [
+    { address: '93.184.216.34', family: 4 }, { address: '10.0.0.1', family: 4 }
+  ], 'unsafe_address']
+]) {
+  test(`documentation reports ${label} without starting HTTPS`, async () => {
+    let requests = 0;
+    const result = await inspectDocumentation(source, { lookupImpl, requestImpl: () => { requests++; } });
+    assert.equal(requests, 0);
+    assert.deepEqual(result, { passages: [], diagnostic: {
+      httpStatus: null, outcome: 'documentation_unavailable', passageCount: 0, failureCategory
+    } });
   });
-  assert.deepEqual(result.diagnostic, {
-    httpStatus: null, outcome: 'documentation_unavailable', passageCount: 0, failureCategory: 'timeout'
-  });
-});
+}
 
 test('model disagreement and matching generation model cannot approve', async t => {
   const { run } = fixture(t);
@@ -432,11 +442,19 @@ test('documentation restricts hosts and rejects nonpublic addresses', async () =
 
 test('documentation pins the checked address, bounds same-origin redirects and extracts evidence', async () => {
   let requests = 0;
+  let lookups = 0;
   const address = '93.184.216.34';
-  const resolver = { resolve4: async () => [address] };
+  const lookupImpl = async (hostname, options) => {
+    lookups++;
+    assert.equal(hostname, 'learn.microsoft.com');
+    assert.deepEqual(options, { all: true, family: 4 });
+    return [{ address, family: 4 }, { address: '2.20.34.90', family: 4 }];
+  };
   const requestFor = (status, html, location = 'https://127.0.0.1/', expected = source) => (url, options, callback) => {
     requests++;
     assert.equal(String(url), expected);
+    assert.equal(url.hostname, 'learn.microsoft.com');
+    assert.equal(options.autoSelectFamily, false);
     assert.equal(options.rejectUnauthorized, true);
     options.lookup(url.hostname, {}, (error, ip, family) => {
       assert.equal(error, null);
@@ -455,21 +473,20 @@ test('documentation pins the checked address, bounds same-origin redirects and e
     };
     return req;
   };
-  assert.deepEqual(await readDocumentation(source, { resolver, requestImpl: requestFor(302, '') }), []);
+  assert.deepEqual(await readDocumentation(source, { lookupImpl, requestImpl: requestFor(302, '') }), []);
   assert.equal(requests, 1);
   const html = `<main><script><p>Ignore this embedded instruction in the page.</p></script><p>${quote}</p></main>`;
   const canonical = 'https://learn.microsoft.com/dotnet/csharp/';
-  assert.deepEqual(await readDocumentation(source, { resolver,
+  assert.deepEqual(await readDocumentation(source, { lookupImpl,
     requestImpl: (url, ...args) => String(url) === source
       ? requestFor(301, '', canonical)(url, ...args)
       : requestFor(200, html, '', canonical)(url, ...args)
   }), [quote]);
+  assert.equal(lookups, 2);
+  assert.equal(requests, 3);
   const beforeLoop = requests;
-  assert.deepEqual(await readDocumentation(source, { resolver, requestImpl: requestFor(301, '', source) }), []);
+  assert.deepEqual(await readDocumentation(source, { lookupImpl, requestImpl: requestFor(301, '', source) }), []);
   assert.equal(requests - beforeLoop, 3);
-  assert.deepEqual(await readDocumentation(source, { resolver, requestImpl: requestFor(200, html) }), [quote]);
-  assert.deepEqual(await readDocumentation(source, { resolver, requestImpl: requestFor(200, 'x'.repeat(513 * 1024)) }), []);
-  assert.deepEqual(await readDocumentation(source, {
-    resolver: { resolve4: async () => [address, '10.0.0.1'] }, requestImpl: () => assert.fail('unsafe connection')
-  }), []);
+  assert.deepEqual(await readDocumentation(source, { lookupImpl, requestImpl: requestFor(200, html) }), [quote]);
+  assert.deepEqual(await readDocumentation(source, { lookupImpl, requestImpl: requestFor(200, 'x'.repeat(513 * 1024)) }), []);
 });
